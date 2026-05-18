@@ -1,105 +1,150 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { TrendingDown, Bed, UtensilsCrossed, Bell, Mail, Send } from 'lucide-react';
+import { TrendingDown, Bell, Mail, Send } from 'lucide-react';
 
-const PAID = 7192;
-const NEW_PRICE = 5482;
-const SAVINGS = PAID - NEW_PRICE;
-const PCT = Math.round((SAVINGS / PAID) * 100);
+interface DemoBooking {
+  hotel: string;
+  city: string;
+  dates: string;
+  paid: number;
+  newPrice: number;
+  img: string;
+}
 
-// Curated stable Unsplash IDs — tropical/luxury resort vibes
-const HOTEL_IMG = 'https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800&q=80&auto=format&fit=crop';
+const BOOKINGS: DemoBooking[] = [
+  {
+    hotel: 'Vana Belle',
+    city: 'Koh Samui',
+    dates: '19–22 באוק׳',
+    paid: 7192,
+    newPrice: 5482,
+    img: 'https://images.unsplash.com/photo-1582719508461-905c673771fd?w=600&q=80&auto=format&fit=crop',
+  },
+  {
+    hotel: 'Banyan Tree',
+    city: 'Maldives',
+    dates: '16–19 באוק׳',
+    paid: 5061,
+    newPrice: 4200,
+    img: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&q=80&auto=format&fit=crop',
+  },
+  {
+    hotel: 'Canaves Oia',
+    city: 'Santorini',
+    dates: '12–15 ביוני',
+    paid: 4350,
+    newPrice: 3580,
+    img: 'https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=600&q=80&auto=format&fit=crop',
+  },
+];
 
 export function HeroBento() {
-  const [dropped, setDropped] = useState(false);
+  const [activeIdx, setActiveIdx] = useState(0);
 
   useEffect(() => {
-    const t = setTimeout(() => setDropped(true), 800);
-    const cycle = setInterval(() => setDropped((d) => !d), 5000);
-    return () => {
-      clearTimeout(t);
-      clearInterval(cycle);
-    };
+    const t = setInterval(() => setActiveIdx((i) => (i + 1) % BOOKINGS.length), 4500);
+    return () => clearInterval(t);
   }, []);
+
+  const active = BOOKINGS[activeIdx];
+  const savings = active.paid - active.newPrice;
+  const pct = Math.round((savings / active.paid) * 100);
 
   return (
     <div className="relative mx-auto w-full max-w-md lg:max-w-none">
       {/* Soft glow */}
       <div className="absolute -inset-12 -z-10 rounded-full bg-gradient-to-br from-primary/15 via-purple-500/10 to-pink-400/10 blur-3xl" />
 
-      {/* Main booking card */}
-      <div className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-2xl shadow-primary/10">
-        <div className="relative aspect-[16/9] w-full overflow-hidden">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={HOTEL_IMG} alt="" className="size-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-          <div
-            className={`absolute end-3 top-3 flex items-center gap-1.5 rounded-full bg-success px-3 py-1.5 text-xs font-bold text-white shadow-lg transition-all duration-500 ${
-              dropped ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 -translate-y-2 scale-95'
-            }`}
-          >
-            <TrendingDown className="size-3" /> חיסכון {PCT}%
+      {/* "Dashboard" container — 3 stacked booking cards */}
+      <div className="relative rounded-2xl border border-border bg-card p-3 shadow-2xl shadow-primary/10">
+        {/* Tiny dashboard header */}
+        <div className="mb-3 flex items-center justify-between px-2 pt-1">
+          <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+            <span className="inline-block size-2 rounded-full bg-success animate-pulse" />
+            הזמנות פעילות · {BOOKINGS.length}
           </div>
-          <div className="absolute bottom-3 start-3 end-3 text-white">
-            <h3 className="text-base font-bold drop-shadow-lg">Vana Belle, Koh Samui</h3>
-            <p className="text-xs opacity-90 drop-shadow">19–22 באוקטובר · 3 לילות</p>
-          </div>
+          <div className="text-[10px] text-muted-foreground">בדיקה אחרונה: עכשיו</div>
         </div>
-        <div className="space-y-3 p-4">
-          <div className="flex items-center gap-3 text-xs text-muted-foreground">
-            <span className="inline-flex items-center gap-1"><Bed className="size-3" /> Ocean Pool Suite</span>
-            <span className="text-border">·</span>
-            <span className="inline-flex items-center gap-1"><UtensilsCrossed className="size-3" /> חצי פנסיון</span>
-          </div>
-          <div className="flex items-end justify-between border-t border-border pt-3">
-            <div>
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">שילמת</p>
-              <p
-                className={`tabular-nums text-base font-medium transition-all ${
-                  dropped ? 'text-muted-foreground line-through' : 'text-foreground'
+
+        <div className="space-y-2">
+          {BOOKINGS.map((b, i) => {
+            const isActive = i === activeIdx;
+            const sav = b.paid - b.newPrice;
+            const p = Math.round((sav / b.paid) * 100);
+            return (
+              <div
+                key={b.hotel}
+                className={`relative flex items-center gap-3 rounded-xl border p-2.5 transition-all duration-500 ${
+                  isActive
+                    ? 'border-success/40 bg-success/5 shadow-md scale-[1.02]'
+                    : 'border-border/60 bg-background/50 scale-100'
                 }`}
               >
-                ₪{PAID.toLocaleString()}
-              </p>
-            </div>
-            <div className="text-end">
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">המחיר היום</p>
-              <p
-                key={String(dropped)}
-                className={`tabular-nums text-3xl font-bold ${
-                  dropped ? 'text-success animate-price-drop' : 'text-foreground'
-                }`}
-              >
-                ₪{(dropped ? NEW_PRICE : PAID).toLocaleString()}
-              </p>
-            </div>
-          </div>
+                {/* Thumbnail */}
+                <div className="relative size-16 shrink-0 overflow-hidden rounded-lg">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={b.img} alt="" className="size-full object-cover" />
+                  {isActive && (
+                    <div className="absolute inset-0 bg-success/20" />
+                  )}
+                </div>
+
+                {/* Info */}
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <p className="truncate text-sm font-bold">{b.hotel}</p>
+                    <span className="text-[10px] text-muted-foreground">· {b.city}</span>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">{b.dates} · 3 לילות</p>
+                  <div className="mt-1 flex items-baseline gap-2">
+                    <span
+                      className={`tabular-nums text-base font-bold ${
+                        isActive ? 'text-success' : ''
+                      }`}
+                    >
+                      ₪{(isActive ? b.newPrice : b.paid).toLocaleString()}
+                    </span>
+                    {isActive && (
+                      <span className="tabular-nums text-[11px] text-muted-foreground line-through">
+                        ₪{b.paid.toLocaleString()}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Drop badge */}
+                {isActive && (
+                  <div className="flex items-center gap-1 rounded-full bg-success px-2 py-1 text-[10px] font-bold text-white shadow-sm animate-slide-up">
+                    <TrendingDown className="size-2.5" /> {p}%
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 
-      {/* Floating in-app notification toast */}
+      {/* Floating in-app notification — appears for active booking */}
       <div
-        className={`absolute -top-4 -end-4 hidden lg:flex max-w-[280px] items-start gap-2.5 rounded-xl border border-border bg-card p-3 shadow-2xl transition-all duration-500 ${
-          dropped ? 'opacity-100 translate-y-0 rotate-0' : 'opacity-0 translate-y-3 rotate-3'
-        }`}
+        key={`bell-${activeIdx}`}
+        className="absolute -top-4 -end-4 hidden lg:flex max-w-[270px] items-start gap-2.5 rounded-xl border border-border bg-card p-3 shadow-2xl animate-slide-up"
       >
         <div className="grid size-9 shrink-0 place-items-center rounded-full bg-success/15 text-success">
           <Bell className="size-4" />
         </div>
         <div>
-          <p className="text-xs font-semibold">חיסכון של ₪{SAVINGS.toLocaleString()}</p>
+          <p className="text-xs font-semibold">חיסכון של ₪{savings.toLocaleString()}</p>
           <p className="text-[11px] text-muted-foreground leading-snug">
-            המחיר ירד {PCT}%. שווה לבטל ולהזמין מחדש.
+            {active.hotel} ירד {pct}%. שווה לבטל ולהזמין מחדש.
           </p>
         </div>
       </div>
 
-      {/* Floating email subject */}
+      {/* Floating email */}
       <div
-        className={`absolute -bottom-6 -start-6 hidden lg:flex max-w-[300px] items-start gap-3 rounded-xl border border-border bg-card p-3 shadow-2xl transition-all duration-500 delay-100 ${
-          dropped ? 'opacity-100 translate-y-0 -rotate-1' : 'opacity-0 translate-y-3 rotate-2'
-        }`}
+        key={`mail-${activeIdx}`}
+        className="absolute -bottom-6 -start-6 hidden lg:flex max-w-[290px] items-start gap-3 rounded-xl border border-border bg-card p-3 shadow-2xl animate-slide-up [animation-delay:120ms]"
       >
         <div className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
           <Mail className="size-4" />
@@ -109,21 +154,20 @@ export function HeroBento() {
             <p className="text-[11px] font-medium text-muted-foreground">TripWatch</p>
             <p className="text-[10px] text-muted-foreground">עכשיו</p>
           </div>
-          <p className="text-xs font-semibold truncate">💸 ירידת מחיר ב-Vana Belle</p>
-          <p className="text-[11px] text-muted-foreground truncate">חיסכון של ₪{SAVINGS.toLocaleString()}</p>
+          <p className="text-xs font-semibold truncate">💸 ירידת מחיר ב-{active.hotel}</p>
+          <p className="text-[11px] text-muted-foreground truncate">חיסכון של ₪{savings.toLocaleString()}</p>
         </div>
       </div>
 
       {/* Floating telegram bubble */}
       <div
-        className={`absolute top-1/2 -translate-y-1/2 -end-12 hidden lg:flex w-[240px] items-start gap-2.5 rounded-2xl rounded-tr-sm bg-[#229ED9] p-3 text-white shadow-2xl transition-all duration-500 delay-200 ${
-          dropped ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4'
-        }`}
+        key={`tg-${activeIdx}`}
+        className="absolute top-1/2 -translate-y-1/2 -end-12 hidden xl:flex w-[230px] items-start gap-2.5 rounded-2xl rounded-tr-sm bg-[#229ED9] p-3 text-white shadow-2xl animate-slide-up [animation-delay:240ms]"
       >
         <Send className="size-4 shrink-0 mt-0.5" />
         <div className="text-xs leading-snug">
           <p className="font-bold">💸 ירידת מחיר!</p>
-          <p className="opacity-90">Vana Belle, ₪{NEW_PRICE.toLocaleString()} (ירידה של {PCT}%)</p>
+          <p className="opacity-90 truncate">{active.hotel}, ₪{active.newPrice.toLocaleString()} ({pct}%)</p>
         </div>
       </div>
     </div>
