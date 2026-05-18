@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { nas } from '@/lib/nas-client';
+import { fetchOgImage } from '@/lib/og';
 
 export async function checkNow(bookingId: string) {
   const supabase = await createClient();
@@ -32,11 +33,17 @@ export async function checkNow(bookingId: string) {
       matched_room: r.matched_room,
       matched_meal: r.matched_meal,
     });
-    await supabase.from('bookings').update({
+    const updates: Record<string, unknown> = {
       last_price: r.amount,
       last_currency: r.currency,
       last_checked_at: new Date().toISOString(),
-    }).eq('id', b.id);
+    };
+    // Backfill hotel image if missing — prefer scraper's og:image, else fetch directly
+    if (!b.hotel_image_url) {
+      const img = r.hotel_meta?.imageUrl ?? (await fetchOgImage(b.url));
+      if (img) updates.hotel_image_url = img;
+    }
+    await supabase.from('bookings').update(updates).eq('id', b.id);
 
     revalidatePath(`/booking/${bookingId}`);
     revalidatePath('/dashboard');

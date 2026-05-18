@@ -26,12 +26,19 @@ export interface ExtractedBooking {
   currency: string | null;
 }
 
+export interface HotelMeta {
+  imageUrl: string | null;
+  name: string | null;
+  address: string | null;
+}
+
 export interface ScrapeMatchResult {
   amount: number;
   currency: string;
   match_score: number;
   matched_room: string | null;
   matched_meal: string | null;
+  hotel_meta?: HotelMeta;
   all_rates_count?: number;
   candidates?: Array<{
     room: string;
