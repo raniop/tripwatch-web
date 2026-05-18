@@ -81,6 +81,17 @@ export function AddBookingFlow() {
     );
   }
 
+  if (phase === 'saving') {
+    return (
+      <Card>
+        <CardContent className="flex flex-col items-center gap-3 py-12">
+          <Loader2 className="size-8 animate-spin text-success" />
+          <p className="text-sm text-muted-foreground">שומר את ההזמנה...</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   if (phase === 'preview' && data) {
     const e = data.extracted;
     return (
