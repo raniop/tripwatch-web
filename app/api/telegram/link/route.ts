@@ -1,0 +1,68 @@
+/**
+ * Telegram account linking — two endpoints:
+ *  POST  /api/telegram/link  → user clicks "link telegram" in web app, we mint
+ *                              a one-time token, return it. User sends the
+ *                              token to the bot as `/link <token>`.
+ *  PATCH /api/telegram/link  → called by the bot (with NAS_API_KEY bearer)
+ *                              when the user sends `/link <token>` — we look
+ *                              up the token, set telegram_chat_id on profile.
+ */
+import { NextResponse } from 'next/server';
+import { randomBytes } from 'node:crypto';
+import { createClient, createAdminClient } from '@/lib/supabase/server';
+
+export async function POST() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+
+  const token = randomBytes(6).toString('base64url').toUpperCase().slice(0, 8);
+  const expires = new Date(Date.now() + 30 * 60_000).toISOString();
+
+  await supabase
+    .from('profiles')
+    .update({ telegram_link_token: token, telegram_link_expires_at: expires })
+    .eq('id', user.id);
+
+  return NextResponse.json({
+    token,
+    expires,
+    instructions: `שלח לבוט @${process.env.TELEGRAM_BOT_USERNAME || 'RaniTripWatchBot'}:\n/link ${token}`,
+  });
+}
+
+export async function PATCH(request: Request) {
+  const expected = process.env.NAS_API_KEY;
+  if (!expected || request.headers.get('authorization') !== `Bearer ${expected}`) {
+    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  }
+  const { token, chat_id } = (await request.json().catch(() => ({}))) as {
+    token?: string;
+    chat_id?: number;
+  };
+  if (!token || !chat_id) return NextResponse.json({ error: 'token and chat_id required' }, { status: 400 });
+
+  const sb = createAdminClient();
+  const { data: profile } = await sb
+    .from('profiles')
+    .select('id, telegram_link_expires_at')
+    .eq('telegram_link_token', token)
+    .maybeSingle();
+
+  if (!profile) return NextResponse.json({ error: 'invalid token' }, { status: 404 });
+  if (profile.telegram_link_expires_at && new Date(profile.telegram_link_expires_at) < new Date()) {
+    return NextResponse.json({ error: 'token expired' }, { status: 410 });
+  }
+
+  await sb
+    .from('profiles')
+    .update({
+      telegram_chat_id: chat_id,
+      telegram_link_token: null,
+      telegram_link_expires_at: null,
+      notification_prefs: { email: true, in_app: true, telegram: true },
+    })
+    .eq('id', profile.id);
+
+  return NextResponse.json({ ok: true });
+}

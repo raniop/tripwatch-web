@@ -1,0 +1,93 @@
+/**
+ * Typed fetch wrapper for the NAS scraper API. Used from server-side code only
+ * (Server Components, Server Actions, route handlers). Never expose
+ * NAS_API_KEY to the browser.
+ */
+
+const BASE = process.env.NAS_API_URL;
+const KEY = process.env.NAS_API_KEY;
+
+export interface NasGuests {
+  adults: number;
+  children: number;
+  rooms: number;
+}
+
+export interface ExtractedBooking {
+  source: string | null;
+  hotel_name: string;
+  check_in: string;
+  check_out: string;
+  guests: NasGuests;
+  room_type: string | null;
+  meal_plan: string | null;
+  cancellation: string | null;
+  total_price: number | null;
+  currency: string | null;
+}
+
+export interface ScrapeMatchResult {
+  amount: number;
+  currency: string;
+  match_score: number;
+  matched_room: string | null;
+  matched_meal: string | null;
+  all_rates_count?: number;
+  candidates?: Array<{
+    room: string;
+    meal: string;
+    amount: number;
+    currency: string;
+    score: number;
+  }>;
+}
+
+class NasError extends Error {
+  constructor(public status: number, message: string) {
+    super(message);
+  }
+}
+
+async function call<T>(path: string, body?: object): Promise<T> {
+  if (!BASE || !KEY) throw new NasError(500, 'NAS_API_URL / NAS_API_KEY not configured');
+  const res = await fetch(`${BASE.replace(/\/$/, '')}${path}`, {
+    method: body ? 'POST' : 'GET',
+    headers: {
+      Authorization: `Bearer ${KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: body ? JSON.stringify(body) : undefined,
+    cache: 'no-store',
+    // Give the NAS up to 60s — Playwright operations are slow.
+    signal: AbortSignal.timeout(60_000),
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new NasError(res.status, `NAS ${path} returned ${res.status}: ${text.slice(0, 300)}`);
+  }
+  return res.json() as Promise<T>;
+}
+
+export const nas = {
+  health: () => call<{ ok: boolean; uptime: number; version: string }>('/health'),
+  visionExtract: (image_url: string) => call<ExtractedBooking>('/vision/extract', { image_url }),
+  search: (params: { hotel_name: string; check_in: string; check_out: string; adults?: number; children?: number; rooms?: number }) =>
+    call<{ url: string }>('/search', params),
+  resolveShare: (url: string) => call<{ url: string; resolved: boolean }>('/resolve-share', { url }),
+  parseUrl: (url: string) => call<{
+    source: string;
+    country: string;
+    slug: string;
+    hotelName: string;
+    checkIn: string;
+    checkOut: string;
+    guests: NasGuests;
+    currency: string | null;
+    canonicalUrl: string;
+  }>('/parse-url', { url }),
+  scrape: (params: { url: string; room_type?: string | null; meal_plan?: string | null }) =>
+    call<ScrapeMatchResult>('/scrape', params),
+  triggerDailyCheck: () => call<{ ok: true; started_at: string }>('/trigger-daily-check', {}),
+};
+
+export { NasError };
