@@ -5,7 +5,6 @@ import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
 import { nas, type ExtractedBooking } from '@/lib/nas-client';
-import { fetchOgImage } from '@/lib/og';
 
 const SaveSchema = z.object({
   source: z.string().default('booking.com'),
@@ -85,8 +84,8 @@ export async function saveBooking(input: unknown) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { ok: false as const, error: 'unauthorized' };
 
-  // Best-effort hotel image from Booking's og:image meta tag
-  const hotel_image_url = await fetchOgImage(parsed.data.url);
+  // Note: hotel image is fetched by the NAS scraper on first /check
+  // (Booking blocks direct HTTP fetches with bot challenges).
 
   // Best-effort FX to ILS for the savings counter
   let paid_price_ils: number | null = null;
@@ -112,7 +111,6 @@ export async function saveBooking(input: unknown) {
       user_id: user.id,
       ...parsed.data,
       paid_price_ils,
-      hotel_image_url,
       status: 'active',
     })
     .select('id')
