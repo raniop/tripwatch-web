@@ -1,4 +1,7 @@
 import dayjs from 'dayjs';
+import 'dayjs/locale/he';
+
+dayjs.locale('he');
 
 const SYMBOLS: Record<string, string> = {
   ILS: '₪',
