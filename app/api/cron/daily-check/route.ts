@@ -16,7 +16,7 @@ export async function GET(request: Request) {
   }
   try {
     const r = await nas.triggerDailyCheck();
-    return NextResponse.json({ ok: true, ...r });
+    return NextResponse.json(r);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     return NextResponse.json({ error: msg }, { status: 502 });
