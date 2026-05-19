@@ -53,18 +53,21 @@ export function HeroBento() {
 
   return (
     <div className="relative mx-auto w-full max-w-md lg:max-w-none">
-      {/* Soft glow */}
-      <div className="absolute -inset-12 -z-10 rounded-full bg-gradient-to-br from-primary/15 via-purple-500/10 to-pink-400/10 blur-3xl" />
+      {/* Multi-layer glow */}
+      <div className="absolute -inset-16 -z-10 rounded-full bg-gradient-to-br from-primary/20 via-purple-500/15 to-pink-400/10 blur-3xl" />
+      <div className="absolute inset-10 -z-10 rounded-full bg-gradient-to-tr from-accent/15 to-warning/5 blur-3xl" />
 
-      {/* "Dashboard" container — 3 stacked booking cards */}
-      <div className="relative rounded-2xl border border-border bg-card p-3 shadow-2xl shadow-primary/10">
-        {/* Tiny dashboard header */}
-        <div className="mb-3 flex items-center justify-between px-2 pt-1">
-          <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-            <span className="inline-block size-2 rounded-full bg-success animate-pulse" />
+      {/* Main "Dashboard" — glassmorphic */}
+      <div className="glass rounded-3xl p-3 shadow-2xl shadow-primary/10">
+        <div className="mb-3 flex items-center justify-between px-2 pt-1.5">
+          <div className="flex items-center gap-2 text-[11px] font-medium text-muted-foreground">
+            <span className="relative inline-flex">
+              <span className="size-2 rounded-full bg-success" />
+              <span className="absolute inset-0 size-2 rounded-full bg-success animate-ping opacity-75" />
+            </span>
             הזמנות פעילות · {BOOKINGS.length}
           </div>
-          <div className="text-[10px] text-muted-foreground">בדיקה אחרונה: עכשיו</div>
+          <div className="text-[10px] text-muted-foreground/70">בדיקה אחרונה: עכשיו</div>
         </div>
 
         <div className="space-y-2">
@@ -75,34 +78,24 @@ export function HeroBento() {
             return (
               <div
                 key={b.hotel}
-                className={`relative flex items-center gap-3 rounded-xl border p-2.5 transition-all duration-500 ${
+                className={`relative flex items-center gap-3 rounded-2xl p-2.5 transition-all duration-500 ${
                   isActive
-                    ? 'border-success/40 bg-success/5 shadow-md scale-[1.02]'
-                    : 'border-border/60 bg-background/50 scale-100'
+                    ? 'bg-white shadow-lg shadow-success/15 ring-2 ring-success/40 scale-[1.02]'
+                    : 'bg-white/40 hover:bg-white/60 scale-100'
                 }`}
               >
-                {/* Thumbnail */}
-                <div className="relative size-16 shrink-0 overflow-hidden rounded-lg">
+                <div className="relative size-16 shrink-0 overflow-hidden rounded-xl">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={b.img} alt="" className="size-full object-cover" />
-                  {isActive && (
-                    <div className="absolute inset-0 bg-success/20" />
-                  )}
                 </div>
-
-                {/* Info */}
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5">
-                    <p className="truncate text-sm font-bold">{b.hotel}</p>
+                    <p className="truncate text-sm font-bold" style={{ fontFamily: 'var(--font-poppins)' }}>{b.hotel}</p>
                     <span className="text-[10px] text-muted-foreground">· {b.city}</span>
                   </div>
                   <p className="text-[11px] text-muted-foreground">{b.dates} · 3 לילות</p>
                   <div className="mt-1 flex items-baseline gap-2">
-                    <span
-                      className={`tabular-nums text-base font-bold ${
-                        isActive ? 'text-success' : ''
-                      }`}
-                    >
+                    <span className={`tabular-nums text-base font-bold ${isActive ? 'text-success' : ''}`} style={{ fontFamily: 'var(--font-poppins)' }}>
                       ₪{(isActive ? b.newPrice : b.paid).toLocaleString()}
                     </span>
                     {isActive && (
@@ -112,10 +105,8 @@ export function HeroBento() {
                     )}
                   </div>
                 </div>
-
-                {/* Drop badge */}
                 {isActive && (
-                  <div className="flex items-center gap-1 rounded-full bg-success px-2 py-1 text-[10px] font-bold text-white shadow-sm animate-slide-up">
+                  <div className="flex items-center gap-1 rounded-full bg-success px-2 py-1 text-[10px] font-bold text-white animate-slide-up">
                     <TrendingDown className="size-2.5" /> {p}%
                   </div>
                 )}
@@ -125,28 +116,28 @@ export function HeroBento() {
         </div>
       </div>
 
-      {/* Floating in-app notification — appears for active booking */}
+      {/* Floating: notification */}
       <div
         key={`bell-${activeIdx}`}
-        className="absolute -top-4 -end-4 hidden lg:flex max-w-[270px] items-start gap-2.5 rounded-xl border border-border bg-card p-3 shadow-2xl animate-slide-up"
+        className="absolute -top-5 -end-4 hidden lg:flex max-w-[260px] items-start gap-2.5 glass rounded-2xl p-3 shadow-2xl animate-slide-up"
       >
         <div className="grid size-9 shrink-0 place-items-center rounded-full bg-success/15 text-success">
           <Bell className="size-4" />
         </div>
         <div>
-          <p className="text-xs font-semibold">חיסכון של ₪{savings.toLocaleString()}</p>
+          <p className="text-xs font-semibold" style={{ fontFamily: 'var(--font-poppins)' }}>חיסכון של ₪{savings.toLocaleString()}</p>
           <p className="text-[11px] text-muted-foreground leading-snug">
             {active.hotel} ירד {pct}%. שווה לבטל ולהזמין מחדש.
           </p>
         </div>
       </div>
 
-      {/* Floating email */}
+      {/* Floating: email */}
       <div
         key={`mail-${activeIdx}`}
-        className="absolute -bottom-6 -start-6 hidden lg:flex max-w-[290px] items-start gap-3 rounded-xl border border-border bg-card p-3 shadow-2xl animate-slide-up [animation-delay:120ms]"
+        className="absolute -bottom-6 -start-6 hidden lg:flex max-w-[280px] items-start gap-3 glass rounded-2xl p-3 shadow-2xl animate-slide-up [animation-delay:120ms]"
       >
-        <div className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
+        <div className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
           <Mail className="size-4" />
         </div>
         <div className="min-w-0">
@@ -159,10 +150,10 @@ export function HeroBento() {
         </div>
       </div>
 
-      {/* Floating telegram bubble */}
+      {/* Floating: telegram */}
       <div
         key={`tg-${activeIdx}`}
-        className="absolute top-1/2 -translate-y-1/2 -end-12 hidden xl:flex w-[230px] items-start gap-2.5 rounded-2xl rounded-tr-sm bg-[#229ED9] p-3 text-white shadow-2xl animate-slide-up [animation-delay:240ms]"
+        className="absolute top-1/2 -translate-y-1/2 -end-12 hidden xl:flex w-[220px] items-start gap-2.5 rounded-2xl rounded-tr-sm bg-[#229ED9] p-3 text-white shadow-2xl animate-slide-up [animation-delay:240ms]"
       >
         <Send className="size-4 shrink-0 mt-0.5" />
         <div className="text-xs leading-snug">
