@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Bed, Calendar, UtensilsCrossed } from 'lucide-react';
+import { Bed, Calendar, UtensilsCrossed, Clock } from 'lucide-react';
 import type { Booking } from '@/lib/supabase/types';
 import { fmtPrice, fmtDateRange, nightsBetween, priceDiff } from '@/lib/format';
 import { cn } from '@/lib/utils';
@@ -8,6 +8,7 @@ export function BookingCard({ booking }: { booking: Booking }) {
   const nights = nightsBetween(booking.check_in, booking.check_out);
   const hasCheck = booking.last_price !== null;
   const diff = hasCheck ? priceDiff(Number(booking.paid_price), Number(booking.last_price)) : null;
+  const deadline = cancellationChip(booking.cancellation_deadline);
 
   return (
     <Link
@@ -39,6 +40,15 @@ export function BookingCard({ booking }: { booking: Booking }) {
             <Calendar className="size-3" />
             {fmtDateRange(booking.check_in, booking.check_out)} · {nights} לילות
           </p>
+          {deadline && (
+            <p className={cn(
+              'mt-1.5 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px]',
+              deadline.cls,
+            )}>
+              <Clock className="size-3" />
+              {deadline.text}
+            </p>
+          )}
         </div>
 
         {(booking.room_type || booking.meal_plan) && (
@@ -87,4 +97,26 @@ export function BookingCard({ booking }: { booking: Booking }) {
       </div>
     </Link>
   );
+}
+
+function cancellationChip(iso: string | null): { text: string; cls: string } | null {
+  if (!iso) return null;
+  const ms = new Date(iso).getTime() - Date.now();
+  const expired = ms <= 0;
+  const hours = Math.round(ms / 3_600_000);
+  const days = Math.round(ms / 86_400_000);
+  const shortDate = new Date(iso).toLocaleDateString('he-IL', { day: 'numeric', month: 'short' });
+
+  let text: string;
+  if (expired) text = `פג ביטול`;
+  else if (hours < 24) text = `ביטול עד ${hours}ש'`;
+  else if (days <= 7) text = `ביטול עד ${shortDate} (${days}י')`;
+  else text = `ביטול עד ${shortDate}`;
+
+  let cls = 'bg-success/15 text-success';
+  if (expired) cls = 'bg-muted text-muted-foreground';
+  else if (hours <= 48) cls = 'bg-destructive/15 text-destructive';
+  else if (days <= 7) cls = 'bg-warning/15 text-warning';
+
+  return { text, cls };
 }

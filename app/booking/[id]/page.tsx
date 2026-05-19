@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { createClient } from '@/lib/supabase/server';
 import { fmtPrice, fmtDateRange, nightsBetween, priceDiff, fmtRelative } from '@/lib/format';
 import { convertToILS } from '@/lib/fx';
+import { CancellationDeadlineEditor } from '@/components/cancellation-deadline-editor';
 import type { Booking, PriceCheck } from '@/lib/supabase/types';
 
 export const dynamic = 'force-dynamic';
@@ -90,7 +91,7 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
             {b.cancellation && !b.cancellation_deadline && (
               <p className="text-sm text-muted-foreground">📋 {b.cancellation}</p>
             )}
-            {b.cancellation_deadline && <CancellationDeadline iso={b.cancellation_deadline} />}
+            <CancellationDeadlineEditor bookingId={b.id} initialIso={b.cancellation_deadline} />
             <div className="flex gap-2 pt-2">
               <a href={b.url} target="_blank" rel="noopener noreferrer">
                 <Button variant="outline" size="sm">
@@ -231,34 +232,3 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
   );
 }
 
-function CancellationDeadline({ iso }: { iso: string }) {
-  const now = Date.now();
-  const deadline = new Date(iso).getTime();
-  const msLeft = deadline - now;
-  const expired = msLeft <= 0;
-  const hoursLeft = Math.round(msLeft / 3_600_000);
-  const daysLeft = Math.round(msLeft / 86_400_000);
-
-  let remaining: string;
-  if (expired) remaining = 'פג תוקף';
-  else if (hoursLeft < 1) remaining = `עוד פחות משעה`;
-  else if (hoursLeft < 24) remaining = `עוד ${hoursLeft} שעות`;
-  else if (daysLeft === 1) remaining = `עוד יום`;
-  else remaining = `עוד ${daysLeft} ימים`;
-
-  let cls = 'border-success/40 bg-success/10 text-success';
-  if (expired) cls = 'border-border bg-muted text-muted-foreground';
-  else if (hoursLeft <= 48) cls = 'border-destructive/40 bg-destructive/10 text-destructive';
-  else if (daysLeft <= 7) cls = 'border-warning/40 bg-warning/10 text-warning';
-
-  const formatted = new Date(iso).toLocaleString('he-IL', { dateStyle: 'medium', timeStyle: 'short' });
-
-  return (
-    <div className={`mt-2 rounded-lg border px-3 py-2 text-sm ${cls}`}>
-      <div className="flex items-center justify-between gap-3">
-        <span className="font-semibold">⏰ ביטול חינמי {expired ? 'פג' : remaining}</span>
-        <span className="text-xs opacity-80" dir="ltr">{formatted}</span>
-      </div>
-    </div>
-  );
-}
