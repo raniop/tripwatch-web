@@ -33,17 +33,17 @@ export default function LandingPage() {
         <div className="relative z-10 flex h-full flex-col items-center justify-center px-5 text-center text-white sm:px-8">
           <div className="mb-8 inline-flex items-center gap-2 rounded-full glass-dark px-4 py-1.5 text-xs font-medium text-white animate-fade-up">
             <Sparkles className="size-3.5 text-warning" />
-            המלון שכבר הזמנת? אנחנו עוקבים אחרי המחיר שלו.
+            חינם · 30 שניות להתחבר · בלי הורדה
           </div>
 
           <h1 className="font-display max-w-5xl text-balance text-5xl leading-[0.95] sm:text-7xl md:text-8xl lg:text-[110px] animate-fade-up [animation-delay:120ms]">
-            תיירות יותר.<br />
-            <span className="text-gradient-warm">שלם פחות.</span>
+            הזמנת חופשה?<br />
+            <span className="text-gradient-warm">בוא נחזיר לך כסף.</span>
           </h1>
 
           <p className="mt-8 max-w-2xl text-balance text-lg leading-relaxed text-white/90 sm:text-xl md:text-2xl animate-fade-up [animation-delay:240ms]">
-            אנחנו עוקבים אחרי המחיר של ההזמנה שלך ב-Booking כל יום. <br className="hidden md:inline" />
-            יורד מספיק? <strong className="text-white">תקבל התראה לבטל ולהזמין מחדש זול יותר.</strong>
+            מחירי מלונות זזים יום-יום. ברגע שהמחיר על ההזמנה שלך יורד —
+            <strong className="text-white"> נתריע לך מיד לבטל ולהזמין מחדש זול יותר.</strong>
           </p>
 
           <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row animate-fade-up [animation-delay:360ms]">
