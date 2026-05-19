@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { updateNotificationPrefs, updateDefaults, unlinkTelegram } from '@/app/settings/actions';
+import { ProfileEditor } from '@/components/profile-editor';
 import type { Profile } from '@/lib/supabase/types';
 
 export function SettingsForm({ profile, email }: { profile: Profile | null; email: string }) {
@@ -51,14 +52,7 @@ export function SettingsForm({ profile, email }: { profile: Profile | null; emai
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardContent className="space-y-4 p-6">
-          <div>
-            <h2 className="font-semibold">חשבון</h2>
-            <p className="text-sm text-muted-foreground" dir="ltr">{email}</p>
-          </div>
-        </CardContent>
-      </Card>
+      <ProfileEditor profile={profile} email={email} />
 
       <Card>
         <CardContent className="space-y-4 p-6">
