@@ -15,6 +15,7 @@
  */
 
 import { NextResponse } from 'next/server';
+import { Resend } from 'resend';
 import { createAdminClient } from '@/lib/supabase/server';
 import { nas, type ExtractedBooking } from '@/lib/nas-client';
 import {
@@ -174,12 +175,32 @@ export async function POST(req: Request) {
     console.warn('[inbound] raw storage upload failed', err);
   }
 
+  // Resend Inbound webhooks don't include the body — fetch it via the API
+  // when text/html are missing.
+  let bodyText = email.text;
+  let bodyHtml = email.html;
+  if (!bodyText && !bodyHtml && email.emailId) {
+    const fetched = await fetchEmailBody(email.emailId);
+    if (fetched) {
+      bodyText = fetched.text;
+      bodyHtml = fetched.html;
+    }
+  }
+  if (!bodyText && !bodyHtml) {
+    console.warn('[inbound] no body and could not fetch from Resend');
+    await admin.from('inbound_emails').update({
+      status: 'error',
+      error: 'no body in webhook payload and Resend fetch failed',
+    }).eq('id', inboundId);
+    return NextResponse.json({ ok: true, error: 'no body' });
+  }
+
   // Extract booking fields via LLM
   let extracted: ExtractedBooking | null = null;
   try {
     const result = await nas.textExtract({
-      text: email.text,
-      html: email.html,
+      text: bodyText,
+      html: bodyHtml,
       subject: email.subject,
       from: email.from,
       source_hint: detected,
@@ -328,7 +349,8 @@ export async function POST(req: Request) {
 
 interface EmailFields {
   eventId: string;
-  messageId: string | null;
+  emailId: string | null;     // Resend internal id, used to fetch body
+  messageId: string | null;   // RFC 5322 Message-ID, used for idempotency
   from: string | null;
   to: string[];
   cc: string[];
@@ -345,15 +367,37 @@ function extractEmailFields(payload: unknown): EmailFields | null {
   const data = (p.data && typeof p.data === 'object' ? (p.data as Record<string, unknown>) : p);
 
   const eventId = String(p.id || data.id || Date.now());
+  const emailId = pickString(data.email_id) || pickString(data.id);
   const from = pickString(data.from) || pickAddress(data.from);
   const to = asAddressList(data.to);
   const cc = asAddressList(data.cc);
   const subject = pickString(data.subject);
   const text = pickString(data.text);
   const html = pickString(data.html);
-  const messageId = extractMessageId(data.headers);
+  // Resend Inbound exposes Message-ID directly on data; legacy providers nest it under data.headers.
+  const messageId = pickString(data.message_id) || extractMessageId(data.headers);
 
-  return { eventId, messageId, from, to, cc, subject, text, html };
+  return { eventId, emailId, messageId, from, to, cc, subject, text, html };
+}
+
+/**
+ * Resend Inbound webhooks include only metadata — the email body (text + html)
+ * has to be fetched separately via the Resend API. Returns merged text/html
+ * or nulls if the fetch fails (caller will surface a bounce).
+ */
+async function fetchEmailBody(emailId: string): Promise<{ text: string | null; html: string | null } | null> {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.warn('[inbound] RESEND_API_KEY not set — cannot fetch email body');
+    return null;
+  }
+  const resend = new Resend(apiKey);
+  const { data, error } = await resend.emails.get(emailId);
+  if (error || !data) {
+    console.warn('[inbound] resend.emails.get failed', error?.message);
+    return null;
+  }
+  return { text: data.text ?? null, html: data.html ?? null };
 }
 
 function pickString(v: unknown): string | null {
