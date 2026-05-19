@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { updateNotificationPrefs, updateDefaults, unlinkTelegram } from '@/app/settings/actions';
 import { ProfileEditor } from '@/components/profile-editor';
+import { LinkedAccounts } from '@/components/linked-accounts';
 import type { Profile } from '@/lib/supabase/types';
 
 export function SettingsForm({ profile, email }: { profile: Profile | null; email: string }) {
@@ -53,6 +54,8 @@ export function SettingsForm({ profile, email }: { profile: Profile | null; emai
   return (
     <div className="space-y-6">
       <ProfileEditor profile={profile} email={email} />
+
+      <LinkedAccounts />
 
       <Card>
         <CardContent className="space-y-4 p-6">
