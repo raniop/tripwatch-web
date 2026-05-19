@@ -163,6 +163,62 @@ git push -u origin main
 
 ---
 
+## שלב 4ב — Resend Inbound לפורוורד הזמנות (15 דקות)
+
+מאפשר למשתמש לפורוורד אישור הזמנה ל-**`trip@tripwatch.net`** ולקבל את ההזמנה אוטומטית.
+המערכת מזהה את המשתמש לפי כתובת השולח (כל מייל מקושר לחשבון).
+לכל משתמש יש גם כתובת אישית חלופית `book.{token}@inbound.tripwatch.net` למקרה שהוא רוצה לפורוורד ממייל לא מקושר.
+
+### 4ב.1 DNS — שני דומיינים ב-Resend
+**מטרה: לפתוח גם את `tripwatch.net` וגם את `inbound.tripwatch.net` ל-inbound.**
+
+#### A. דומיין ראשי (`tripwatch.net`)
+1. Resend → **Domains** → **Add Domain** → `tripwatch.net` (זה כבר אמור להיות שם ל-outbound)
+2. הפעל את האפשרות **Inbound** ⇒ Resend יציג MX חדש:
+   - `tripwatch.net.  MX  10  feedback-smtp.resend.com.` (הערך המדויק יופיע ב-Resend)
+3. הוסף את ה-MX ב-DNS שלך.
+   - ⚠️ אם יש כבר MX records אחרים על `tripwatch.net` (Google Workspace למשל) — זה ידרוס אותם. ודא שאתה לא רוצה לקבל מייל אחר על הדומיין הראשי, או הוסף את ה-MX של Resend כעדיפות גבוהה יותר (priority 10 לעומת 20 לקיים).
+
+#### B. סאב-דומיין לכתובות אישיות (`inbound.tripwatch.net`)
+1. Resend → **Domains** → **Add Domain** → `inbound.tripwatch.net`
+2. הפעל Inbound, הוסף את ה-MX שיציג.
+3. **Verify** את שניהם.
+
+### 4ב.2 Inbound Webhook
+1. Resend → **Webhooks** → **Add endpoint**
+2. URL: `https://tripwatch.net/api/inbound/email`
+3. Events: `email.received` (או `inbound.email.received` — תלוי בגרסה של Resend)
+4. אותו endpoint משרת את שני הדומיינים (אנחנו עושים routing לפי הכתובת בקוד).
+5. שמור את ה-**Signing Secret** (`whsec_...`).
+
+### 4ב.3 Vercel env vars
+```
+RESEND_INBOUND_SIGNING_SECRET=whsec_...
+INBOUND_GLOBAL_ADDRESS=trip@tripwatch.net
+INBOUND_EMAIL_DOMAIN=inbound.tripwatch.net
+```
+ואז **Redeploy**.
+
+### 4ב.4 NAS scraper — endpoint חדש
+ה-webhook קורא ל-`/text/extract` ב-NAS:
+- `POST /text/extract` עם payload `{ text, html, subject, from, source_hint }`
+- מחזיר schema של `ExtractedBooking` כמו `/vision/extract`, או `{"not_a_booking": true}`.
+- LLM שמבין Booking.com, Agoda, Expedia ו-Hotels.com.
+
+### 4ב.5 הרץ מיגרציות
+ב-Supabase SQL Editor:
+1. `supabase/migrations/0003_inbound_email.sql`
+2. `supabase/migrations/0004_find_user_by_email.sql`
+
+### 4ב.6 בדיקה
+1. היכנס ל-`/settings` — תראה את `trip@tripwatch.net` ככתובת הראשית.
+2. פתח Gmail עם המייל שאיתו נרשמת → אישור Booking → **Forward** → `trip@tripwatch.net`.
+3. תוך 5-30 שניות ההזמנה תופיע ב-Dashboard + מייל אישור.
+4. אם הגיע bounce עם "המייל לא רשום" — סימן שפורווידת ממייל לא מקושר. הוסף אותו ב-Linked Accounts, או השתמש בכתובת האישית.
+5. אם בכלל לא הגיע כלום — Vercel Logs → `/api/inbound/email`.
+
+---
+
 ## שלב 5 — עדכון NAS .env (5 דקות)
 
 ב-`\\Nas\data\TripWatch\.env` ודא שיש את כל אלה:

@@ -36,6 +36,88 @@ export async function sendPriceDropEmail(args: PriceDropEmailArgs) {
   return { id: data?.id };
 }
 
+interface InboundConfirmationArgs {
+  to: string;
+  hotelName: string;
+  checkIn: string;
+  checkOut: string;
+  paidFormatted: string;
+  bookingUrl: string;
+}
+
+export async function sendInboundConfirmation(args: InboundConfirmationArgs) {
+  if (!resend) {
+    console.warn('RESEND_API_KEY not set — skipping inbound confirmation');
+    return { skipped: true };
+  }
+  const subject = `✅ קלטנו את ההזמנה — ${args.hotelName}`;
+  const html = `<!doctype html>
+<html lang="he" dir="rtl"><head><meta charset="utf-8"/></head>
+<body style="margin:0;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;background:#f4f4f5;padding:24px 16px;direction:rtl;text-align:right;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto;background:#fff;border-radius:12px;border:1px solid #e4e4e7;">
+    <tr><td style="padding:24px 28px 8px;">
+      <div style="font-size:14px;color:#71717a;">TripWatch</div>
+      <h1 style="margin:8px 0 0;font-size:22px;color:#18181b;">✅ ההזמנה נקלטה ועומדת במעקב</h1>
+    </td></tr>
+    <tr><td style="padding:16px 28px;">
+      <h2 style="margin:0 0 4px;font-size:18px;color:#18181b;">${escape(args.hotelName)}</h2>
+      <div style="font-size:14px;color:#71717a;">${escape(args.checkIn)} → ${escape(args.checkOut)}</div>
+      <div style="font-size:14px;color:#52525b;margin-top:8px;">שילמת: <strong>${escape(args.paidFormatted)}</strong></div>
+    </td></tr>
+    <tr><td style="padding:8px 28px 24px;">
+      <a href="${args.bookingUrl}" style="display:inline-block;background:#2563eb;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:15px;">פתח את ההזמנה</a>
+    </td></tr>
+    <tr><td style="background:#fafafa;padding:14px 28px;font-size:12px;color:#a1a1aa;text-align:center;border-top:1px solid #e4e4e7;">
+      נתחיל לעקוב אחרי המחיר ונשלח התראה אם הוא ירד.
+    </td></tr>
+  </table>
+</body></html>`;
+  const { data, error } = await resend.emails.send({ from, to: args.to, subject, html });
+  if (error) throw new Error(error.message);
+  return { id: data?.id };
+}
+
+interface InboundBounceArgs {
+  to: string;
+  reason: string;
+  settingsUrl: string;
+}
+
+export async function sendInboundBounce(args: InboundBounceArgs) {
+  if (!resend) {
+    console.warn('RESEND_API_KEY not set — skipping inbound bounce');
+    return { skipped: true };
+  }
+  const subject = `לא הצלחנו לקלוט את המייל ששלחת`;
+  const html = `<!doctype html>
+<html lang="he" dir="rtl"><head><meta charset="utf-8"/></head>
+<body style="margin:0;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;background:#f4f4f5;padding:24px 16px;direction:rtl;text-align:right;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto;background:#fff;border-radius:12px;border:1px solid #e4e4e7;">
+    <tr><td style="padding:24px 28px 8px;">
+      <div style="font-size:14px;color:#71717a;">TripWatch</div>
+      <h1 style="margin:8px 0 0;font-size:20px;color:#18181b;">לא זיהינו הזמנה במייל</h1>
+    </td></tr>
+    <tr><td style="padding:8px 28px 16px;">
+      <p style="font-size:14px;color:#52525b;line-height:1.6;margin:8px 0;">
+        ניסינו לחלץ פרטי הזמנה מהמייל ששלחת, אבל לא הצלחנו.
+      </p>
+      <p style="font-size:13px;color:#71717a;line-height:1.6;margin:8px 0;">
+        סיבה: ${escape(args.reason)}
+      </p>
+      <p style="font-size:13px;color:#71717a;line-height:1.6;margin:12px 0 0;">
+        נסה לפורוורד את אישור ההזמנה המקורי מ-Booking/Agoda/Expedia/Hotels.com, או הוסף את ההזמנה ידנית באתר.
+      </p>
+    </td></tr>
+    <tr><td style="padding:0 28px 24px;">
+      <a href="${args.settingsUrl}" style="display:inline-block;background:#2563eb;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">פתח הגדרות</a>
+    </td></tr>
+  </table>
+</body></html>`;
+  const { data, error } = await resend.emails.send({ from, to: args.to, subject, html });
+  if (error) throw new Error(error.message);
+  return { id: data?.id };
+}
+
 function renderPriceDropHtml(a: PriceDropEmailArgs): string {
   return `<!doctype html>
 <html lang="he" dir="rtl">
