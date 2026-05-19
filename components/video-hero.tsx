@@ -6,20 +6,9 @@ interface Props {
   children: React.ReactNode;
 }
 
-// Verified Pexels CDN URLs (tropical vacation vibes) — cycle every 25s
-const VIDEOS = [
-  // Tropical ocean waves
-  'https://videos.pexels.com/video-files/1093662/1093662-hd_1280_720_30fps.mp4',
-  // Resort pool + palm trees
-  'https://videos.pexels.com/video-files/2169880/2169880-hd_1280_720_30fps.mp4',
-];
-
-const POSTERS = [
-  'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1920&q=80&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=1920&q=80&auto=format&fit=crop',
-];
-
-const ROTATE_MS = 25_000;
+// Single hero video — tropical resort pool with palm trees
+const VIDEO = 'https://videos.pexels.com/video-files/2169880/2169880-hd_1280_720_30fps.mp4';
+const POSTER = 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=1920&q=80&auto=format&fit=crop';
 
 function partOfDay() {
   const h = new Date().getHours();
@@ -31,16 +20,9 @@ function partOfDay() {
 
 export function VideoHero({ children }: Props) {
   const [period, setPeriod] = useState<'morning' | 'day' | 'sunset' | 'night'>('day');
-  const [idx, setIdx] = useState(0);
 
   useEffect(() => {
     setPeriod(partOfDay());
-    setIdx(Math.floor(Math.random() * VIDEOS.length));
-
-    const t = setInterval(() => {
-      setIdx((i) => (i + 1) % VIDEOS.length);
-    }, ROTATE_MS);
-    return () => clearInterval(t);
   }, []);
 
   const tintClass = {
@@ -52,17 +34,15 @@ export function VideoHero({ children }: Props) {
 
   return (
     <section className="relative isolate h-[100svh] min-h-[640px] w-full overflow-hidden">
-      {/* Permanent poster fallback (under everything) */}
+      {/* Poster always present underneath */}
       <div
-        className="absolute inset-0 -z-30 bg-cover bg-center transition-[background-image] duration-700"
-        style={{ backgroundImage: `url(${POSTERS[idx]})` }}
+        className="absolute inset-0 -z-30 bg-cover bg-center"
+        style={{ backgroundImage: `url(${POSTER})` }}
       />
-      {/* Video — re-mounts when idx changes, loops the current one */}
       <video
-        key={idx}
-        className="absolute inset-0 -z-20 size-full object-cover animate-fade-up"
-        src={VIDEOS[idx]}
-        poster={POSTERS[idx]}
+        className="absolute inset-0 -z-20 size-full object-cover"
+        src={VIDEO}
+        poster={POSTER}
         autoPlay
         muted
         loop
