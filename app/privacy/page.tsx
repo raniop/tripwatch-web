@@ -27,7 +27,7 @@ export default function PrivacyPage() {
 
       <h2 className="mt-6 text-lg font-semibold">מחיקת חשבון</h2>
       <p>
-        כתוב לנו ב-rani@ophir.email ואנחנו נמחק את כל הנתונים שלך תוך 48 שעות.
+        כתוב לנו ב-rani@ophirins.co.il ואנחנו נמחק את כל הנתונים שלך תוך 48 שעות.
         בעתיד נוסיף כפתור "מחק חשבון" בדף ההגדרות.
       </p>
     </div>

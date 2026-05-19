@@ -25,7 +25,7 @@ export default function TermsPage() {
 
       <h2 className="mt-6 text-lg font-semibold">פניות</h2>
       <p>
-        שאלות? <a href="mailto:rani@ophir.email" className="underline">rani@ophir.email</a>
+        שאלות? <a href="mailto:rani@ophirins.co.il" className="underline">rani@ophirins.co.il</a>
       </p>
     </div>
   );

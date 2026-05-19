@@ -20,7 +20,7 @@ export function MarketingFooter() {
             </p>
             <div className="mt-5 flex items-center gap-3">
               <a
-                href="mailto:rani@ophir.email"
+                href="mailto:rani@ophirins.co.il"
                 className="grid size-9 place-items-center rounded-lg border border-border bg-card text-muted-foreground transition-colors hover:border-primary hover:text-primary"
                 aria-label="מייל"
               >
@@ -48,7 +48,7 @@ export function MarketingFooter() {
 
           {/* Support */}
           <Col title="תמיכה">
-            <FLink href="mailto:rani@ophir.email">צור קשר</FLink>
+            <FLink href="mailto:rani@ophirins.co.il">צור קשר</FLink>
             <FLink href="#faq">מרכז עזרה</FLink>
             <FLink href="#testimonials">סיפורי הצלחה</FLink>
           </Col>
