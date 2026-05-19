@@ -6,17 +6,20 @@ interface Props {
   children: React.ReactNode;
 }
 
-// Verified Pexels CDN URLs (vacation-themed, return 200)
+// Verified Pexels CDN URLs — both cycle in rotation
 const VIDEOS = [
-  // Eiffel Tower at twilight — Paris vacation vibe
+  // Eiffel Tower at twilight — Paris vibe
   'https://videos.pexels.com/video-files/31491829/13427380_2560_1440_25fps.mp4',
-  // Backup: ocean waves at tropical beach
+  // Tropical ocean waves
   'https://videos.pexels.com/video-files/1093662/1093662-hd_1280_720_30fps.mp4',
 ];
 
-// Poster: Eiffel Tower at sunset (Unsplash) — shown while video loads / if blocked
-const POSTER =
-  'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=1920&q=80&auto=format&fit=crop';
+const POSTERS = [
+  'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=1920&q=80&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1920&q=80&auto=format&fit=crop',
+];
+
+const ROTATE_MS = 25_000;
 
 function partOfDay() {
   const h = new Date().getHours();
@@ -28,12 +31,18 @@ function partOfDay() {
 
 export function VideoHero({ children }: Props) {
   const [period, setPeriod] = useState<'morning' | 'day' | 'sunset' | 'night'>('day');
+  const [idx, setIdx] = useState(0);
 
   useEffect(() => {
     setPeriod(partOfDay());
+    setIdx(Math.floor(Math.random() * VIDEOS.length));
+
+    const t = setInterval(() => {
+      setIdx((i) => (i + 1) % VIDEOS.length);
+    }, ROTATE_MS);
+    return () => clearInterval(t);
   }, []);
 
-  // Subtle color cast per time-of-day
   const tintClass = {
     morning: 'bg-gradient-to-b from-amber-800/25 via-black/30 to-black/55',
     day: 'bg-gradient-to-b from-blue-900/25 via-black/30 to-black/55',
@@ -43,27 +52,24 @@ export function VideoHero({ children }: Props) {
 
   return (
     <section className="relative isolate h-[100svh] min-h-[640px] w-full overflow-hidden">
-      {/* Poster image — visible while video loads, and as permanent fallback if video is blocked */}
+      {/* Permanent poster fallback (under everything) */}
       <div
-        className="absolute inset-0 -z-30 bg-cover bg-center"
-        style={{ backgroundImage: `url(${POSTER})` }}
+        className="absolute inset-0 -z-30 bg-cover bg-center transition-[background-image] duration-700"
+        style={{ backgroundImage: `url(${POSTERS[idx]})` }}
       />
+      {/* Video — re-mounts when idx changes, loops the current one */}
       <video
-        className="absolute inset-0 -z-20 size-full object-cover"
-        poster={POSTER}
+        key={idx}
+        className="absolute inset-0 -z-20 size-full object-cover animate-fade-up"
+        src={VIDEOS[idx]}
+        poster={POSTERS[idx]}
         autoPlay
         muted
         loop
         playsInline
         preload="auto"
-      >
-        {VIDEOS.map((src, i) => (
-          <source key={i} src={src} type="video/mp4" />
-        ))}
-      </video>
-      {/* Tint */}
+      />
       <div className={`absolute inset-0 -z-10 ${tintClass}`} />
-      {/* Bottom fade into next section */}
       <div className="absolute inset-x-0 bottom-0 -z-10 h-1/3 bg-gradient-to-t from-background to-transparent" />
       {children}
     </section>
