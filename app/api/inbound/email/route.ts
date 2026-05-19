@@ -14,9 +14,10 @@
  * retry after we've successfully logged the event).
  */
 
-import { NextResponse } from 'next/server';
+import { NextResponse, after } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/server';
 import { nas, type ExtractedBooking } from '@/lib/nas-client';
+import { runPriceCheck } from '@/lib/booking/run-check';
 import {
   extractTokenFromAddresses,
   matchesGlobalAddress,
@@ -326,6 +327,21 @@ export async function POST(req: Request) {
     status: 'created',
     booking_id: booking.id,
   }).eq('id', inboundId);
+
+  // Kick off the first price check in the background (populates hotel image,
+  // baseline price). after() returns 200 immediately; the scrape can take
+  // up to ~30s and runs after the webhook responds.
+  const bookingId = booking.id as string;
+  after(async () => {
+    const newAdmin = createAdminClient();
+    await runPriceCheck(newAdmin, {
+      id: bookingId,
+      url,
+      room_type: extracted.room_type,
+      meal_plan: extracted.meal_plan,
+      hotel_image_url: null,
+    });
+  });
 
   // Confirmation email (non-fatal if it fails)
   if (userEmail) {

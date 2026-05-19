@@ -8,6 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { createClient } from '@/lib/supabase/server';
 import { fmtPrice, fmtDateRange, nightsBetween, priceDiff, fmtRelative } from '@/lib/format';
+import { convertToILS } from '@/lib/fx';
 import type { Booking, PriceCheck } from '@/lib/supabase/types';
 
 export const dynamic = 'force-dynamic';
@@ -35,8 +36,30 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
     .limit(90);
   const checks = (checksData as PriceCheck[] | null) || [];
 
-  const hasCheck = b.last_price !== null;
-  const diff = hasCheck ? priceDiff(Number(b.paid_price), Number(b.last_price)) : null;
+  const paidCur = (b.currency || 'ILS').toUpperCase();
+  const lastCur = (b.last_currency || paidCur).toUpperCase();
+  const paidPriceN = Number(b.paid_price);
+  const lastPriceN = b.last_price !== null ? Number(b.last_price) : null;
+  const hasCheck = lastPriceN !== null;
+
+  // Compute ILS equivalents so a spread can be calculated when the booking
+  // currency differs from the current scrape currency (e.g. paid in EUR,
+  // Booking displaying ILS now).
+  let paidIls = b.paid_price_ils !== null ? Number(b.paid_price_ils) : null;
+  if (paidIls === null && paidCur === 'ILS') paidIls = paidPriceN;
+  let currentIls: number | null = null;
+  if (lastPriceN !== null) {
+    currentIls = lastCur === 'ILS' ? lastPriceN : await convertToILS(lastPriceN, lastCur);
+  }
+
+  const currenciesDiffer = paidCur !== lastCur;
+  const useIls = currenciesDiffer && paidIls !== null && currentIls !== null;
+  const diff = hasCheck
+    ? (useIls
+      ? { ...priceDiff(paidIls!, currentIls!), currency: 'ILS' }
+      : { ...priceDiff(paidPriceN, lastPriceN!), currency: paidCur })
+    : null;
+
   const lastCheck = checks.find((c) => !c.error) ?? null;
 
   return (
@@ -81,6 +104,9 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
             <div>
               <p className="text-xs text-muted-foreground">שילמת</p>
               <p className="tabular-nums text-2xl font-bold">{fmtPrice(b.paid_price, b.currency)}</p>
+              {paidCur !== 'ILS' && paidIls && (
+                <p className="text-xs text-muted-foreground">≈ {fmtPrice(paidIls, 'ILS')}</p>
+              )}
             </div>
             {hasCheck && diff ? (
               <>
@@ -89,6 +115,9 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
                   <p className={`tabular-nums text-3xl font-bold ${diff.direction === 'down' && diff.pct >= 1 ? 'text-success' : diff.direction === 'up' && diff.pct <= -1 ? 'text-destructive' : ''}`}>
                     {fmtPrice(b.last_price, b.last_currency || b.currency)}
                   </p>
+                  {lastCur !== 'ILS' && currentIls && (
+                    <p className="text-xs text-muted-foreground">≈ {fmtPrice(currentIls, 'ILS')}</p>
+                  )}
                   <p className="mt-1 text-xs text-muted-foreground">עודכן {fmtRelative(b.last_checked_at)}</p>
                 </div>
                 {diff.direction !== 'same' && (
@@ -96,7 +125,7 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
                     <p className="text-xs text-muted-foreground">הפרש</p>
                     <p className={`tabular-nums text-lg font-semibold ${diff.direction === 'down' ? 'text-success' : 'text-destructive'}`}>
                       {diff.direction === 'down' ? '⬇ ' : '⬆ '}
-                      {fmtPrice(Math.abs(diff.diff), b.currency)} ({Math.abs(diff.pct).toFixed(1)}%)
+                      {fmtPrice(Math.abs(diff.diff), diff.currency)} ({Math.abs(diff.pct).toFixed(1)}%)
                     </p>
                   </div>
                 )}
