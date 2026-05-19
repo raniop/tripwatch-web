@@ -86,7 +86,7 @@ export async function POST(req: Request) {
       if (fromEmail) {
         await sendInboundBounce({
           to: fromEmail,
-          reason: 'המייל שממנו שלחת לא רשום בחשבון TripWatch. הוסף אותו ב-Linked Accounts בהגדרות, או פורווד מהמייל שאיתו נרשמת.',
+          reason: 'המייל שממנו שלחת לא רשום בחשבון TripWatch. הוסף אותו ב-Linked Accounts בהגדרות, או שלח מהמייל שאיתו נרשמת.',
           settingsUrl: `${APP_URL}/settings`,
         }).catch((e) => console.warn('[inbound] bounce email failed', e));
       }
@@ -209,7 +209,7 @@ export async function POST(req: Request) {
     if (userEmail) {
       await sendInboundBounce({
         to: userEmail,
-        reason: 'נכשל חילוץ פרטי ההזמנה — נסה לפורוורד את המייל המקורי במלואו',
+        reason: 'נכשל חילוץ פרטי ההזמנה — נסה להעביר את המייל המקורי במלואו',
         settingsUrl: `${APP_URL}/settings#inbound`,
       }).catch((e) => console.warn('[inbound] bounce email failed', e));
     }

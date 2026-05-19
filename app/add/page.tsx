@@ -15,7 +15,7 @@ export default function AddBookingPage() {
         </p>
         <AddBookingFlow />
         <p className="mt-6 text-center text-sm text-muted-foreground">
-          📧 או פורוורד את אישור ההזמנה ל-
+          📧 או העבר את מייל אישור ההזמנה אל
           <span dir="ltr" className="font-mono">{inbox}</span>
         </p>
       </div>

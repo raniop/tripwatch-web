@@ -98,8 +98,8 @@ export default function LandingPage() {
             </h2>
           </div>
           <div className="grid gap-6 md:grid-cols-3">
-            <Step n={1} Icon={Camera} title="צלם או פורוורד">
-              צלם מסך של אישור ההזמנה ב-Booking, <strong>או</strong> פשוט פורוורד את אישור ההזמנה אל
+            <Step n={1} Icon={Camera} title="צלם או שלח במייל">
+              צלם מסך של אישור ההזמנה ב-Booking, <strong>או</strong> פשוט העבר את מייל אישור ההזמנה אל
               <strong dir="ltr" className="mx-1 whitespace-nowrap">trip@tripwatch.net</strong>. סיימת.
             </Step>
             <Step n={2} Icon={Eye} title="אנחנו עוקבים">
@@ -175,7 +175,7 @@ export default function LandingPage() {
               <p className="mt-2 text-sm text-muted-foreground">בלי כרטיס אשראי. בלי הגבלת זמן.</p>
               <ul className="mt-6 space-y-3 text-sm">
                 <Feature>הזמנות בלתי מוגבלות</Feature>
-                <Feature>הוספת הזמנה ע&quot;י פורוורד מייל ✨</Feature>
+                <Feature>הוספת הזמנה ע&quot;י שליחת המייל ✨</Feature>
                 <Feature>בדיקת מחיר אוטומטית יומית</Feature>
                 <Feature>זיהוי AI של חדר + ארוחות</Feature>
                 <Feature>התראות במייל ובאפליקציה</Feature>
@@ -239,15 +239,15 @@ export default function LandingPage() {
               כן. המערכת מזהה את החדר המדויק שהזמנת (Ocean Pool 1BR Suite למשל) ואת תוכנית הארוחות. הבדיקות משוות בדיוק את אותו צירוף.
             </Faq>
             <Faq q="ומה לגבי Agoda, Expedia, Airbnb?">
-              כרגע Booking.com בלבד למעקב מחירים. אם פורוורדת אישור מ-Agoda / Expedia / Hotels.com — נחלץ את הפרטים, אבל המעקב היומי כרגע ב-Booking. Airbnb לא — שם אין באמת ירידות מחיר.
+              כרגע Booking.com בלבד למעקב מחירים. אם העברת לנו אישור מ-Agoda / Expedia / Hotels.com במייל — נחלץ את הפרטים, אבל המעקב היומי כרגע ב-Booking. Airbnb לא — שם אין באמת ירידות מחיר.
             </Faq>
-            <Faq q="אני יכול לפורוורד את אישור ההזמנה במייל?">
-              כן ✨ פורוורד את האישור מ-Booking / Agoda / Expedia / Hotels.com אל
+            <Faq q="אני יכול לשלוח את אישור ההזמנה במייל?">
+              כן ✨ העבר את אישור ההזמנה מ-Booking / Agoda / Expedia / Hotels.com אל
               <strong dir="ltr" className="mx-1">trip@tripwatch.net</strong>
-              ונחלץ את הפרטים אוטומטית. צריך לפורוורד מהמייל שאיתו נרשמת ל-TripWatch (או ממייל מקושר שהוספת בהגדרות).
+              ונחלץ את הפרטים אוטומטית. חשוב לשלוח מהמייל שאיתו נרשמת ל-TripWatch (או ממייל מקושר שהוספת בהגדרות).
             </Faq>
             <Faq q="כמה זמן לוקח להוסיף הזמנה?">
-              פחות מ-30 שניות. שולח צילום או מפורוורד את אישור המייל → המערכת קוראת אותו ב-AI ומציגה את הפרטים → אתה מאשר.
+              פחות מ-30 שניות. שולח צילום מסך או מעביר את מייל ההזמנה → המערכת קוראת אותו ב-AI ומציגה את הפרטים → אתה מאשר.
             </Faq>
           </div>
         </div>

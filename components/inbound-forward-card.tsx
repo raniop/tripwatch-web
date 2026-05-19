@@ -39,7 +39,7 @@ export function InboundForwardCard({ globalAddress, userEmail, personalAddress: 
   }
 
   function onRotate() {
-    if (!confirm('להחליף את הכתובת האישית? פורוורדים שכבר עשית לכתובת הישנה לא יקלטו יותר.')) return;
+    if (!confirm('להחליף את הכתובת האישית? מיילים שכבר שלחת לכתובת הישנה לא יקלטו יותר.')) return;
     startTransition(async () => {
       const res = await rotateInboundToken();
       if (res.ok) setPersonalAddress(res.address);
@@ -53,7 +53,7 @@ export function InboundForwardCard({ globalAddress, userEmail, personalAddress: 
         <div>
           <h2 className="font-semibold">📧 הוספת הזמנות במייל</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            פורוורד את אישור ההזמנה אל הכתובת הבאה ונחלץ את הפרטים אוטומטית.
+            העבר את מייל אישור ההזמנה אל הכתובת הבאה ונחלץ את הפרטים אוטומטית.
             עובד עם Booking.com, Agoda, Expedia ו-Hotels.com.
           </p>
         </div>
@@ -77,7 +77,7 @@ export function InboundForwardCard({ globalAddress, userEmail, personalAddress: 
         </div>
 
         <div className="rounded-md bg-amber-50 dark:bg-amber-950/30 px-3 py-2 text-xs text-amber-900 dark:text-amber-200">
-          ⚠️ חשוב: צריך לפורוורד מהמייל <span dir="ltr" className="font-mono">{userEmail}</span> או
+          ⚠️ חשוב: צריך לשלוח מהמייל <span dir="ltr" className="font-mono">{userEmail}</span> או
           ממייל אחר שמקושר לחשבון (ראה &quot;חיבורי חשבון&quot; למטה).
         </div>
 
@@ -85,18 +85,18 @@ export function InboundForwardCard({ globalAddress, userEmail, personalAddress: 
           <summary className="cursor-pointer text-muted-foreground">איך זה עובד?</summary>
           <ol className="mt-2 list-decimal space-y-1 pr-5 text-muted-foreground">
             <li>פתח את אישור ההזמנה ב-Gmail / Outlook.</li>
-            <li>לחץ &quot;פורוורד&quot; והדבק את הכתובת למעלה.</li>
+            <li>לחץ &quot;Forward&quot; (העברה) והדבק את הכתובת למעלה.</li>
             <li>בתוך כמה שניות ההזמנה תופיע ב-Dashboard ותקבל מייל אישור.</li>
           </ol>
         </details>
 
         <details className="text-sm">
           <summary className="cursor-pointer text-muted-foreground">
-            כתובת אישית — לפורוורד ממייל לא מקושר
+            כתובת אישית — לשליחה ממייל לא מקושר
           </summary>
           <div className="mt-3 space-y-2">
             <p className="text-xs text-muted-foreground">
-              אם אתה רוצה לפורוורד ממייל שלא מקושר ל-TripWatch (למשל מייל של מקום העבודה),
+              אם אתה רוצה לשלוח ממייל שלא מקושר ל-TripWatch (למשל מייל של מקום העבודה),
               השתמש בכתובת האישית הסודית הזו. שמור אותה ואל תפרסם.
             </p>
             {personalAddress ? (

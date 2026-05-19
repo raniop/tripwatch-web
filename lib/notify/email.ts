@@ -105,7 +105,7 @@ export async function sendInboundBounce(args: InboundBounceArgs) {
         סיבה: ${escape(args.reason)}
       </p>
       <p style="font-size:13px;color:#71717a;line-height:1.6;margin:12px 0 0;">
-        נסה לפורוורד את אישור ההזמנה המקורי מ-Booking/Agoda/Expedia/Hotels.com, או הוסף את ההזמנה ידנית באתר.
+        נסה להעביר את אישור ההזמנה המקורי מ-Booking/Agoda/Expedia/Hotels.com, או הוסף את ההזמנה ידנית באתר.
       </p>
     </td></tr>
     <tr><td style="padding:0 28px 24px;">

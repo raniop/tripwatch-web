@@ -163,11 +163,11 @@ git push -u origin main
 
 ---
 
-## שלב 4ב — Resend Inbound לפורוורד הזמנות (15 דקות)
+## שלב 4ב — Resend Inbound לקבלת הזמנות במייל (15 דקות)
 
-מאפשר למשתמש לפורוורד אישור הזמנה ל-**`trip@tripwatch.net`** ולקבל את ההזמנה אוטומטית.
+מאפשר למשתמש להעביר אישור הזמנה ל-**`trip@tripwatch.net`** ולקבל את ההזמנה אוטומטית.
 המערכת מזהה את המשתמש לפי כתובת השולח (כל מייל מקושר לחשבון).
-לכל משתמש יש גם כתובת אישית חלופית `book.{token}@inbound.tripwatch.net` למקרה שהוא רוצה לפורוורד ממייל לא מקושר.
+לכל משתמש יש גם כתובת אישית חלופית `book.{token}@inbound.tripwatch.net` למקרה שרוצה לשלוח ממייל לא מקושר.
 
 ### 4ב.1 DNS — שני דומיינים ב-Resend
 **מטרה: לפתוח גם את `tripwatch.net` וגם את `inbound.tripwatch.net` ל-inbound.**
@@ -214,7 +214,7 @@ INBOUND_EMAIL_DOMAIN=inbound.tripwatch.net
 1. היכנס ל-`/settings` — תראה את `trip@tripwatch.net` ככתובת הראשית.
 2. פתח Gmail עם המייל שאיתו נרשמת → אישור Booking → **Forward** → `trip@tripwatch.net`.
 3. תוך 5-30 שניות ההזמנה תופיע ב-Dashboard + מייל אישור.
-4. אם הגיע bounce עם "המייל לא רשום" — סימן שפורווידת ממייל לא מקושר. הוסף אותו ב-Linked Accounts, או השתמש בכתובת האישית.
+4. אם הגיע bounce עם "המייל לא רשום" — סימן ששלחת ממייל לא מקושר. הוסף אותו ב-Linked Accounts, או השתמש בכתובת האישית.
 5. אם בכלל לא הגיע כלום — Vercel Logs → `/api/inbound/email`.
 
 ---
