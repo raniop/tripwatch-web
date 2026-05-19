@@ -178,18 +178,23 @@ export async function POST(req: Request) {
   // when text/html are missing.
   let bodyText = email.text;
   let bodyHtml = email.html;
+  let fetchError: string | undefined;
   if (!bodyText && !bodyHtml && email.emailId) {
     const fetched = await fetchEmailBody(email.emailId);
-    if (fetched) {
-      bodyText = fetched.text;
-      bodyHtml = fetched.html;
-    }
+    bodyText = fetched.text;
+    bodyHtml = fetched.html;
+    fetchError = fetched.fetchError;
   }
   if (!bodyText && !bodyHtml) {
-    console.warn('[inbound] no body and could not fetch from Resend');
+    const reason = fetchError
+      ? `Resend body fetch failed (${fetchError})`
+      : !email.emailId
+      ? 'webhook payload missing email_id'
+      : 'no body returned by Resend';
+    console.warn('[inbound] no body —', reason);
     await admin.from('inbound_emails').update({
       status: 'error',
-      error: 'no body in webhook payload and Resend fetch failed',
+      error: reason.slice(0, 500),
     }).eq('id', inboundId);
     return NextResponse.json({ ok: true, error: 'no body' });
   }
@@ -381,31 +386,35 @@ function extractEmailFields(payload: unknown): EmailFields | null {
 
 /**
  * Resend Inbound webhooks include only metadata — the email body (text + html)
- * has to be fetched separately via GET /emails/received/{id}. The Resend SDK
+ * has to be fetched separately via GET /emails/receiving/{id}. The Resend SDK
  * doesn't expose this endpoint yet (their .emails.get() hits /emails/{id},
  * which is outbound-only), so we call the REST API directly.
+ *
+ * On failure returns { text: null, html: null, fetchError: "..." } so the
+ * caller can surface the reason in the inbound_emails log.
  */
-async function fetchEmailBody(emailId: string): Promise<{ text: string | null; html: string | null } | null> {
+async function fetchEmailBody(emailId: string): Promise<{ text: string | null; html: string | null; fetchError?: string }> {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
-    console.warn('[inbound] RESEND_API_KEY not set — cannot fetch email body');
-    return null;
+    return { text: null, html: null, fetchError: 'RESEND_API_KEY not set' };
   }
   try {
-    const res = await fetch(`https://api.resend.com/emails/received/${emailId}`, {
+    const res = await fetch(`https://api.resend.com/emails/receiving/${emailId}`, {
       headers: { Authorization: `Bearer ${apiKey}` },
       signal: AbortSignal.timeout(15_000),
     });
     if (!res.ok) {
       const body = await res.text().catch(() => '');
-      console.warn(`[inbound] resend received fetch ${res.status}: ${body.slice(0, 300)}`);
-      return null;
+      const msg = `${res.status}: ${body.slice(0, 200)}`;
+      console.warn('[inbound] resend receiving fetch failed', msg);
+      return { text: null, html: null, fetchError: msg };
     }
     const data = await res.json() as { text?: string | null; html?: string | null };
     return { text: data.text ?? null, html: data.html ?? null };
   } catch (err) {
-    console.warn('[inbound] resend received fetch threw', err);
-    return null;
+    const msg = err instanceof Error ? err.message : String(err);
+    console.warn('[inbound] resend receiving fetch threw', msg);
+    return { text: null, html: null, fetchError: msg };
   }
 }
 
