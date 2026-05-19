@@ -16,7 +16,9 @@ export async function POST() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 
-  const token = randomBytes(6).toString('base64url').toUpperCase().slice(0, 8);
+  // hex → uppercase: alphabet [0-9A-F] only. base64url would include "-" and "_"
+  // which trip the bot's /^[A-Z0-9]{4,16}$/ regex (and look ugly to users).
+  const token = randomBytes(4).toString('hex').toUpperCase();
   const expires = new Date(Date.now() + 30 * 60_000).toISOString();
 
   // Upsert in case the profile row wasn't auto-created by the trigger
