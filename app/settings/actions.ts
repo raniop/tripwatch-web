@@ -3,7 +3,9 @@
 import { revalidatePath } from 'next/cache';
 import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { signMergeToken } from '@/lib/merge-token';
+import { signVerifyEmailToken } from '@/lib/inbound/verify-token';
 import { sendMergeEmail } from '@/lib/notify/merge-email';
+import { sendVerifyInboundEmail } from '@/lib/notify/email';
 import { generateInboundToken, formatInboundAddress } from '@/lib/inbound/address';
 
 export async function updateNotificationPrefs(prefs: { email: boolean; in_app: boolean; telegram: boolean }) {
@@ -215,6 +217,59 @@ export async function rotateInboundToken() {
     }
   }
   return { ok: false as const, error: 'could not allocate token' };
+}
+
+/**
+ * Send a verification link to an email the user wants to register as an
+ * additional "from" address for inbound forwarding.
+ */
+export async function requestInboundEmailVerification(rawEmail: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false as const, error: 'unauthorized' };
+
+  const email = rawEmail.trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return { ok: false as const, error: 'מייל לא תקין' };
+  }
+  if (email === user.email?.toLowerCase()) {
+    return { ok: false as const, error: 'כבר רשום — זה המייל הראשי שלך' };
+  }
+
+  // Already verified? short-circuit
+  const { data: existing } = await supabase
+    .from('user_verified_emails')
+    .select('email')
+    .eq('user_id', user.id)
+    .eq('email', email)
+    .maybeSingle();
+  if (existing) return { ok: false as const, error: 'הכתובת כבר מאומתת' };
+
+  const token = signVerifyEmailToken({
+    user_id: user.id,
+    email,
+    exp: Math.floor(Date.now() / 1000) + 3600,
+  });
+  const base = process.env.NEXT_PUBLIC_APP_URL || 'https://tripwatch.net';
+  const link = `${base}/api/email/verify-inbound?token=${encodeURIComponent(token)}`;
+
+  try {
+    await sendVerifyInboundEmail({ to: email, link, appUrl: base });
+  } catch (err) {
+    return { ok: false as const, error: err instanceof Error ? err.message : 'שליחת המייל נכשלה' };
+  }
+  return { ok: true as const, sentTo: email };
+}
+
+export async function removeInboundEmail(email: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false as const, error: 'unauthorized' };
+
+  const clean = email.trim().toLowerCase();
+  await supabase.from('user_verified_emails').delete().eq('user_id', user.id).eq('email', clean);
+  revalidatePath('/settings');
+  return { ok: true as const };
 }
 
 export async function updateDisplayName(name: string) {

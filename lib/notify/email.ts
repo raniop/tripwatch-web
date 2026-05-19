@@ -94,6 +94,48 @@ export async function sendCancellationReminderEmail(args: CancellationReminderEm
   return { id: data?.id };
 }
 
+interface VerifyInboundEmailArgs {
+  to: string;
+  link: string;
+  appUrl: string;
+}
+
+export async function sendVerifyInboundEmail(args: VerifyInboundEmailArgs) {
+  if (!resend) {
+    console.warn('RESEND_API_KEY not set — skipping verify-inbound email');
+    return { skipped: true };
+  }
+  const subject = `אישור הוספת כתובת מייל ל-TripWatch`;
+  const html = `<!doctype html>
+<html lang="he" dir="rtl"><head><meta charset="utf-8"/></head>
+<body style="margin:0;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;background:#f4f4f5;padding:24px 16px;direction:rtl;text-align:right;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto;background:#fff;border-radius:12px;border:1px solid #e4e4e7;">
+    <tr><td style="padding:24px 28px 8px;">
+      <div style="font-size:14px;color:#71717a;">TripWatch</div>
+      <h1 style="margin:8px 0 0;font-size:20px;color:#18181b;">אישור כתובת מייל לשליחת הזמנות</h1>
+    </td></tr>
+    <tr><td style="padding:8px 28px 16px;">
+      <p style="font-size:14px;color:#52525b;line-height:1.6;margin:8px 0;">
+        ביקשת להוסיף את הכתובת הזו כמייל שממנו תוכל לשלוח הזמנות אל
+        <strong dir="ltr">trip@tripwatch.net</strong>.
+      </p>
+      <p style="font-size:14px;color:#52525b;line-height:1.6;margin:8px 0;">
+        אם זה אתה — לחץ על הכפתור. הקישור יפוג בעוד שעה.
+      </p>
+    </td></tr>
+    <tr><td style="padding:8px 28px 24px;">
+      <a href="${args.link}" style="display:inline-block;background:#2563eb;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:15px;">אשר את הכתובת</a>
+    </td></tr>
+    <tr><td style="background:#fafafa;padding:14px 28px;font-size:12px;color:#a1a1aa;text-align:center;border-top:1px solid #e4e4e7;">
+      אם לא ביקשת את זה — אפשר להתעלם מהמייל.
+    </td></tr>
+  </table>
+</body></html>`;
+  const { data, error } = await resend.emails.send({ from, to: args.to, subject, html });
+  if (error) throw new Error(error.message);
+  return { id: data?.id };
+}
+
 interface InboundConfirmationArgs {
   to: string;
   hotelName: string;

@@ -2,10 +2,10 @@
 
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
-import { Copy, RefreshCw, Check } from 'lucide-react';
+import { Copy, RefreshCw, Check, Mail, Plus, Trash2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { rotateInboundToken } from '@/app/settings/actions';
+import { rotateInboundToken, requestInboundEmailVerification, removeInboundEmail } from '@/app/settings/actions';
 import type { InboundEmail } from '@/lib/supabase/types';
 
 interface Props {
@@ -13,6 +13,7 @@ interface Props {
   userEmail: string;
   personalAddress: string | null;
   recent: InboundEmail[];
+  verifiedEmails: Array<{ email: string; verified_at: string }>;
 }
 
 const STATUS_LABEL: Record<string, { text: string; cls: string }> = {
@@ -23,10 +24,35 @@ const STATUS_LABEL: Record<string, { text: string; cls: string }> = {
   error:    { text: 'שגיאה',  cls: 'bg-destructive/15 text-destructive' },
 };
 
-export function InboundForwardCard({ globalAddress, userEmail, personalAddress: initialPersonal, recent }: Props) {
+export function InboundForwardCard({ globalAddress, userEmail, personalAddress: initialPersonal, recent, verifiedEmails: initialVerified }: Props) {
   const [personalAddress, setPersonalAddress] = useState(initialPersonal);
   const [copied, setCopied] = useState<'global' | 'personal' | null>(null);
   const [pending, startTransition] = useTransition();
+  const [verifiedEmails, setVerifiedEmails] = useState(initialVerified);
+  const [newEmail, setNewEmail] = useState('');
+  const [addBusy, setAddBusy] = useState(false);
+  const [addMsg, setAddMsg] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null);
+
+  async function onAddEmail(e: React.FormEvent) {
+    e.preventDefault();
+    if (!newEmail.trim()) return;
+    setAddBusy(true);
+    setAddMsg(null);
+    const r = await requestInboundEmailVerification(newEmail);
+    setAddBusy(false);
+    if (r.ok) {
+      setAddMsg({ kind: 'ok', text: `נשלח מייל אישור ל-${r.sentTo}` });
+      setNewEmail('');
+    } else {
+      setAddMsg({ kind: 'err', text: r.error });
+    }
+  }
+
+  async function onRemoveEmail(email: string) {
+    if (!confirm(`להסיר את הכתובת ${email} מהרשימה? לא תוכל לשלוח ממנה הזמנות אחרי שתסיר.`)) return;
+    const r = await removeInboundEmail(email);
+    if (r.ok) setVerifiedEmails((prev) => prev.filter((v) => v.email !== email));
+  }
 
   async function onCopy(value: string, which: 'global' | 'personal') {
     try {
@@ -77,9 +103,59 @@ export function InboundForwardCard({ globalAddress, userEmail, personalAddress: 
         </div>
 
         <div className="rounded-md bg-amber-50 dark:bg-amber-950/30 px-3 py-2 text-xs text-amber-900 dark:text-amber-200">
-          ⚠️ חשוב: צריך לשלוח מהמייל <span dir="ltr" className="font-mono">{userEmail}</span> או
-          ממייל אחר שמקושר לחשבון (ראה &quot;חיבורי חשבון&quot; למטה).
+          ⚠️ חשוב: צריך לשלוח מאחת מהכתובות המאומתות שלך (ראה למטה).
         </div>
+
+        <details className="text-sm" open>
+          <summary className="cursor-pointer text-muted-foreground">
+            כתובות מייל מאומתות לשליחה ({1 + verifiedEmails.length})
+          </summary>
+          <ul className="mt-2 space-y-1.5">
+            <li className="flex items-center justify-between rounded-md border border-border bg-muted/30 px-3 py-2 text-sm">
+              <span className="flex items-center gap-2">
+                <Mail className="size-4 text-muted-foreground" />
+                <span dir="ltr" className="font-mono">{userEmail}</span>
+              </span>
+              <span className="text-xs text-muted-foreground">ראשי</span>
+            </li>
+            {verifiedEmails.map((v) => (
+              <li key={v.email} className="flex items-center justify-between rounded-md border border-border bg-muted/30 px-3 py-2 text-sm">
+                <span className="flex items-center gap-2">
+                  <Mail className="size-4 text-muted-foreground" />
+                  <span dir="ltr" className="font-mono">{v.email}</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => onRemoveEmail(v.email)}
+                  className="text-destructive hover:text-destructive/80"
+                  aria-label="הסר"
+                >
+                  <Trash2 className="size-4" />
+                </button>
+              </li>
+            ))}
+          </ul>
+          <form onSubmit={onAddEmail} className="mt-3 flex gap-2">
+            <input
+              type="email"
+              dir="ltr"
+              required
+              placeholder="add-email@example.com"
+              value={newEmail}
+              onChange={(e) => setNewEmail(e.target.value)}
+              className="h-10 flex-1 rounded-md border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+            <Button type="submit" disabled={addBusy || !newEmail} size="sm" className="shrink-0 gap-1">
+              {addBusy ? <Loader2 className="size-4 animate-spin" /> : <Plus className="size-4" />}
+              שלח אישור
+            </Button>
+          </form>
+          {addMsg && (
+            <p className={`mt-2 text-xs ${addMsg.kind === 'ok' ? 'text-success' : 'text-destructive'}`}>
+              {addMsg.kind === 'ok' ? '✓ ' : '⚠ '}{addMsg.text}
+            </p>
+          )}
+        </details>
 
         <details className="text-sm">
           <summary className="cursor-pointer text-muted-foreground">איך זה עובד?</summary>

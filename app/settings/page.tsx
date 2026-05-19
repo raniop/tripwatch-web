@@ -14,7 +14,7 @@ export default async function SettingsPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const [{ data: profileData }, addressResult, { data: inboundData }] = await Promise.all([
+  const [{ data: profileData }, addressResult, { data: inboundData }, { data: verifiedData }] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', user.id).maybeSingle(),
     ensureInboundAddress(),
     supabase
@@ -23,10 +23,16 @@ export default async function SettingsPage() {
       .eq('user_id', user.id)
       .order('received_at', { ascending: false })
       .limit(10),
+    supabase
+      .from('user_verified_emails')
+      .select('email, verified_at')
+      .eq('user_id', user.id)
+      .order('verified_at', { ascending: false }),
   ]);
   const profile = profileData as Profile | null;
   const personalAddress = addressResult.ok ? addressResult.address : null;
   const recent = (inboundData ?? []) as InboundEmail[];
+  const verifiedEmails = (verifiedData ?? []) as Array<{ email: string; verified_at: string }>;
 
   return (
     <AppShell>
@@ -37,6 +43,7 @@ export default async function SettingsPage() {
           userEmail={user.email ?? ''}
           personalAddress={personalAddress}
           recent={recent}
+          verifiedEmails={verifiedEmails}
         />
         <SettingsForm profile={profile} email={user.email ?? ''} />
       </div>
