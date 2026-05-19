@@ -2,12 +2,32 @@ import Link from 'next/link';
 import { Bed, Calendar, UtensilsCrossed, Clock } from 'lucide-react';
 import type { Booking } from '@/lib/supabase/types';
 import { fmtPrice, fmtDateRange, nightsBetween, priceDiff } from '@/lib/format';
+import { convertToILS } from '@/lib/fx';
 import { cn } from '@/lib/utils';
 
-export function BookingCard({ booking }: { booking: Booking }) {
+export async function BookingCard({ booking }: { booking: Booking }) {
   const nights = nightsBetween(booking.check_in, booking.check_out);
-  const hasCheck = booking.last_price !== null;
-  const diff = hasCheck ? priceDiff(Number(booking.paid_price), Number(booking.last_price)) : null;
+  const paidCur = (booking.currency || 'ILS').toUpperCase();
+  const lastCur = (booking.last_currency || paidCur).toUpperCase();
+  const paidPriceN = Number(booking.paid_price);
+  const lastPriceN = booking.last_price !== null ? Number(booking.last_price) : null;
+  const hasCheck = lastPriceN !== null;
+
+  // Cross-currency comparison: normalize to ILS so the spread reflects real
+  // savings rather than treating, say, 1820 EUR and 6155 ILS as same units.
+  let paidIls = booking.paid_price_ils !== null ? Number(booking.paid_price_ils) : null;
+  if (paidIls === null && paidCur === 'ILS') paidIls = paidPriceN;
+  let currentIls: number | null = null;
+  if (lastPriceN !== null) {
+    currentIls = lastCur === 'ILS' ? lastPriceN : await convertToILS(lastPriceN, lastCur);
+  }
+  const currenciesDiffer = paidCur !== lastCur;
+  const useIls = currenciesDiffer && paidIls !== null && currentIls !== null;
+  const diff = hasCheck
+    ? (useIls
+      ? { ...priceDiff(paidIls!, currentIls!), currency: 'ILS' }
+      : { ...priceDiff(paidPriceN, lastPriceN!), currency: paidCur })
+    : null;
   const deadline = cancellationChip(booking.cancellation_deadline);
 
   return (
@@ -73,6 +93,9 @@ export function BookingCard({ booking }: { booking: Booking }) {
             <span className="text-xs text-muted-foreground">שילמת</span>
             <span className="tabular-nums text-sm font-medium">
               {fmtPrice(booking.paid_price, booking.currency)}
+              {paidCur !== 'ILS' && paidIls && (
+                <span className="ms-1 text-[10px] font-normal text-muted-foreground">≈ {fmtPrice(paidIls, 'ILS')}</span>
+              )}
             </span>
           </div>
           {hasCheck && diff ? (
@@ -83,6 +106,9 @@ export function BookingCard({ booking }: { booking: Booking }) {
                 diff.direction === 'down' && diff.pct >= 1 ? 'text-success' : diff.direction === 'up' && diff.pct <= -1 ? 'text-destructive' : '',
               )}>
                 {fmtPrice(booking.last_price, booking.last_currency || booking.currency)}
+                {lastCur !== 'ILS' && currentIls && (
+                  <span className="ms-1 text-[10px] font-normal text-muted-foreground">≈ {fmtPrice(currentIls, 'ILS')}</span>
+                )}
                 {diff.direction !== 'same' && (
                   <span className="ms-2 text-xs font-normal">
                     {diff.direction === 'down' ? '⬇' : '⬆'} {Math.abs(diff.pct).toFixed(1)}%

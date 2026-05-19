@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { CheckAllButton } from '@/components/check-all-button';
 import { createClient } from '@/lib/supabase/server';
 import { fmtPrice } from '@/lib/format';
+import { convertToILS } from '@/lib/fx';
 import type { Booking } from '@/lib/supabase/types';
 
 import { MergeSuccessToast } from '@/components/merge-success-toast';
@@ -31,17 +32,25 @@ export default async function DashboardPage({
 
   const list = (bookings as Booking[] | null) || [];
 
-  // Sum potential savings across active bookings, converted to ILS using
-  // the FX snapshot we recorded at booking time.
-  const totalSavedIls = list.reduce((sum, b) => {
-    if (b.last_price === null || b.paid_price_ils === null || b.last_currency !== b.currency) {
-      return sum;
-    }
-    const savedNative = Number(b.paid_price) - Number(b.last_price);
-    if (savedNative <= 0) return sum;
-    const ilsPerNative = Number(b.paid_price_ils) / Number(b.paid_price);
-    return sum + savedNative * ilsPerNative;
-  }, 0);
+  // Sum potential savings across active bookings, normalizing both prices
+  // to ILS. paid_price_ils is the FX snapshot at booking time; current price
+  // is converted live when its currency differs from ILS.
+  const savedPerBooking = await Promise.all(
+    list.map(async (b) => {
+      if (b.last_price === null) return 0;
+      const paidIls = b.paid_price_ils !== null
+        ? Number(b.paid_price_ils)
+        : (b.currency === 'ILS' ? Number(b.paid_price) : null);
+      const lastCur = (b.last_currency || b.currency || 'ILS').toUpperCase();
+      const currentIls = lastCur === 'ILS'
+        ? Number(b.last_price)
+        : await convertToILS(Number(b.last_price), lastCur);
+      if (paidIls === null || currentIls === null) return 0;
+      const saved = paidIls - currentIls;
+      return saved > 0 ? saved : 0;
+    }),
+  );
+  const totalSavedIls = savedPerBooking.reduce((a, b) => a + b, 0);
 
   return (
     <AppShell>
