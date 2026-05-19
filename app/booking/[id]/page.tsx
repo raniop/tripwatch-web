@@ -37,6 +37,7 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
 
   const hasCheck = b.last_price !== null;
   const diff = hasCheck ? priceDiff(Number(b.paid_price), Number(b.last_price)) : null;
+  const lastCheck = checks.find((c) => !c.error) ?? null;
 
   return (
     <AppShell>
@@ -97,6 +98,23 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
                       {diff.direction === 'down' ? '⬇ ' : '⬆ '}
                       {fmtPrice(Math.abs(diff.diff), b.currency)} ({Math.abs(diff.pct).toFixed(1)}%)
                     </p>
+                  </div>
+                )}
+                {lastCheck?.matched_room && (
+                  <div className="rounded-md border border-border bg-muted/30 p-3 space-y-1">
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                      התאמה בסקרייפר
+                      {lastCheck.match_score !== null && (
+                        <span className={`ms-1 font-bold ${Number(lastCheck.match_score) >= 0.8 ? 'text-success' : Number(lastCheck.match_score) >= 0.5 ? 'text-warning' : 'text-destructive'}`}>
+                          {(Number(lastCheck.match_score) * 100).toFixed(0)}%
+                        </span>
+                      )}
+                    </p>
+                    <p className="text-xs">🛏 {lastCheck.matched_room}</p>
+                    {lastCheck.matched_meal && <p className="text-[11px] text-muted-foreground line-clamp-2">{lastCheck.matched_meal.slice(0, 140)}</p>}
+                    {Number(lastCheck.match_score) < 0.7 && (
+                      <p className="text-[11px] text-warning">⚠️ התאמה חלשה — ייתכן שלא אותו תעריף שהזמנת</p>
+                    )}
                   </div>
                 )}
               </>
