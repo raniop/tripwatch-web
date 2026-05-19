@@ -1,7 +1,9 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createAdminClient } from '@/lib/supabase/server';
+import { signMergeToken } from '@/lib/merge-token';
+import { sendMergeEmail } from '@/lib/notify/merge-email';
 
 export async function updateNotificationPrefs(prefs: { email: boolean; in_app: boolean; telegram: boolean }) {
   const supabase = await createClient();
@@ -93,6 +95,66 @@ export async function removeAvatar() {
   revalidatePath('/settings');
   revalidatePath('/dashboard');
   return { ok: true as const };
+}
+
+/**
+ * Request to merge another existing TripWatch account into the current one.
+ * Sends a verification email to the OTHER address with a one-time link.
+ * Clicking the link performs the merge (move all bookings + delete other user).
+ */
+export async function requestAccountMerge(otherEmail: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user || !user.email) return { ok: false as const, error: 'unauthorized' };
+
+  const cleanOther = otherEmail.trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanOther)) {
+    return { ok: false as const, error: 'מייל לא תקין' };
+  }
+  if (cleanOther === user.email.toLowerCase()) {
+    return { ok: false as const, error: 'זה אותו מייל — אין מה לאחד' };
+  }
+
+  // Look up the other user via admin
+  const admin = createAdminClient();
+  let other = null as { id: string; email: string } | null;
+  let page = 1;
+  while (page < 20) {
+    const { data, error } = await admin.auth.admin.listUsers({ page, perPage: 1000 });
+    if (error) return { ok: false as const, error: error.message };
+    const match = data.users.find((u) => u.email?.toLowerCase() === cleanOther);
+    if (match) {
+      other = { id: match.id, email: match.email! };
+      break;
+    }
+    if (data.users.length < 1000) break;
+    page++;
+  }
+  if (!other) {
+    return { ok: false as const, error: 'לא נמצא חשבון פעיל עם המייל הזה' };
+  }
+  if (other.id === user.id) {
+    return { ok: false as const, error: 'זה אותו חשבון' };
+  }
+
+  // Sign + email
+  const token = signMergeToken({
+    keep_uid: user.id,
+    merge_uid: other.id,
+    keep_email: user.email,
+    merge_email: other.email,
+    exp: Math.floor(Date.now() / 1000) + 3600,
+  });
+  const base = process.env.NEXT_PUBLIC_APP_URL || 'https://tripwatch.net';
+  const link = `${base}/api/merge/confirm?token=${encodeURIComponent(token)}`;
+
+  try {
+    await sendMergeEmail({ to: other.email, keepEmail: user.email, link });
+  } catch (err) {
+    return { ok: false as const, error: err instanceof Error ? err.message : 'שליחת המייל נכשלה' };
+  }
+
+  return { ok: true as const, sentTo: other.email };
 }
 
 export async function updateDisplayName(name: string) {

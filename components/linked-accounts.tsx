@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Loader2, Trash2, Plus, Mail } from 'lucide-react';
+import { Loader2, Trash2, Plus, Mail, GitMerge } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { createClient } from '@/lib/supabase/client';
+import { requestAccountMerge } from '@/app/settings/actions';
 import type { UserIdentity } from '@supabase/supabase-js';
 
 const PROVIDER_LABELS: Record<string, string> = {
@@ -142,13 +143,86 @@ export function LinkedAccounts() {
         {err && <p className="text-xs text-destructive">⚠ {err}</p>}
         {msg && <p className="text-xs text-success">✓ {msg}</p>}
 
-        <p className="border-t border-border pt-3 text-[11px] text-muted-foreground">
-          💡 פתחת חשבון פעמיים בטעות? שלח מייל ל-
-          <a href="mailto:rani@ophir.email" className="underline">rani@ophir.email</a>
-          {' '}ואני אאחד אותם תוך 24 שעות.
-        </p>
+        <MergeAccountSection />
       </CardContent>
     </Card>
+  );
+}
+
+function MergeAccountSection() {
+  const [otherEmail, setOtherEmail] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [sent, setSent] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setErr(null);
+    setSent(null);
+    const r = await requestAccountMerge(otherEmail);
+    setBusy(false);
+    if (r.ok) {
+      setSent(r.sentTo);
+      setOtherEmail('');
+    } else {
+      setErr(r.error);
+    }
+  }
+
+  return (
+    <details className="border-t border-border pt-4 [&_summary]:cursor-pointer group">
+      <summary className="list-none flex items-center justify-between text-sm font-medium">
+        <span className="flex items-center gap-2">
+          <GitMerge className="size-4 text-muted-foreground" />
+          פתחת בטעות 2 חשבונות? מזג אותם
+        </span>
+        <span className="text-xs text-muted-foreground transition-transform group-open:rotate-45">+</span>
+      </summary>
+
+      <div className="mt-4 space-y-3 rounded-lg border border-border bg-muted/30 p-4">
+        {sent ? (
+          <div className="text-center">
+            <p className="text-2xl">✉️</p>
+            <p className="mt-2 text-sm font-medium">נשלח מייל אישור ל-<span dir="ltr">{sent}</span></p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              היכנס לתיבת המייל הזו, לחץ על הקישור — וההזמנות וההגדרות יעברו לחשבון הנוכחי שלך.
+            </p>
+            <button
+              onClick={() => setSent(null)}
+              className="mt-3 text-xs text-primary underline"
+            >
+              לשלוח לחשבון נוסף
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={onSubmit} className="space-y-2">
+            <p className="text-xs text-muted-foreground">
+              הזן מייל של חשבון נוסף שיש לך. נשלח אליו קישור אישור, ואחרי שתלחץ — הנתונים יעברו לכאן והחשבון הישן יימחק.
+            </p>
+            <div className="flex gap-2">
+              <input
+                type="email"
+                dir="ltr"
+                required
+                placeholder="other@example.com"
+                value={otherEmail}
+                onChange={(e) => setOtherEmail(e.target.value)}
+                className="h-10 flex-1 rounded-md border border-border bg-background px-3 text-sm text-left focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+              <Button type="submit" disabled={busy || !otherEmail} size="sm" className="gap-1">
+                {busy ? <Loader2 className="size-4 animate-spin" /> : <GitMerge className="size-4" />}
+                שלח אישור
+              </Button>
+            </div>
+            {err && <p className="text-xs text-destructive">⚠ {err}</p>}
+            <p className="text-[11px] text-warning">
+              ⚠️ פעולה זו בלתי הפיכה. ההזמנות וההגדרות מהחשבון השני יועברו, והוא יימחק.
+            </p>
+          </form>
+        )}
+      </div>
+    </details>
   );
 }
 

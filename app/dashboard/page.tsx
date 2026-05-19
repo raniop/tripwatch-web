@@ -8,9 +8,16 @@ import { createClient } from '@/lib/supabase/server';
 import { fmtPrice } from '@/lib/format';
 import type { Booking } from '@/lib/supabase/types';
 
+import { MergeSuccessToast } from '@/components/merge-success-toast';
+
 export const dynamic = 'force-dynamic';
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ merged?: string }>;
+}) {
+  const sp = (await searchParams) || {};
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null; // middleware will redirect
@@ -38,6 +45,7 @@ export default async function DashboardPage() {
 
   return (
     <AppShell>
+      {sp.merged === 'ok' && <MergeSuccessToast />}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold">הנסיעות שלך</h1>
