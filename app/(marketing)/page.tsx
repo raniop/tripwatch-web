@@ -30,7 +30,7 @@ export default function LandingPage() {
 
           <p className="mt-8 max-w-2xl text-balance text-lg leading-relaxed text-white/90 sm:text-xl md:text-2xl animate-fade-up [animation-delay:240ms]">
             מחירי מלונות זזים יום-יום. ברגע שהמחיר על ההזמנה שלך יורד —
-            <strong className="text-white"> נתריע לך מיד לבטל ולהזמין מחדש זול יותר.</strong>
+            <strong className="text-white"> נתריע לך מיד לבטל ולהזמין מחדש במחיר זול יותר.</strong>
           </p>
 
           <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row animate-fade-up [animation-delay:360ms]">
