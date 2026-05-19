@@ -3,6 +3,7 @@ import { Plus } from 'lucide-react';
 import { AppShell } from '@/components/app-shell';
 import { BookingCard } from '@/components/booking-card';
 import { Button } from '@/components/ui/button';
+import { CheckAllButton } from '@/components/check-all-button';
 import { createClient } from '@/lib/supabase/server';
 import { fmtPrice } from '@/lib/format';
 import type { Booking } from '@/lib/supabase/types';
@@ -37,7 +38,7 @@ export default async function DashboardPage() {
 
   return (
     <AppShell>
-      <div className="mb-6 flex items-end justify-between">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold">הנסיעות שלך</h1>
           {totalSavedIls > 5 && (
@@ -46,11 +47,14 @@ export default async function DashboardPage() {
             </p>
           )}
         </div>
-        <Link href="/add">
-          <Button size="lg">
-            <Plus className="size-4" /> הוסף הזמנה
-          </Button>
-        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <CheckAllButton totalBookings={list.length} />
+          <Link href="/add">
+            <Button size="lg" className="h-11">
+              <Plus className="size-4" /> הוסף הזמנה
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {list.length === 0 ? (
