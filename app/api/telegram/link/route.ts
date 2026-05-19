@@ -19,10 +19,17 @@ export async function POST() {
   const token = randomBytes(6).toString('base64url').toUpperCase().slice(0, 8);
   const expires = new Date(Date.now() + 30 * 60_000).toISOString();
 
-  await supabase
+  // Upsert in case the profile row wasn't auto-created by the trigger
+  const { error } = await supabase
     .from('profiles')
-    .update({ telegram_link_token: token, telegram_link_expires_at: expires })
-    .eq('id', user.id);
+    .upsert(
+      { id: user.id, telegram_link_token: token, telegram_link_expires_at: expires },
+      { onConflict: 'id' },
+    );
+  if (error) {
+    console.error('telegram link POST upsert failed:', error.message);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 
   return NextResponse.json({
     token,
