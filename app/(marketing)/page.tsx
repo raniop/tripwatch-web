@@ -72,16 +72,16 @@ export default function LandingPage() {
           </div>
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            <Promise Icon={PiggyBank} title="חיסכון אמיתי">
+            <Promise Icon={PiggyBank} accent="success" title="חיסכון אמיתי">
               לא Genius discount או הנחת קופון. ירידת מחיר אמיתית של אותו חדר שכבר הזמנת.
             </Promise>
-            <Promise Icon={Lock} title="פרטיות מוחלטת">
-              לעולם לא ניגע בסיסמה שלך ל-Booking. רק צילום מסך — וזה הכל.
+            <Promise Icon={Lock} accent="primary" title="פרטיות מוחלטת">
+              לעולם לא ניגע בסיסמה שלך ל-Booking. צילום מסך או העברת מייל ההזמנה — וזה הכל.
             </Promise>
-            <Promise Icon={Zap} title="התראה מיידית">
+            <Promise Icon={Zap} accent="accent" title="התראה מיידית">
               ברגע שמחיר יורד מעל סף שתגדיר — מייל, התראה, אופציונלית גם טלגרם.
             </Promise>
-            <Promise Icon={Globe} title="חינם, באמת">
+            <Promise Icon={Globe} accent="warning" title="חינם, באמת">
               ללא כרטיס אשראי. ללא תקופת ניסיון. בטא חינמי לכל המשתמשים הראשונים.
             </Promise>
           </div>
@@ -290,11 +290,33 @@ function TrustItem({ Icon, children }: { Icon: React.ElementType; children: Reac
   );
 }
 
-function Promise({ Icon, title, children }: { Icon: React.ElementType; title: string; children: React.ReactNode }) {
+type PromiseAccent = 'success' | 'primary' | 'accent' | 'warning';
+
+function Promise({
+  Icon,
+  title,
+  accent,
+  children,
+}: {
+  Icon: React.ElementType;
+  title: string;
+  accent: PromiseAccent;
+  children: React.ReactNode;
+}) {
+  const tones: Record<PromiseAccent, { icon: string; hoverBorder: string; check: string }> = {
+    success: { icon: 'bg-success/10 text-success', hoverBorder: 'hover:border-success/40', check: 'text-success' },
+    primary: { icon: 'bg-primary/10 text-primary', hoverBorder: 'hover:border-primary/40', check: 'text-primary' },
+    accent:  { icon: 'bg-accent/10 text-accent',   hoverBorder: 'hover:border-accent/40',  check: 'text-accent'  },
+    warning: { icon: 'bg-warning/10 text-warning', hoverBorder: 'hover:border-warning/40', check: 'text-warning' },
+  };
+  const t = tones[accent];
   return (
-    <div className="group rounded-3xl border border-border bg-white p-7 transition-all hover:border-accent/30 hover:shadow-glow-orange hover:-translate-y-1">
-      <div className="mb-5 inline-flex size-14 items-center justify-center rounded-2xl bg-accent/10 text-accent transition-transform group-hover:scale-110">
+    <div className={`group relative overflow-hidden rounded-3xl border border-border bg-card p-7 transition-all ${t.hoverBorder} hover:shadow-lg hover:-translate-y-1`}>
+      <div className={`mb-5 inline-flex size-14 items-center justify-center rounded-2xl ${t.icon} transition-transform group-hover:scale-110`}>
         <Icon className="size-7" />
+      </div>
+      <div className={`absolute end-5 top-5 ${t.check} opacity-60`}>
+        <Check className="size-5" />
       </div>
       <h3 className="font-display text-xl">{title}</h3>
       <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{children}</p>
