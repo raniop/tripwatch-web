@@ -13,6 +13,8 @@ export interface Profile {
   telegram_chat_id: number | null;
   telegram_link_token: string | null;
   telegram_link_expires_at: string | null;
+  inbound_token: string | null;
+  inbound_token_created_at: string | null;
   notification_prefs: {
     email: boolean;
     in_app: boolean;
@@ -22,6 +24,23 @@ export interface Profile {
   alert_amount_ils_default: number;
   created_at: string;
   updated_at: string;
+}
+
+export type InboundEmailStatus = 'received' | 'parsed' | 'created' | 'skipped' | 'error';
+
+export interface InboundEmail {
+  id: string;
+  user_id: string;
+  message_id: string;
+  from_address: string;
+  to_address: string;
+  subject: string | null;
+  detected_source: string | null;
+  status: InboundEmailStatus;
+  booking_id: string | null;
+  error: string | null;
+  raw_storage_path: string | null;
+  received_at: string;
 }
 
 export interface Booking {

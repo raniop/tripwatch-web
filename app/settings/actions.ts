@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { signMergeToken } from '@/lib/merge-token';
 import { sendMergeEmail } from '@/lib/notify/merge-email';
+import { generateInboundToken, formatInboundAddress } from '@/lib/inbound/address';
 
 export async function updateNotificationPrefs(prefs: { email: boolean; in_app: boolean; telegram: boolean }) {
   const supabase = await createClient();
@@ -155,6 +156,65 @@ export async function requestAccountMerge(otherEmail: string) {
   }
 
   return { ok: true as const, sentTo: other.email };
+}
+
+/**
+ * Return the user's forwarding address, creating a token on first call.
+ * Token collisions on the UNIQUE index are astronomically unlikely; if one
+ * does happen, the retry loop covers it.
+ */
+export async function ensureInboundAddress() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false as const, error: 'unauthorized' };
+
+  const { data: existing } = await supabase
+    .from('profiles')
+    .select('inbound_token')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  if (existing?.inbound_token) {
+    return { ok: true as const, address: formatInboundAddress(existing.inbound_token) };
+  }
+
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const token = generateInboundToken();
+    const { error } = await supabase
+      .from('profiles')
+      .update({ inbound_token: token, inbound_token_created_at: new Date().toISOString() })
+      .eq('id', user.id);
+    if (!error) {
+      return { ok: true as const, address: formatInboundAddress(token) };
+    }
+    // Collision on UNIQUE → retry with new token
+    if ((error as { code?: string }).code !== '23505') {
+      return { ok: false as const, error: error.message };
+    }
+  }
+  return { ok: false as const, error: 'could not allocate token' };
+}
+
+export async function rotateInboundToken() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false as const, error: 'unauthorized' };
+
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const token = generateInboundToken();
+    const { error } = await supabase
+      .from('profiles')
+      .update({ inbound_token: token, inbound_token_created_at: new Date().toISOString() })
+      .eq('id', user.id);
+    if (!error) {
+      revalidatePath('/settings');
+      return { ok: true as const, address: formatInboundAddress(token) };
+    }
+    if ((error as { code?: string }).code !== '23505') {
+      return { ok: false as const, error: error.message };
+    }
+  }
+  return { ok: false as const, error: 'could not allocate token' };
 }
 
 export async function updateDisplayName(name: string) {

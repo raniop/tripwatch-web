@@ -75,9 +75,19 @@ async function call<T>(path: string, body?: object): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+export interface TextExtractInput {
+  text: string | null;
+  html: string | null;
+  subject: string | null;
+  from: string | null;
+  source_hint: string | null;
+}
+
 export const nas = {
   health: () => call<{ ok: boolean; uptime: number; version: string }>('/health'),
   visionExtract: (image_url: string) => call<ExtractedBooking>('/vision/extract', { image_url }),
+  textExtract: (input: TextExtractInput) =>
+    call<ExtractedBooking | { not_a_booking: true }>('/text/extract', input),
   search: (params: { hotel_name: string; check_in: string; check_out: string; adults?: number; children?: number; rooms?: number }) =>
     call<{ url: string }>('/search', params),
   resolveShare: (url: string) => call<{ url: string; resolved: boolean }>('/resolve-share', { url }),

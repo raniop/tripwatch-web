@@ -1,9 +1,11 @@
 import { AppShell } from '@/components/app-shell';
 import { AddBookingFlow } from '@/components/add-booking-flow';
+import { getGlobalAddress } from '@/lib/inbound/address';
 
 export const metadata = { title: 'הוסף הזמנה · TripWatch' };
 
 export default function AddBookingPage() {
+  const inbox = getGlobalAddress();
   return (
     <AppShell>
       <div className="mx-auto max-w-2xl">
@@ -12,6 +14,10 @@ export default function AddBookingPage() {
           שלח צילום מסך של דף ההזמנה ב-Booking — נזהה הכל אוטומטית
         </p>
         <AddBookingFlow />
+        <p className="mt-6 text-center text-sm text-muted-foreground">
+          📧 או פורוורד את אישור ההזמנה ל-
+          <span dir="ltr" className="font-mono">{inbox}</span>
+        </p>
       </div>
     </AppShell>
   );
