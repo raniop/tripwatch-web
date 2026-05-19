@@ -22,6 +22,8 @@ export interface ExtractedBooking {
   room_type: string | null;
   meal_plan: string | null;
   cancellation: string | null;
+  /** ISO 8601 datetime of the free-cancellation deadline, or null if unknown / non-refundable. */
+  cancellation_deadline: string | null;
   total_price: number | null;
   currency: string | null;
 }

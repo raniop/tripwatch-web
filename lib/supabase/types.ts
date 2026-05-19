@@ -60,6 +60,8 @@ export interface Booking {
   room_type: string | null;
   meal_plan: string | null;
   cancellation: string | null;
+  cancellation_deadline: string | null;
+  cancellation_reminder_sent_at: string | null;
   currency: string;
   paid_price: number;
   paid_price_ils: number | null;
@@ -96,7 +98,7 @@ export interface PriceCheck {
   error: string | null;
 }
 
-export type NotificationKind = 'price_drop' | 'check_failed' | 'system' | 'welcome';
+export type NotificationKind = 'price_drop' | 'check_failed' | 'system' | 'welcome' | 'cancellation_deadline';
 
 export interface Notification {
   id: string;

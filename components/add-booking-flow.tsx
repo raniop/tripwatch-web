@@ -57,6 +57,7 @@ export function AddBookingFlow() {
         room_type: data.extracted.room_type,
         meal_plan: data.extracted.meal_plan,
         cancellation: data.extracted.cancellation,
+        cancellation_deadline: data.extracted.cancellation_deadline,
         currency: currencyOverride || data.extracted.currency || 'ILS',
         paid_price: price,
         source_image_path: data.image_path,

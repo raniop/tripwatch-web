@@ -307,6 +307,7 @@ export async function POST(req: Request) {
       room_type: extracted.room_type,
       meal_plan: extracted.meal_plan,
       cancellation: extracted.cancellation,
+      cancellation_deadline: extracted.cancellation_deadline,
       currency,
       paid_price: extracted.total_price,
       paid_price_ils,

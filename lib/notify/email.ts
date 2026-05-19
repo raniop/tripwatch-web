@@ -36,6 +36,64 @@ export async function sendPriceDropEmail(args: PriceDropEmailArgs) {
   return { id: data?.id };
 }
 
+interface CancellationReminderEmailArgs {
+  to: string;
+  hotelName: string;
+  checkIn: string;
+  checkOut: string;
+  hoursRemaining: number;
+  deadlineISO: string;
+  bookingUrl: string;
+  appUrl: string;
+}
+
+export async function sendCancellationReminderEmail(args: CancellationReminderEmailArgs) {
+  if (!resend) {
+    console.warn('RESEND_API_KEY not set — skipping cancellation reminder');
+    return { skipped: true };
+  }
+  const subject = `⏰ ביטול חינמי פוקע בעוד ${args.hoursRemaining} שעות — ${args.hotelName}`;
+  const deadlineLocal = new Date(args.deadlineISO).toLocaleString('he-IL', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  });
+  const html = `<!doctype html>
+<html lang="he" dir="rtl"><head><meta charset="utf-8"/></head>
+<body style="margin:0;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;background:#f4f4f5;padding:24px 16px;direction:rtl;text-align:right;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto;background:#fff;border-radius:12px;border:1px solid #e4e4e7;">
+    <tr><td style="padding:24px 28px 8px;">
+      <div style="font-size:14px;color:#71717a;">TripWatch</div>
+      <h1 style="margin:8px 0 0;font-size:22px;color:#18181b;">⏰ הביטול החינמי פוקע בקרוב</h1>
+    </td></tr>
+    <tr><td style="padding:8px 28px 16px;">
+      <h2 style="margin:0 0 4px;font-size:18px;color:#18181b;">${escape(args.hotelName)}</h2>
+      <div style="font-size:14px;color:#71717a;">${escape(args.checkIn)} → ${escape(args.checkOut)}</div>
+      <div style="margin-top:12px;font-size:14px;color:#dc2626;font-weight:600;">
+        עוד ${args.hoursRemaining} שעות לפוג הביטול החינמי
+      </div>
+      <div style="font-size:13px;color:#71717a;margin-top:4px;">
+        מועד אחרון: ${escape(deadlineLocal)}
+      </div>
+    </td></tr>
+    <tr><td style="padding:0 28px 8px;">
+      <p style="font-size:14px;color:#52525b;line-height:1.6;margin:8px 0;">
+        אם המחיר ירד מאז שהזמנת — זה הזמן לבטל ולהזמין מחדש.
+        אחרי שהביטול החינמי פוקע, לא תוכל לחזור בך גם אם המחיר ירד דרסטית.
+      </p>
+    </td></tr>
+    <tr><td style="padding:8px 28px 24px;">
+      <a href="${args.bookingUrl}" style="display:inline-block;background:#2563eb;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:15px;">פתח את ההזמנה ב-Booking</a>
+    </td></tr>
+    <tr><td style="background:#fafafa;padding:14px 28px;font-size:12px;color:#a1a1aa;text-align:center;border-top:1px solid #e4e4e7;">
+      <a href="${args.appUrl}" style="color:#a1a1aa;text-decoration:underline;">פתח ב-TripWatch</a>
+    </td></tr>
+  </table>
+</body></html>`;
+  const { data, error } = await resend.emails.send({ from, to: args.to, subject, html });
+  if (error) throw new Error(error.message);
+  return { id: data?.id };
+}
+
 interface InboundConfirmationArgs {
   to: string;
   hotelName: string;

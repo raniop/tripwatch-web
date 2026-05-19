@@ -20,6 +20,7 @@ const SaveSchema = z.object({
   room_type: z.string().nullable().optional(),
   meal_plan: z.string().nullable().optional(),
   cancellation: z.string().nullable().optional(),
+  cancellation_deadline: z.string().datetime({ offset: true }).nullable().optional(),
   currency: z.string().min(3).max(3),
   paid_price: z.number().positive(),
   source_image_path: z.string().nullable().optional(),

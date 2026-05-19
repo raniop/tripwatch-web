@@ -13,7 +13,7 @@
  */
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/server';
-import { sendPriceDropEmail } from '@/lib/notify/email';
+import { sendPriceDropEmail, sendCancellationReminderEmail } from '@/lib/notify/email';
 import { telegramSend } from '@/lib/notify/telegram';
 import { fmtPrice } from '@/lib/format';
 
@@ -39,8 +39,9 @@ export async function POST(request: Request) {
     | null;
   if (!row) return NextResponse.json({ error: 'no record' }, { status: 400 });
 
-  // Only handle price_drop kind for now; others are in-app only
-  if (row.kind !== 'price_drop') return NextResponse.json({ ok: true, skipped: 'kind' });
+  if (row.kind !== 'price_drop' && row.kind !== 'cancellation_deadline') {
+    return NextResponse.json({ ok: true, skipped: 'kind' });
+  }
 
   const sb = createAdminClient();
 
@@ -64,44 +65,87 @@ export async function POST(request: Request) {
     drop_pct?: number;
     drop_ils?: number;
     currency?: string;
+    deadline?: string;
+    hours_remaining?: number;
+    booking_url?: string;
   };
 
   const updates: Record<string, string> = {};
 
-  if (prefs.email && authUser.user.email) {
-    try {
-      await sendPriceDropEmail({
-        to: authUser.user.email,
-        hotelName: booking.hotel_name || 'המלון שלך',
-        checkIn: booking.check_in,
-        checkOut: booking.check_out,
-        paidFormatted: fmtPrice(payload.paid_price ?? booking.paid_price, payload.currency ?? booking.currency),
-        currentFormatted: fmtPrice(payload.current_price ?? null, payload.currency ?? booking.currency),
-        savingsFormatted: fmtPrice(payload.diff ?? null, payload.currency ?? booking.currency),
-        savingsPct: Number(payload.drop_pct ?? 0),
-        bookingUrl: booking.url,
-        appUrl: APP_URL,
-      });
-      updates.email_sent_at = new Date().toISOString();
-    } catch (err) {
-      console.error('email send failed:', err);
+  if (row.kind === 'price_drop') {
+    if (prefs.email && authUser.user.email) {
+      try {
+        await sendPriceDropEmail({
+          to: authUser.user.email,
+          hotelName: booking.hotel_name || 'המלון שלך',
+          checkIn: booking.check_in,
+          checkOut: booking.check_out,
+          paidFormatted: fmtPrice(payload.paid_price ?? booking.paid_price, payload.currency ?? booking.currency),
+          currentFormatted: fmtPrice(payload.current_price ?? null, payload.currency ?? booking.currency),
+          savingsFormatted: fmtPrice(payload.diff ?? null, payload.currency ?? booking.currency),
+          savingsPct: Number(payload.drop_pct ?? 0),
+          bookingUrl: booking.url,
+          appUrl: APP_URL,
+        });
+        updates.email_sent_at = new Date().toISOString();
+      } catch (err) {
+        console.error('email send failed:', err);
+      }
+    }
+
+    if (prefs.telegram && profile.telegram_chat_id) {
+      try {
+        const text =
+          `💸 <b>ירידת מחיר!</b>\n\n` +
+          `🏨 ${escapeHtml(booking.hotel_name || '')}\n` +
+          `📅 ${booking.check_in} → ${booking.check_out}\n\n` +
+          `שילמת: ${fmtPrice(payload.paid_price ?? booking.paid_price, booking.currency)}\n` +
+          `עכשיו: ${fmtPrice(payload.current_price ?? null, booking.currency)}\n` +
+          `חיסכון: ${fmtPrice(payload.diff ?? null, booking.currency)} (${Number(payload.drop_pct ?? 0).toFixed(1)}%)\n\n` +
+          `<a href="${booking.url}">פתח ב-Booking</a>`;
+        await telegramSend({ chatId: Number(profile.telegram_chat_id), text });
+        updates.telegram_sent_at = new Date().toISOString();
+      } catch (err) {
+        console.error('telegram send failed:', err);
+      }
     }
   }
 
-  if (prefs.telegram && profile.telegram_chat_id) {
-    try {
-      const text =
-        `💸 <b>ירידת מחיר!</b>\n\n` +
-        `🏨 ${escapeHtml(booking.hotel_name || '')}\n` +
-        `📅 ${booking.check_in} → ${booking.check_out}\n\n` +
-        `שילמת: ${fmtPrice(payload.paid_price ?? booking.paid_price, booking.currency)}\n` +
-        `עכשיו: ${fmtPrice(payload.current_price ?? null, booking.currency)}\n` +
-        `חיסכון: ${fmtPrice(payload.diff ?? null, booking.currency)} (${Number(payload.drop_pct ?? 0).toFixed(1)}%)\n\n` +
-        `<a href="${booking.url}">פתח ב-Booking</a>`;
-      await telegramSend({ chatId: Number(profile.telegram_chat_id), text });
-      updates.telegram_sent_at = new Date().toISOString();
-    } catch (err) {
-      console.error('telegram send failed:', err);
+  if (row.kind === 'cancellation_deadline') {
+    const hours = Number(payload.hours_remaining ?? 24);
+    if (prefs.email && authUser.user.email && payload.deadline) {
+      try {
+        await sendCancellationReminderEmail({
+          to: authUser.user.email,
+          hotelName: booking.hotel_name || 'המלון שלך',
+          checkIn: booking.check_in,
+          checkOut: booking.check_out,
+          hoursRemaining: hours,
+          deadlineISO: payload.deadline,
+          bookingUrl: payload.booking_url ?? booking.url,
+          appUrl: APP_URL,
+        });
+        updates.email_sent_at = new Date().toISOString();
+      } catch (err) {
+        console.error('cancellation email send failed:', err);
+      }
+    }
+
+    if (prefs.telegram && profile.telegram_chat_id && payload.deadline) {
+      try {
+        const deadlineLocal = new Date(payload.deadline).toLocaleString('he-IL', { dateStyle: 'medium', timeStyle: 'short' });
+        const text =
+          `⏰ <b>ביטול חינמי פוקע בקרוב</b>\n\n` +
+          `🏨 ${escapeHtml(booking.hotel_name || '')}\n` +
+          `📅 ${booking.check_in} → ${booking.check_out}\n\n` +
+          `עוד <b>${hours} שעות</b> לפוג הביטול החינמי.\n` +
+          `מועד אחרון: ${escapeHtml(deadlineLocal)}\n\n` +
+          `<a href="${payload.booking_url ?? booking.url}">פתח ב-Booking</a>`;
+        await telegramSend({ chatId: Number(profile.telegram_chat_id), text });
+        updates.telegram_sent_at = new Date().toISOString();
+      } catch (err) {
+        console.error('cancellation telegram send failed:', err);
+      }
     }
   }
 
