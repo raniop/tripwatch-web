@@ -101,21 +101,50 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
                   </div>
                 )}
                 {lastCheck?.matched_room && (
-                  <div className="rounded-md border border-border bg-muted/30 p-3 space-y-1">
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                      התאמה בסקרייפר
-                      {lastCheck.match_score !== null && (
-                        <span className={`ms-1 font-bold ${Number(lastCheck.match_score) >= 0.8 ? 'text-success' : Number(lastCheck.match_score) >= 0.5 ? 'text-warning' : 'text-destructive'}`}>
-                          {(Number(lastCheck.match_score) * 100).toFixed(0)}%
-                        </span>
+                  <details className="rounded-md border border-border bg-muted/30 p-3 [&_summary]:cursor-pointer">
+                    <summary className="text-[10px] uppercase tracking-wider text-muted-foreground list-none flex items-center justify-between">
+                      <span>
+                        התאמה
+                        {lastCheck.match_score !== null && (
+                          <span className={`ms-1 font-bold ${Number(lastCheck.match_score) >= 0.8 ? 'text-success' : Number(lastCheck.match_score) >= 0.5 ? 'text-warning' : 'text-destructive'}`}>
+                            {(Number(lastCheck.match_score) * 100).toFixed(0)}%
+                          </span>
+                        )}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground">פרטים ⌄</span>
+                    </summary>
+                    <div className="mt-3 space-y-2">
+                      <div>
+                        <p className="text-[10px] text-muted-foreground">חדר שנבחר:</p>
+                        <p className="text-xs">🛏 {lastCheck.matched_room}</p>
+                        {lastCheck.matched_meal && <p className="text-[11px] text-muted-foreground mt-0.5">{lastCheck.matched_meal.slice(0, 140)}</p>}
+                      </div>
+                      {Number(lastCheck.match_score) < 0.7 && (
+                        <p className="text-[11px] text-warning">⚠️ התאמה חלשה — ייתכן שלא התעריף הנכון</p>
                       )}
-                    </p>
-                    <p className="text-xs">🛏 {lastCheck.matched_room}</p>
-                    {lastCheck.matched_meal && <p className="text-[11px] text-muted-foreground line-clamp-2">{lastCheck.matched_meal.slice(0, 140)}</p>}
-                    {Number(lastCheck.match_score) < 0.7 && (
-                      <p className="text-[11px] text-warning">⚠️ התאמה חלשה — ייתכן שלא אותו תעריף שהזמנת</p>
-                    )}
-                  </div>
+                      {lastCheck.candidates && lastCheck.candidates.length > 1 && (
+                        <div>
+                          <p className="text-[10px] text-muted-foreground mb-1">כל המועמדים שנשקלו:</p>
+                          <div className="space-y-1.5">
+                            {lastCheck.candidates.map((c, i) => (
+                              <div key={i} className={`rounded border p-2 text-[11px] ${i === 0 ? 'border-primary bg-primary/5' : 'border-border'}`}>
+                                <div className="flex items-baseline justify-between gap-2">
+                                  <span className="truncate font-medium">{c.room}</span>
+                                  <span className="tabular-nums font-bold shrink-0">
+                                    {c.currency === 'ILS' ? '₪' : ''}{c.amount.toLocaleString()}
+                                  </span>
+                                </div>
+                                <div className="flex items-baseline justify-between gap-2 text-muted-foreground mt-0.5">
+                                  <span className="truncate">{c.meal.slice(0, 80)}</span>
+                                  <span className="shrink-0">{(c.score * 100).toFixed(0)}%</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </details>
                 )}
               </>
             ) : (

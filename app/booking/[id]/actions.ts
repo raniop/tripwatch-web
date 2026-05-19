@@ -25,14 +25,18 @@ export async function checkNow(bookingId: string) {
       room_type: b.room_type,
       meal_plan: b.meal_plan,
     });
-    await supabase.from('price_checks').insert({
+    const { error: checkErr } = await supabase.from('price_checks').insert({
       booking_id: b.id,
       price: r.amount,
       currency: r.currency,
       match_score: r.match_score,
       matched_room: r.matched_room,
       matched_meal: r.matched_meal,
+      candidates: r.candidates ?? null,
     });
+    if (checkErr) {
+      console.error('price_checks insert failed:', checkErr.message);
+    }
     const updates: Record<string, unknown> = {
       last_price: r.amount,
       last_currency: r.currency,

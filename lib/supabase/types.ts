@@ -56,6 +56,14 @@ export interface Booking {
   updated_at: string;
 }
 
+export interface PriceCandidate {
+  room: string;
+  meal: string;
+  amount: number;
+  currency: string;
+  score: number;
+}
+
 export interface PriceCheck {
   id: string;
   booking_id: string;
@@ -65,6 +73,7 @@ export interface PriceCheck {
   match_score: number | null;
   matched_room: string | null;
   matched_meal: string | null;
+  candidates: PriceCandidate[] | null;
   error: string | null;
 }
 
