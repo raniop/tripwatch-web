@@ -1,32 +1,19 @@
 import Link from 'next/link';
 import {
-  ArrowLeft, Camera, Eye, Bell, ShieldCheck, Plane, MapPin, Sparkles,
+  ArrowLeft, Camera, Eye, Bell, ShieldCheck, Sparkles,
   PiggyBank, Lock, Zap, Globe, Check, Star, Quote,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { VideoHero } from '@/components/video-hero';
+import { MarketingNav } from '@/components/marketing-nav';
+import { MarketingFooter } from '@/components/marketing-footer';
 
 export const dynamic = 'force-dynamic';
 
 export default function LandingPage() {
   return (
     <div className="relative min-h-screen bg-background">
-      {/* ======================== HEADER (over hero) ======================== */}
-      <header className="absolute inset-x-0 top-0 z-50">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 sm:px-8">
-          <Link href="/" className="flex items-center gap-2 text-white">
-            <Plane className="size-5" />
-            <span className="text-base font-bold tracking-tight">TripWatch</span>
-            <span className="ms-1 rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white backdrop-blur">Beta</span>
-          </Link>
-          <Link href="/login">
-            <Button variant="accent" size="sm" className="h-9 gap-1.5 shadow-glow-orange">
-              התחל בחינם
-              <ArrowLeft className="size-3.5" />
-            </Button>
-          </Link>
-        </div>
-      </header>
+      <MarketingNav />
 
       {/* ======================== HERO (video) ======================== */}
       <VideoHero>
@@ -102,7 +89,7 @@ export default function LandingPage() {
       </section>
 
       {/* ======================== HOW IT WORKS ======================== */}
-      <section className="bg-muted/40 py-24 md:py-32">
+      <section id="how" className="bg-muted/40 py-24 md:py-32 scroll-mt-20">
         <div className="mx-auto max-w-6xl px-5 sm:px-8">
           <div className="mb-16 text-center">
             <p className="mb-4 text-sm font-bold uppercase tracking-widest text-accent">איך זה עובד</p>
@@ -125,7 +112,7 @@ export default function LandingPage() {
       </section>
 
       {/* ======================== TESTIMONIALS ======================== */}
-      <section className="py-24 md:py-32">
+      <section id="testimonials" className="py-24 md:py-32 scroll-mt-20">
         <div className="mx-auto max-w-6xl px-5 sm:px-8">
           <div className="mb-16 text-center">
             <p className="mb-4 text-sm font-bold uppercase tracking-widest text-accent">מה אומרים בבטא</p>
@@ -162,7 +149,7 @@ export default function LandingPage() {
       </section>
 
       {/* ======================== PRICING ======================== */}
-      <section className="bg-gradient-to-b from-muted/40 to-transparent py-24 md:py-32">
+      <section id="pricing" className="bg-gradient-to-b from-muted/40 to-transparent py-24 md:py-32 scroll-mt-20">
         <div className="mx-auto max-w-5xl px-5 sm:px-8">
           <div className="mb-16 text-center">
             <p className="mb-4 text-sm font-bold uppercase tracking-widest text-accent">תמחור</p>
@@ -228,7 +215,7 @@ export default function LandingPage() {
       </section>
 
       {/* ======================== FAQ ======================== */}
-      <section className="py-24 md:py-32">
+      <section id="faq" className="py-24 md:py-32 scroll-mt-20">
         <div className="mx-auto max-w-3xl px-5 sm:px-8">
           <div className="mb-16 text-center">
             <p className="mb-4 text-sm font-bold uppercase tracking-widest text-accent">שאלות נפוצות</p>
@@ -282,18 +269,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <footer className="border-t border-border/40 bg-muted/30">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-5 py-10 text-xs text-muted-foreground sm:flex-row sm:px-8">
-          <div className="flex items-center gap-2">
-            <Plane className="size-4" />
-            <span>TripWatch · בנוי באהבה בישראל</span>
-          </div>
-          <div className="flex gap-5">
-            <Link href="/privacy" className="hover:text-foreground">פרטיות</Link>
-            <Link href="/terms" className="hover:text-foreground">תנאי שימוש</Link>
-          </div>
-        </div>
-      </footer>
+      <MarketingFooter />
     </div>
   );
 }
