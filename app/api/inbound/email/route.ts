@@ -15,7 +15,6 @@
  */
 
 import { NextResponse } from 'next/server';
-import { Resend } from 'resend';
 import { createAdminClient } from '@/lib/supabase/server';
 import { nas, type ExtractedBooking } from '@/lib/nas-client';
 import {
@@ -382,8 +381,9 @@ function extractEmailFields(payload: unknown): EmailFields | null {
 
 /**
  * Resend Inbound webhooks include only metadata — the email body (text + html)
- * has to be fetched separately via the Resend API. Returns merged text/html
- * or nulls if the fetch fails (caller will surface a bounce).
+ * has to be fetched separately via GET /emails/received/{id}. The Resend SDK
+ * doesn't expose this endpoint yet (their .emails.get() hits /emails/{id},
+ * which is outbound-only), so we call the REST API directly.
  */
 async function fetchEmailBody(emailId: string): Promise<{ text: string | null; html: string | null } | null> {
   const apiKey = process.env.RESEND_API_KEY;
@@ -391,13 +391,22 @@ async function fetchEmailBody(emailId: string): Promise<{ text: string | null; h
     console.warn('[inbound] RESEND_API_KEY not set — cannot fetch email body');
     return null;
   }
-  const resend = new Resend(apiKey);
-  const { data, error } = await resend.emails.get(emailId);
-  if (error || !data) {
-    console.warn('[inbound] resend.emails.get failed', error?.message);
+  try {
+    const res = await fetch(`https://api.resend.com/emails/received/${emailId}`, {
+      headers: { Authorization: `Bearer ${apiKey}` },
+      signal: AbortSignal.timeout(15_000),
+    });
+    if (!res.ok) {
+      const body = await res.text().catch(() => '');
+      console.warn(`[inbound] resend received fetch ${res.status}: ${body.slice(0, 300)}`);
+      return null;
+    }
+    const data = await res.json() as { text?: string | null; html?: string | null };
+    return { text: data.text ?? null, html: data.html ?? null };
+  } catch (err) {
+    console.warn('[inbound] resend received fetch threw', err);
     return null;
   }
-  return { text: data.text ?? null, html: data.html ?? null };
 }
 
 function pickString(v: unknown): string | null {
