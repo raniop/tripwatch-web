@@ -15,11 +15,29 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: 'TripWatch — מעקב מחירים אוטומטי על המלון שכבר הזמנת',
+  metadataBase: new URL('https://tripwatch.net'),
+  title: {
+    default: 'TripWatch — הזמנת חופשה? נחזיר לך כסף.',
+    template: '%s · TripWatch',
+  },
   description:
-    'שלח צילום של ההזמנה שלך ב-Booking, ואנחנו נעקוב אחרי המחיר ונשלח לך התראה כשיש ירידה. חינם.',
+    'עוקבים אחרי המחיר של ההזמנה שלך ב-Booking, כל יום. ברגע שהוא יורד — אתה הראשון לדעת. חינם.',
   manifest: '/manifest.json',
   appleWebApp: { capable: true, title: 'TripWatch', statusBarStyle: 'default' },
+  openGraph: {
+    type: 'website',
+    locale: 'he_IL',
+    url: 'https://tripwatch.net',
+    siteName: 'TripWatch',
+    title: 'TripWatch — הזמנת חופשה? נחזיר לך כסף.',
+    description:
+      'עוקבים אחרי המחיר של ההזמנה שלך ב-Booking, כל יום. ברגע שהוא יורד — אתה הראשון לדעת.',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'TripWatch — הזמנת חופשה? נחזיר לך כסף.',
+    description: 'עוקבים אחרי המחיר של ההזמנה ב-Booking. ירד — אתה הראשון לדעת. חינם.',
+  },
 };
 
 export const viewport: Viewport = {
