@@ -4,24 +4,21 @@
 
 @layer base {
   :root {
-    /* SaaS palette (per ui-ux-pro-max design intelligence) */
-    --background: 210 40% 98%;        /* #F8FAFC */
-    --foreground: 222 47% 11%;        /* #1E293B */
+    --background: 30 40% 98%;          /* warm off-white */
+    --foreground: 222 47% 11%;
     --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;
-    --primary: 217 91% 60%;           /* #2563EB - trust blue */
+    --primary: 217 91% 60%;            /* trust blue */
     --primary-foreground: 0 0% 100%;
-    --accent: 20 96% 48%;             /* #EA580C - CTA orange (WCAG AA) */
+    --accent: 22 100% 50%;             /* #FF7A00 — vacation orange */
     --accent-foreground: 0 0% 100%;
-    --muted: 213 41% 95%;             /* #E9EFF8 */
-    --muted-foreground: 215 16% 47%;  /* #64748B */
-    --border: 213 27% 90%;            /* #E2E8F0 */
-    --destructive: 0 73% 50%;         /* #DC2626 */
+    --accent-warm: 32 100% 55%;        /* sunset */
+    --muted: 30 30% 96%;
+    --muted-foreground: 215 16% 47%;
+    --border: 30 25% 90%;
+    --destructive: 0 73% 50%;
     --success: 142 71% 45%;
     --warning: 38 92% 50%;
-
-    --brand-from: 217 91% 60%;
-    --brand-to: 271 91% 65%;
   }
 }
 
@@ -30,65 +27,59 @@
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
-    font-feature-settings: 'rlig' 1, 'calt' 1, 'ss01' 1;
+    font-feature-settings: 'rlig' 1, 'calt' 1;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
   .tabular-nums { font-variant-numeric: tabular-nums; }
+  .font-display { font-family: var(--font-heebo), sans-serif; font-weight: 900; letter-spacing: -0.03em; }
 }
 
 @layer utilities {
-  .text-gradient {
-    background: linear-gradient(135deg, hsl(var(--brand-from)) 0%, hsl(var(--brand-to)) 100%);
+  .text-gradient-warm {
+    background: linear-gradient(135deg, hsl(22 100% 55%) 0%, hsl(45 100% 60%) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     color: transparent;
   }
-  .bg-grid {
-    background-image:
-      linear-gradient(to right, hsl(var(--border) / 0.4) 1px, transparent 1px),
-      linear-gradient(to bottom, hsl(var(--border) / 0.4) 1px, transparent 1px);
-    background-size: 64px 64px;
+  .text-gradient-cool {
+    background: linear-gradient(135deg, hsl(217 91% 60%) 0%, hsl(280 80% 65%) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: transparent;
   }
-  .bg-mesh {
-    background:
-      radial-gradient(ellipse 60% 50% at 20% 0%, hsl(var(--brand-from) / 0.12), transparent 60%),
-      radial-gradient(ellipse 60% 50% at 80% 0%, hsl(var(--brand-to) / 0.10), transparent 60%),
-      radial-gradient(ellipse 40% 40% at 50% 100%, hsl(var(--accent) / 0.06), transparent 60%);
-  }
-  .mask-fade-bottom {
-    mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
-    -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
-  }
-  /* Glassmorphism — per ui-ux-pro-max rules: backdrop-blur 15px, rgba .15, 1px border light */
   .glass {
-    background: rgba(255, 255, 255, 0.65);
+    background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(16px) saturate(180%);
     -webkit-backdrop-filter: blur(16px) saturate(180%);
     border: 1px solid rgba(255, 255, 255, 0.6);
   }
   .glass-dark {
-    background: rgba(17, 24, 39, 0.7);
-    backdrop-filter: blur(16px) saturate(180%);
-    -webkit-backdrop-filter: blur(16px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
   }
-  .shadow-glow {
-    box-shadow: 0 20px 60px -10px hsl(var(--primary) / 0.35);
+  .shadow-glow-orange {
+    box-shadow: 0 10px 40px -8px hsl(22 100% 50% / 0.55), 0 0 0 1px hsl(22 100% 50% / 0.1);
   }
-  .shadow-glow-accent {
-    box-shadow: 0 20px 60px -10px hsl(var(--accent) / 0.45);
+  .shadow-glow-blue {
+    box-shadow: 0 10px 40px -8px hsl(217 91% 60% / 0.45);
+  }
+  /* Decorative pattern */
+  .bg-dots {
+    background-image: radial-gradient(circle, hsl(var(--border)) 1px, transparent 1px);
+    background-size: 24px 24px;
   }
 }
 
-@keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
-@keyframes pulse-soft { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
-@keyframes slide-up { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes price-drop { 0% { transform: translateY(-10px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
-@keyframes shimmer { 0% { background-position: -1000px 0; } 100% { background-position: 1000px 0; } }
+@keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+@keyframes fade-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+@keyframes pulse-ring { 0% { transform: scale(1); opacity: 0.7; } 100% { transform: scale(1.5); opacity: 0; } }
 
-.animate-float { animation: float 4s ease-in-out infinite; }
-.animate-pulse-soft { animation: pulse-soft 2s ease-in-out infinite; }
-.animate-slide-up { animation: slide-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
-.animate-price-drop { animation: price-drop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.animate-float { animation: float 5s ease-in-out infinite; }
+.animate-fade-up { animation: fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-pulse-ring { animation: pulse-ring 2s ease-out infinite; }

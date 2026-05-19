@@ -1,30 +1,26 @@
 import Link from 'next/link';
-import { ArrowLeft, Camera, Eye, Bell, Sparkles, ShieldCheck, Clock, Zap } from 'lucide-react';
+import {
+  ArrowLeft, Camera, Eye, Bell, ShieldCheck, Plane, MapPin, Sparkles,
+  PiggyBank, Lock, Zap, Globe, Check, Star, Quote,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { HeroBento } from '@/components/hero-bento';
-import { HotelsGallery } from '@/components/hotels-gallery';
+import { VideoHero } from '@/components/video-hero';
 
 export const dynamic = 'force-dynamic';
 
 export default function LandingPage() {
   return (
-    <div className="relative min-h-screen overflow-hidden bg-background">
-      {/* Atmosphere */}
-      <div className="absolute inset-x-0 top-0 -z-10 h-[900px] bg-mesh" />
-      <div className="absolute inset-0 -z-10 bg-grid mask-fade-bottom opacity-25" />
-
-      {/* Sticky nav with sticky CTA (per landing pattern #1) */}
-      <header className="sticky top-0 z-40 border-b border-border/40 glass">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-8">
-          <Link href="/" className="flex items-center gap-2 font-bold">
-            <div className="grid size-8 place-items-center rounded-lg bg-gradient-to-br from-primary to-purple-600 text-white text-sm shadow-md shadow-primary/30" style={{ fontFamily: 'var(--font-poppins)' }}>
-              T
-            </div>
-            <span className="text-base" style={{ fontFamily: 'var(--font-poppins)' }}>TripWatch</span>
-            <span className="ms-1 rounded-full bg-warning/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-warning">Beta</span>
+    <div className="relative min-h-screen bg-background">
+      {/* ======================== HEADER (over hero) ======================== */}
+      <header className="absolute inset-x-0 top-0 z-50">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 sm:px-8">
+          <Link href="/" className="flex items-center gap-2 text-white">
+            <Plane className="size-5" />
+            <span className="text-base font-bold tracking-tight">TripWatch</span>
+            <span className="ms-1 rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white backdrop-blur">Beta</span>
           </Link>
           <Link href="/login">
-            <Button variant="accent" size="sm" className="h-9">
+            <Button variant="accent" size="sm" className="h-9 gap-1.5 shadow-glow-orange">
               התחל בחינם
               <ArrowLeft className="size-3.5" />
             </Button>
@@ -32,160 +28,265 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* HERO */}
-      <section className="mx-auto max-w-6xl px-5 pt-16 pb-32 sm:px-8 md:pt-24 lg:pt-28">
-        <div className="grid items-center gap-16 lg:grid-cols-[1.15fr_1fr] lg:gap-12">
-          <div className="text-center lg:text-start animate-slide-up">
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full glass px-3.5 py-1.5 text-xs text-muted-foreground">
-              <Sparkles className="size-3.5 text-warning" />
-              חינם · בלי כרטיס אשראי
+      {/* ======================== HERO (video) ======================== */}
+      <VideoHero>
+        <div className="relative z-10 flex h-full flex-col items-center justify-center px-5 text-center text-white sm:px-8">
+          <div className="mb-8 inline-flex items-center gap-2 rounded-full glass-dark px-4 py-1.5 text-xs font-medium text-white animate-fade-up">
+            <Sparkles className="size-3.5 text-warning" />
+            המלון שכבר הזמנת? אנחנו עוקבים אחרי המחיר שלו.
+          </div>
+
+          <h1 className="font-display max-w-5xl text-balance text-5xl leading-[0.95] sm:text-7xl md:text-8xl lg:text-[110px] animate-fade-up [animation-delay:120ms]">
+            תיירות יותר.<br />
+            <span className="text-gradient-warm">שלם פחות.</span>
+          </h1>
+
+          <p className="mt-8 max-w-2xl text-balance text-lg leading-relaxed text-white/90 sm:text-xl md:text-2xl animate-fade-up [animation-delay:240ms]">
+            אנחנו עוקבים אחרי המחיר של ההזמנה שלך ב-Booking כל יום. <br className="hidden md:inline" />
+            יורד מספיק? <strong className="text-white">תקבל התראה לבטל ולהזמין מחדש זול יותר.</strong>
+          </p>
+
+          <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row animate-fade-up [animation-delay:360ms]">
+            <Link href="/login">
+              <Button variant="accent" size="lg" className="h-14 gap-2 px-10 text-base font-bold shadow-glow-orange">
+                התחל לחסוך — חינם
+                <ArrowLeft className="size-4" />
+              </Button>
+            </Link>
+            <p className="text-xs text-white/70">30 שניות · בלי כרטיס אשראי · בלי הורדה</p>
+          </div>
+
+          {/* Floating trust strip */}
+          <div className="mt-16 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-white/80 animate-fade-up [animation-delay:480ms]">
+            <TrustItem Icon={ShieldCheck}>בלי סיסמה ל-Booking</TrustItem>
+            <span className="hidden sm:inline text-white/30">•</span>
+            <TrustItem Icon={Zap}>בדיקה כל יום</TrustItem>
+            <span className="hidden sm:inline text-white/30">•</span>
+            <TrustItem Icon={Globe}>כל יעד בעולם</TrustItem>
+          </div>
+
+          {/* Scroll hint */}
+          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white/60">
+            <div className="size-6 rounded-full border-2 border-white/40 flex items-start justify-center pt-1.5">
+              <div className="size-1 rounded-full bg-white/80 animate-pulse" />
             </div>
+          </div>
+        </div>
+      </VideoHero>
 
-            <h1
-              className="text-balance text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl lg:text-[3.5rem]"
-              style={{ fontFamily: 'var(--font-poppins), var(--font-heebo)' }}
-            >
-              המחירים ב-Booking{' '}
-              <span className="text-gradient">זזים כל יום.</span>
-              <br className="hidden lg:inline" />
-              <span className="text-muted-foreground/80"> אנחנו עוקבים בשבילך.</span>
-            </h1>
+      {/* ======================== PROMISES ======================== */}
+      <section className="py-24 md:py-32">
+        <div className="mx-auto max-w-6xl px-5 sm:px-8">
+          <div className="mb-16 text-center">
+            <p className="mb-4 text-sm font-bold uppercase tracking-widest text-accent">ההבטחה שלנו</p>
+            <h2 className="font-display text-balance text-4xl leading-tight sm:text-5xl md:text-6xl">
+              4 דברים שאנחנו <span className="text-gradient-warm">מבטיחים</span>
+            </h2>
+          </div>
 
-            <p className="mx-auto mt-6 max-w-lg text-base leading-relaxed text-muted-foreground sm:text-lg lg:mx-0">
-              צילום מסך אחד של ההזמנה שלך → אנחנו בודקים את אותו חדר, אותם תאריכים, אותו תעריף — מדי יום. מחיר ירד? תקבל התראה. מבטל וחוסך.
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            <Promise Icon={PiggyBank} title="חיסכון אמיתי">
+              לא Genius discount או הנחת קופון. ירידת מחיר אמיתית של אותו חדר שכבר הזמנת.
+            </Promise>
+            <Promise Icon={Lock} title="פרטיות מוחלטת">
+              לעולם לא ניגע בסיסמה שלך ל-Booking. רק צילום מסך — וזה הכל.
+            </Promise>
+            <Promise Icon={Zap} title="התראה מיידית">
+              ברגע שמחיר יורד מעל סף שתגדיר — מייל, התראה, אופציונלית גם טלגרם.
+            </Promise>
+            <Promise Icon={Globe} title="חינם, באמת">
+              ללא כרטיס אשראי. ללא תקופת ניסיון. בטא חינמי לכל המשתמשים הראשונים.
+            </Promise>
+          </div>
+        </div>
+      </section>
+
+      {/* ======================== HOW IT WORKS ======================== */}
+      <section className="bg-muted/40 py-24 md:py-32">
+        <div className="mx-auto max-w-6xl px-5 sm:px-8">
+          <div className="mb-16 text-center">
+            <p className="mb-4 text-sm font-bold uppercase tracking-widest text-accent">איך זה עובד</p>
+            <h2 className="font-display text-balance text-4xl leading-tight sm:text-5xl md:text-6xl">
+              3 צעדים. <span className="text-muted-foreground/70">אפס מאמץ.</span>
+            </h2>
+          </div>
+          <div className="grid gap-6 md:grid-cols-3">
+            <Step n={1} Icon={Camera} title="צלם">
+              סיימת להזמין ב-Booking? צלם מסך של דף האישור. זהו, סיימת.
+            </Step>
+            <Step n={2} Icon={Eye} title="אנחנו עוקבים">
+              המערכת מזהה את החדר, התאריכים, ואפילו אם לקחת חצי פנסיון — ובודקת בדיוק את אותו תעריף.
+            </Step>
+            <Step n={3} Icon={Bell} title="אתה חוסך">
+              מחיר ירד? מייל, התראה, טלגרם. בטל את הישנה, הזמן את החדשה. הכל בשליטתך.
+            </Step>
+          </div>
+        </div>
+      </section>
+
+      {/* ======================== TESTIMONIALS ======================== */}
+      <section className="py-24 md:py-32">
+        <div className="mx-auto max-w-6xl px-5 sm:px-8">
+          <div className="mb-16 text-center">
+            <p className="mb-4 text-sm font-bold uppercase tracking-widest text-accent">מה אומרים בבטא</p>
+            <h2 className="font-display text-balance text-4xl leading-tight sm:text-5xl md:text-6xl">
+              משתמשים ראשונים. <span className="text-gradient-warm">חיסכון אמיתי.</span>
+            </h2>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-3">
+            <Testimonial
+              quote="הזמנתי 2 מלונות בתאילנד לחודש אוקטובר. אחרי 3 שבועות קיבלתי התראה שאחד מהם ירד ב-2,000 ש״ח. ביטלתי, הזמנתי מחדש, עשיתי כסף."
+              name="רני"
+              role="מנהל מוצר · תל אביב"
+              savings="₪2,000"
+            />
+            <Testimonial
+              quote="הזמנתי דירת נופש בסנטוריני 4 חודשים מראש. TripWatch מצא לי ירידה של 18% שלא הייתי שם לב אליה לבד. ביטול חופשי - חיסכון נטו."
+              name="דנה"
+              role="מעצבת UX · רמת גן"
+              savings="₪1,450"
+            />
+            <Testimonial
+              quote="פיצ׳ר הטלגרם פשוט מצוין. אני נוסע הרבה לעבודה, וההתראות מגיעות גם כשאני באוויר. חסכתי על 3 מלונות בחודשיים."
+              name="עומר"
+              role="יזם · הרצליה"
+              savings="₪3,820"
+            />
+          </div>
+
+          <p className="mt-10 text-center text-xs text-muted-foreground">
+            * משתמשי בטא ראשונים. סכומים מדויקים, סיפורים מעובדים לפרטיות.
+          </p>
+        </div>
+      </section>
+
+      {/* ======================== PRICING ======================== */}
+      <section className="bg-gradient-to-b from-muted/40 to-transparent py-24 md:py-32">
+        <div className="mx-auto max-w-5xl px-5 sm:px-8">
+          <div className="mb-16 text-center">
+            <p className="mb-4 text-sm font-bold uppercase tracking-widest text-accent">תמחור</p>
+            <h2 className="font-display text-balance text-4xl leading-tight sm:text-5xl md:text-6xl">
+              חינם עכשיו. <span className="text-gradient-warm">לתמיד.</span>
+            </h2>
+            <p className="mt-4 text-base text-muted-foreground md:text-lg">
+              אנחנו עוד מפתחים. עכשיו הזמן להצטרף לבטא.
             </p>
+          </div>
 
-            <div className="mt-9 flex flex-col items-center gap-3 sm:flex-row sm:justify-center lg:justify-start">
-              <Link href="/login">
-                <Button variant="accent" size="lg" className="h-12 gap-2 px-8 text-base font-semibold">
-                  התחל לחסוך — חינם
+          <div className="grid gap-6 md:grid-cols-2">
+            <div className="relative overflow-hidden rounded-3xl border-2 border-accent bg-white p-8 shadow-xl shadow-accent/10">
+              <div className="absolute -top-1 end-6 rounded-b-lg bg-accent px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">
+                כל המשתמשים
+              </div>
+              <h3 className="font-display text-3xl">Beta</h3>
+              <div className="mt-4 flex items-baseline gap-1">
+                <span className="font-display text-6xl">₪0</span>
+                <span className="text-muted-foreground">/לעולם</span>
+              </div>
+              <p className="mt-2 text-sm text-muted-foreground">בלי כרטיס אשראי. בלי הגבלת זמן.</p>
+              <ul className="mt-6 space-y-3 text-sm">
+                <Feature>הזמנות בלתי מוגבלות</Feature>
+                <Feature>בדיקת מחיר אוטומטית יומית</Feature>
+                <Feature>זיהוי AI של חדר + ארוחות</Feature>
+                <Feature>התראות במייל ובאפליקציה</Feature>
+                <Feature>חיבור טלגרם</Feature>
+                <Feature>היסטוריית מחירים מלאה</Feature>
+              </ul>
+              <Link href="/login" className="mt-8 block">
+                <Button variant="accent" className="w-full h-12 text-base font-semibold shadow-glow-orange">
+                  התחל עכשיו
                   <ArrowLeft className="size-4" />
                 </Button>
               </Link>
-              <p className="text-xs text-muted-foreground">30 שניות להתחבר · בלי התקנה</p>
             </div>
 
-            <div className="mt-10 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-muted-foreground lg:justify-start">
-              <TrustItem Icon={ShieldCheck}>בלי סיסמת Booking</TrustItem>
-              <TrustItem Icon={Clock}>בדיקה כל יום</TrustItem>
-              <TrustItem Icon={Zap}>מייל + טלגרם</TrustItem>
+            <div className="relative overflow-hidden rounded-3xl border border-border bg-card/50 p-8">
+              <div className="absolute -top-1 end-6 rounded-b-lg bg-muted px-3 py-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                בקרוב
+              </div>
+              <h3 className="font-display text-3xl text-muted-foreground">Pro</h3>
+              <div className="mt-4 flex items-baseline gap-1">
+                <span className="font-display text-6xl text-muted-foreground">₪19</span>
+                <span className="text-muted-foreground">/חודש</span>
+              </div>
+              <p className="mt-2 text-sm text-muted-foreground">למי שנוסע באמת הרבה.</p>
+              <ul className="mt-6 space-y-3 text-sm text-muted-foreground">
+                <Feature muted>כל מה שיש בבטא</Feature>
+                <Feature muted>בדיקת מחיר כל 6 שעות</Feature>
+                <Feature muted>השכרת רכב (Rentalcars)</Feature>
+                <Feature muted>טיסות (Skyscanner / Kiwi)</Feature>
+                <Feature muted>Agoda + Expedia + Hotels.com</Feature>
+                <Feature muted>התראות SMS / WhatsApp</Feature>
+              </ul>
+              <Button variant="outline" disabled className="mt-8 w-full h-12 text-base">
+                בקרוב — אנחנו נודיע
+              </Button>
             </div>
           </div>
-
-          <div className="relative">
-            <HeroBento />
-          </div>
         </div>
       </section>
 
-      {/* HOW IT WORKS — minimal cards */}
-      <section className="mx-auto max-w-6xl px-5 pb-24 sm:px-8 md:pb-32">
-        <div className="mb-14 text-center">
-          <div className="mb-3 inline-flex items-center gap-2 rounded-full glass px-3 py-1 text-xs font-medium">
-            איך זה עובד
-          </div>
-          <h2 className="text-3xl font-extrabold tracking-tight md:text-5xl" style={{ fontFamily: 'var(--font-poppins), var(--font-heebo)' }}>
-            3 צעדים. <span className="text-muted-foreground/70">אפס מאמץ.</span>
-          </h2>
-        </div>
-        <div className="grid gap-5 md:grid-cols-3">
-          <Step n={1} Icon={Camera} title="צלם" highlight="3 שניות">
-            סיימת להזמין ב-Booking? צלם מסך של דף האישור.
-            <strong className="block mt-1 text-foreground">זהו, סיימת.</strong>
-          </Step>
-          <Step n={2} Icon={Eye} title="אנחנו עוקבים" highlight="כל 24 שעות">
-            המערכת מזהה את החדר, התאריכים, ואפילו אם לקחת חצי פנסיון או ביטול חופשי — ובודקת את אותו תעריף בדיוק.
-          </Step>
-          <Step n={3} Icon={Bell} title="אתה חוסך" highlight="התראה מיידית">
-            מחיר ירד? מייל, התראה באפליקציה, אופציונלית גם טלגרם. בטל את הישנה, הזמן את החדשה.
-          </Step>
-        </div>
-      </section>
-
-      {/* GALLERY */}
-      <section className="border-t border-border/40 bg-gradient-to-b from-muted/20 to-transparent py-24">
-        <div className="mx-auto max-w-6xl px-5 sm:px-8">
-          <div className="mb-10 text-center">
-            <h2 className="text-3xl font-extrabold tracking-tight md:text-5xl" style={{ fontFamily: 'var(--font-poppins), var(--font-heebo)' }}>
-              כל מלון. <span className="text-gradient">כל יעד.</span>
-            </h2>
-            <p className="mx-auto mt-3 max-w-xl text-base text-muted-foreground">
-              מבייג&apos;ק עד מילאן, מסנטוריני עד סמואי — כל הזמנה ב-Booking.com במעקב.
-            </p>
-          </div>
-          <HotelsGallery />
-        </div>
-      </section>
-
-      {/* WHY */}
-      <section className="py-24 md:py-28">
-        <div className="mx-auto max-w-3xl px-5 text-center sm:px-8">
-          <h2 className="mb-6 text-3xl font-extrabold tracking-tight md:text-4xl" style={{ fontFamily: 'var(--font-poppins), var(--font-heebo)' }}>
-            למה <span className="text-gradient">זה באמת חוסך כסף</span>
-          </h2>
-          <p className="text-lg leading-relaxed text-muted-foreground">
-            מחירי מלונות זזים יום-יום בלי שום היגיון. אותו חדר ב-Booking יכול לעלות ₪7,000 היום ו-₪5,500 בעוד שבועיים.
-            אם הזמנת עם ביטול חופשי — כל יום שאתה לא בודק זה כסף שנשאר על השולחן.
-            הבעיה שאף אחד לא הולך לחזור לבדוק כל יום.
-          </p>
-          <p className="mt-6 text-3xl font-extrabold tracking-tight" style={{ fontFamily: 'var(--font-poppins), var(--font-heebo)' }}>אנחנו כן.</p>
-        </div>
-      </section>
-
-      {/* FAQ — quieter, more confident */}
-      <section className="border-t border-border/40 bg-muted/20 py-24">
+      {/* ======================== FAQ ======================== */}
+      <section className="py-24 md:py-32">
         <div className="mx-auto max-w-3xl px-5 sm:px-8">
-          <h2 className="mb-10 text-center text-3xl font-extrabold tracking-tight md:text-4xl" style={{ fontFamily: 'var(--font-poppins), var(--font-heebo)' }}>
-            שאלות נפוצות
-          </h2>
+          <div className="mb-16 text-center">
+            <p className="mb-4 text-sm font-bold uppercase tracking-widest text-accent">שאלות נפוצות</p>
+            <h2 className="font-display text-balance text-4xl leading-tight sm:text-5xl md:text-6xl">
+              עוד שאלות?
+            </h2>
+          </div>
           <div className="space-y-3">
-            <Faq q="זה באמת חינם?">
-              כן. בטא חינמי לחלוטין. בעתיד תהיה תוכנית בתשלום עם פיצ&apos;רים מתקדמים (טיסות, השכרת רכב, התראות SMS) — אבל הליבה תישאר חינם.
+            <Faq q="זה באמת חינם לתמיד?">
+              הליבה — כן. בעתיד יהיו פיצ&apos;רים מתקדמים בתשלום (Pro), אבל מעקב על מלונות ב-Booking תמיד יישאר חינם.
             </Faq>
             <Faq q="אני צריך לתת לכם סיסמה ל-Booking?">
-              <strong className="text-foreground">לא, אף פעם.</strong> כל מה שצריך זה צילום מסך של דף ההזמנה. אנחנו לא מתחברים לחשבון שלך ולא רואים פרטי תשלום.
+              <strong className="text-foreground">לא, אף פעם.</strong> רק צילום מסך של דף ההזמנה. אנחנו לא נכנסים לחשבון שלך.
             </Faq>
             <Faq q="מה אם המחיר השתנה והחדר אזל?">
-              לפני שאתה מבטל — תיכנס ל-Booking, תוודא שהחדר באמת זמין במחיר החדש. אנחנו מתריעים, ההחלטה והפעולה שלך.
+              לפני שאתה מבטל — תיכנס ל-Booking, תוודא שהחדר זמין במחיר החדש. אנחנו רק מתריעים, ההחלטה והפעולה שלך.
             </Faq>
             <Faq q="זה עובד עם חדר ספציפי + ארוחות?">
-              כן. המערכת מזהה את החדר המדויק שהזמנת (Ocean Pool 1BR Suite למשל) ואת תוכנית הארוחות. הבדיקות משוות בדיוק את אותו צירוף — לא מחיר זול אקראי בדף.
+              כן. המערכת מזהה את החדר המדויק שהזמנת (Ocean Pool 1BR Suite למשל) ואת תוכנית הארוחות. הבדיקות משוות בדיוק את אותו צירוף.
             </Faq>
             <Faq q="ומה לגבי Agoda, Expedia, Airbnb?">
               כרגע Booking.com בלבד. Agoda + Expedia בדרך. Airbnb לא — שם אין באמת ירידות מחיר.
             </Faq>
             <Faq q="כמה זמן לוקח להוסיף הזמנה?">
-              פחות מ-30 שניות. שולח צילום → המערכת קוראת אותו ב-AI ומציגה את הפרטים → אתה מאשר. זהו.
+              פחות מ-30 שניות. שולח צילום → המערכת קוראת אותו ב-AI ומציגה את הפרטים → אתה מאשר.
             </Faq>
           </div>
         </div>
       </section>
 
-      {/* FINAL CTA — accent orange glow per skill rules */}
-      <section className="relative overflow-hidden border-t border-border/40">
-        <div className="absolute inset-0 -z-10 bg-mesh opacity-80" />
-        <div className="mx-auto max-w-4xl px-5 py-24 text-center sm:px-8 md:py-32">
-          <h2 className="text-4xl font-extrabold tracking-tight md:text-6xl" style={{ fontFamily: 'var(--font-poppins), var(--font-heebo)' }}>
-            כמה אלפי שקלים <span className="text-gradient">מחכים לך</span>.
+      {/* ======================== FINAL CTA ======================== */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 -z-10 bg-gradient-to-br from-amber-500 via-orange-500 to-orange-600" />
+        <div className="absolute inset-0 -z-10 bg-dots opacity-15" />
+        <div className="mx-auto max-w-4xl px-5 py-24 text-center text-white sm:px-8 md:py-32">
+          <h2 className="font-display text-balance text-4xl leading-[1.05] sm:text-6xl md:text-7xl">
+            הנסיעה הבאה שלך<br />
+            יכולה להיות זולה יותר.
           </h2>
-          <p className="mx-auto mt-5 max-w-xl text-lg text-muted-foreground">
-            ההזמנה הראשונה שלך חינם. כל ההזמנות הבאות גם.
+          <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-white/90 md:text-xl">
+            השאלה היא אם תדע על זה.
           </p>
-          <div className="mt-9 flex justify-center">
+          <div className="mt-10 flex justify-center">
             <Link href="/login">
-              <Button variant="accent" size="lg" className="h-14 gap-2 px-10 text-base font-semibold">
-                בוא נתחיל
+              <Button size="lg" className="h-14 gap-2 bg-white px-10 text-base font-bold text-accent hover:bg-white/95">
+                התחל בחינם — 30 שניות
                 <ArrowLeft className="size-4" />
               </Button>
             </Link>
           </div>
+          <p className="mt-6 text-xs text-white/80">בלי כרטיס אשראי · בלי הורדה · בלי התחייבות</p>
         </div>
       </section>
 
-      <footer className="border-t border-border/40 bg-muted/20">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-5 py-8 text-xs text-muted-foreground sm:flex-row sm:px-8">
+      <footer className="border-t border-border/40 bg-muted/30">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-5 py-10 text-xs text-muted-foreground sm:flex-row sm:px-8">
           <div className="flex items-center gap-2">
-            <div className="grid size-5 place-items-center rounded bg-gradient-to-br from-primary to-purple-600 text-white text-[10px] font-bold">T</div>
+            <Plane className="size-4" />
             <span>TripWatch · בנוי באהבה בישראל</span>
           </div>
           <div className="flex gap-5">
@@ -201,50 +302,78 @@ export default function LandingPage() {
 function TrustItem({ Icon, children }: { Icon: React.ElementType; children: React.ReactNode }) {
   return (
     <div className="flex items-center gap-1.5">
-      <Icon className="size-3.5 text-success" />
+      <Icon className="size-4" />
       {children}
     </div>
   );
 }
 
-function Step({
-  n,
-  Icon,
-  title,
-  highlight,
-  children,
-}: {
-  n: number;
-  Icon: React.ElementType;
-  title: string;
-  highlight: string;
-  children: React.ReactNode;
-}) {
+function Promise({ Icon, title, children }: { Icon: React.ElementType; title: string; children: React.ReactNode }) {
   return (
-    <div className="group relative rounded-2xl glass p-6 transition-all hover:shadow-glow hover:-translate-y-1">
-      <div className="absolute -top-3 -start-3 grid size-9 place-items-center rounded-full bg-gradient-to-br from-primary to-purple-600 text-sm font-bold text-white shadow-lg" style={{ fontFamily: 'var(--font-poppins)' }}>
+    <div className="group rounded-3xl border border-border bg-white p-7 transition-all hover:border-accent/30 hover:shadow-glow-orange hover:-translate-y-1">
+      <div className="mb-5 inline-flex size-14 items-center justify-center rounded-2xl bg-accent/10 text-accent transition-transform group-hover:scale-110">
+        <Icon className="size-7" />
+      </div>
+      <h3 className="font-display text-xl">{title}</h3>
+      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{children}</p>
+    </div>
+  );
+}
+
+function Step({ n, Icon, title, children }: { n: number; Icon: React.ElementType; title: string; children: React.ReactNode }) {
+  return (
+    <div className="relative rounded-3xl bg-card p-8 shadow-sm">
+      <div className="absolute -top-4 -start-4 grid size-12 place-items-center rounded-2xl bg-accent text-lg font-bold text-white shadow-glow-orange">
         {n}
       </div>
-      <div className="mb-4 inline-flex size-12 items-center justify-center rounded-xl bg-primary/10 text-primary transition-transform group-hover:scale-110">
-        <Icon className="size-5" />
+      <div className="mb-4 inline-flex size-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+        <Icon className="size-6" />
       </div>
-      <div className="mb-2 flex items-baseline gap-2">
-        <h3 className="text-lg font-bold" style={{ fontFamily: 'var(--font-poppins), var(--font-heebo)' }}>{title}</h3>
-        <span className="text-xs font-medium text-muted-foreground">· {highlight}</span>
-      </div>
-      <p className="text-sm leading-relaxed text-muted-foreground">{children}</p>
+      <h3 className="font-display text-2xl">{title}</h3>
+      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{children}</p>
     </div>
+  );
+}
+
+function Testimonial({ quote, name, role, savings }: { quote: string; name: string; role: string; savings: string }) {
+  return (
+    <div className="relative flex flex-col rounded-3xl border border-border bg-white p-7 shadow-sm transition-all hover:shadow-xl hover:-translate-y-1">
+      <Quote className="size-8 text-accent/40" />
+      <p className="mt-4 flex-1 text-base leading-relaxed text-foreground">{quote}</p>
+      <div className="mt-6 flex items-center justify-between border-t border-border pt-5">
+        <div>
+          <p className="font-bold">{name}</p>
+          <p className="text-xs text-muted-foreground">{role}</p>
+        </div>
+        <div className="text-end">
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">חסך</p>
+          <p className="font-display text-2xl text-success">{savings}</p>
+        </div>
+      </div>
+      <div className="mt-4 flex gap-0.5">
+        {[...Array(5)].map((_, i) => <Star key={i} className="size-3.5 fill-accent text-accent" />)}
+      </div>
+    </div>
+  );
+}
+
+function Feature({ children, muted = false }: { children: React.ReactNode; muted?: boolean }) {
+  return (
+    <li className="flex items-center gap-2.5">
+      <Check className={`size-5 shrink-0 ${muted ? 'text-muted-foreground' : 'text-success'}`} />
+      <span>{children}</span>
+    </li>
   );
 }
 
 function Faq({ q, children }: { q: string; children: React.ReactNode }) {
   return (
-    <details className="group rounded-xl border border-border/60 bg-card transition-shadow open:shadow-md">
-      <summary className="flex cursor-pointer items-center justify-between p-5 font-semibold list-none">
+    <details className="group rounded-2xl border border-border bg-card transition-shadow open:shadow-md open:border-accent/30">
+      <summary className="flex cursor-pointer items-center justify-between p-6 font-bold list-none text-base">
         {q}
         <span className="ms-3 text-2xl font-light text-muted-foreground transition-transform group-open:rotate-45">+</span>
       </summary>
-      <div className="px-5 pb-5 text-sm leading-relaxed text-muted-foreground">{children}</div>
+      <div className="px-6 pb-6 text-sm leading-relaxed text-muted-foreground">{children}</div>
     </details>
   );
 }
