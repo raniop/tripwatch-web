@@ -6,17 +6,17 @@ interface Props {
   children: React.ReactNode;
 }
 
-// Verified Pexels CDN URLs — both cycle in rotation
+// Verified Pexels CDN URLs (tropical vacation vibes) — cycle every 25s
 const VIDEOS = [
-  // Eiffel Tower at twilight — Paris vibe
-  'https://videos.pexels.com/video-files/31491829/13427380_2560_1440_25fps.mp4',
   // Tropical ocean waves
   'https://videos.pexels.com/video-files/1093662/1093662-hd_1280_720_30fps.mp4',
+  // Resort pool + palm trees
+  'https://videos.pexels.com/video-files/2169880/2169880-hd_1280_720_30fps.mp4',
 ];
 
 const POSTERS = [
-  'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=1920&q=80&auto=format&fit=crop',
   'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1920&q=80&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=1920&q=80&auto=format&fit=crop',
 ];
 
 const ROTATE_MS = 25_000;

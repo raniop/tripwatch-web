@@ -260,10 +260,9 @@ export default function LandingPage() {
       </section>
 
       {/* ======================== FINAL CTA ======================== */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 -z-10 bg-gradient-to-br from-amber-500 via-orange-500 to-orange-600" />
-        <div className="absolute inset-0 -z-10 bg-dots opacity-15" />
-        <div className="mx-auto max-w-4xl px-5 py-24 text-center text-white sm:px-8 md:py-32">
+      <section className="relative isolate overflow-hidden bg-gradient-to-br from-amber-500 via-orange-500 to-orange-600">
+        <div className="absolute inset-0 bg-dots opacity-15" />
+        <div className="relative mx-auto max-w-4xl px-5 py-24 text-center text-white sm:px-8 md:py-32">
           <h2 className="font-display text-balance text-4xl leading-[1.05] sm:text-6xl md:text-7xl">
             הנסיעה הבאה שלך<br />
             יכולה להיות זולה יותר.
