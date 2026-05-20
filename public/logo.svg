@@ -1,4 +1,4 @@
-<svg width="300" height="80" viewBox="0 0 300 80" xmlns="http://www.w3.org/2000/svg">
+<svg width="320" height="80" viewBox="0 0 320 80" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#FFB36B"/>
@@ -6,31 +6,23 @@
       <stop offset="100%" stop-color="#D94E00"/>
     </linearGradient>
     <radialGradient id="shine" cx="22%" cy="14%" r="55%">
-      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.4"/>
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.42"/>
       <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
     </radialGradient>
   </defs>
 
-  <!-- watch+plane icon at 0.5625× scale -->
   <g transform="translate(4 4) scale(0.5625)">
     <rect width="128" height="128" rx="28" fill="url(#bg)"/>
     <rect width="128" height="128" rx="28" fill="url(#shine)"/>
-    <circle cx="64" cy="64" r="44" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-opacity="0.95"/>
-    <g fill="#FFFFFF" fill-opacity="0.85">
-      <rect x="62" y="22" width="4" height="7" rx="1.5"/>
-      <rect x="99" y="62" width="7" height="4" rx="1.5"/>
-      <rect x="62" y="99" width="4" height="7" rx="1.5"/>
-      <rect x="22" y="62" width="7" height="4" rx="1.5"/>
-    </g>
-    <g transform="translate(64 64)">
-      <path d="M28 -22 L-26 0 L-9 6 L-3 22 L1 12 L18 18 Z" fill="rgba(0,0,0,0.18)" transform="translate(0 2)"/>
-      <path d="M28 -22 L-26 0 L-9 6 L-3 22 L1 12 L18 18 Z" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1.2" stroke-linejoin="round"/>
-      <path d="M-9 6 L28 -22" stroke="#D94E00" stroke-opacity="0.55" stroke-width="2" stroke-linecap="round" fill="none"/>
+    <path d="M114 18 L8 60 L46 76 L58 116 L74 96 L106 110 Z" fill="#000000" fill-opacity="0.18" transform="translate(0 4)"/>
+    <path d="M114 18 L8 60 L46 76 L58 116 L74 96 L106 110 Z" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1.6" stroke-linejoin="round"/>
+    <path d="M46 76 L114 18" stroke="#D94E00" stroke-opacity="0.7" stroke-width="3" stroke-linecap="round" fill="none"/>
+    <path d="M58 116 L74 96" stroke="#D94E00" stroke-opacity="0.3" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+    <g transform="translate(96 94)">
+      <circle r="14" fill="#FFFFFF"/>
+      <path d="M-5 -3 L0 4 L5 -3" stroke="#D94E00" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
     </g>
   </g>
 
-  <!-- wordmark -->
-  <g transform="translate(96 0)">
-    <text x="0" y="52" font-family="Poppins, ui-sans-serif, system-ui, -apple-system" font-weight="800" font-size="34" letter-spacing="-0.7" fill="#0F172A">TripWatch</text>
-  </g>
+  <text x="96" y="52" font-family="Poppins, ui-sans-serif, system-ui, -apple-system" font-weight="800" font-size="34" letter-spacing="-0.7" fill="#0F172A">TripWatch</text>
 </svg>

@@ -33,42 +33,63 @@ export default async function Image() {
           }}
         />
 
-        {/* Brand row */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 18, position: 'relative' }}>
-          {/* Logo mark — same orange rounded square + white paper plane as the favicon */}
+        {/* Brand row — logo mark intentionally large so it's recognizable
+            as a tiny preview thumbnail */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 24, position: 'relative' }}>
           <div
             style={{
-              width: 96,
-              height: 96,
-              background: 'rgba(255,255,255,0.18)',
-              borderRadius: 22,
+              width: 152,
+              height: 152,
+              background: 'rgba(255,255,255,0.16)',
+              borderRadius: 34,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 6px 20px rgba(0,0,0,0.18)',
+              boxShadow: '0 12px 30px rgba(0,0,0,0.18)',
             }}
           >
-            <svg width="84" height="84" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
-              {/* watch bezel */}
-              <circle cx="64" cy="64" r="44" fill="none" stroke="#FFFFFF" strokeWidth="5"/>
-              {/* hour marks at 12/3/6/9 */}
-              <rect x="62" y="22" width="4" height="7" rx="1.5" fill="#FFFFFF"/>
-              <rect x="99" y="62" width="7" height="4" rx="1.5" fill="#FFFFFF"/>
-              <rect x="62" y="99" width="4" height="7" rx="1.5" fill="#FFFFFF"/>
-              <rect x="22" y="62" width="7" height="4" rx="1.5" fill="#FFFFFF"/>
-              {/* plane inside (translated path so it's centered inside the dial) */}
-              <g transform="translate(64 64)">
-                <path d="M28 -22 L-26 0 L-9 6 L-3 22 L1 12 L18 18 Z" fill="#FFFFFF" stroke="#FFFFFF" strokeWidth="1.2" strokeLinejoin="round"/>
-                <path d="M-9 6 L28 -22" stroke="rgba(217,78,0,0.55)" strokeWidth="2" strokeLinecap="round" fill="none"/>
-              </g>
+            <svg width="132" height="132" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+              {/* shadow under the plane */}
+              <path
+                d="M114 18 L8 60 L46 76 L58 116 L74 96 L106 110 Z"
+                fill="rgba(0,0,0,0.18)"
+                transform="translate(0 4)"
+              />
+              {/* main plane body */}
+              <path
+                d="M114 18 L8 60 L46 76 L58 116 L74 96 L106 110 Z"
+                fill="#FFFFFF"
+                stroke="#FFFFFF"
+                strokeWidth="1.6"
+                strokeLinejoin="round"
+              />
+              {/* center crease (3D depth) */}
+              <path
+                d="M46 76 L114 18"
+                stroke="rgba(217,78,0,0.7)"
+                strokeWidth="3"
+                strokeLinecap="round"
+                fill="none"
+              />
+              {/* tail fold */}
+              <path
+                d="M58 116 L74 96"
+                stroke="rgba(217,78,0,0.3)"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                fill="none"
+              />
+              {/* down-arrow accent — "price dropping" */}
+              <circle cx="96" cy="94" r="14" fill="#FFFFFF"/>
+              <path d="M91 91 L96 98 L101 91" stroke="#D94E00" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
             </svg>
           </div>
           <div
             style={{
-              fontSize: 52,
+              fontSize: 72,
               fontWeight: 800,
               color: 'white',
-              letterSpacing: -1,
+              letterSpacing: -2,
               display: 'flex',
             }}
           >
@@ -77,14 +98,15 @@ export default async function Image() {
           <div
             style={{
               marginInlineStart: 8,
-              padding: '6px 14px',
+              padding: '8px 16px',
               background: 'rgba(255,255,255,0.22)',
               color: 'white',
               borderRadius: 999,
-              fontSize: 20,
+              fontSize: 24,
               fontWeight: 700,
               letterSpacing: 2,
               display: 'flex',
+              alignSelf: 'center',
             }}
           >
             BETA

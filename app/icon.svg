@@ -6,7 +6,7 @@
       <stop offset="100%" stop-color="#D94E00"/>
     </linearGradient>
     <radialGradient id="shine" cx="22%" cy="14%" r="55%">
-      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.4"/>
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.42"/>
       <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
     </radialGradient>
   </defs>
@@ -15,35 +15,39 @@
   <rect width="128" height="128" rx="28" fill="url(#bg)"/>
   <rect width="128" height="128" rx="28" fill="url(#shine)"/>
 
-  <!-- the icon is a watch face — outer bezel (white ring) -->
-  <circle cx="64" cy="64" r="44" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-opacity="0.95"/>
+  <!-- a single, large, confident paper plane that fills the icon -->
+  <!-- shadow under the plane -->
+  <path d="M114 18 L8 60 L46 76 L58 116 L74 96 L106 110 Z"
+        fill="#000000"
+        fill-opacity="0.18"
+        transform="translate(0 4)"/>
 
-  <!-- watch hour marks at 12 / 3 / 6 / 9 -->
-  <g fill="#FFFFFF" fill-opacity="0.85">
-    <rect x="62" y="22" width="4" height="7" rx="1.5"/>
-    <rect x="99" y="62" width="7" height="4" rx="1.5"/>
-    <rect x="62" y="99" width="4" height="7" rx="1.5"/>
-    <rect x="22" y="62" width="7" height="4" rx="1.5"/>
-  </g>
+  <!-- main plane body -->
+  <path d="M114 18 L8 60 L46 76 L58 116 L74 96 L106 110 Z"
+        fill="#FFFFFF"
+        stroke="#FFFFFF"
+        stroke-width="1.6"
+        stroke-linejoin="round"/>
 
-  <!-- inside the dial: a paper plane "flying" up-right where the hands would be -->
-  <g transform="translate(64 64)">
-    <!-- shadow -->
-    <path d="M28 -22 L-26 0 L-9 6 L-3 22 L1 12 L18 18 Z"
-          fill="rgba(0,0,0,0.18)"
-          transform="translate(0 2)"/>
-    <!-- plane body -->
-    <path d="M28 -22 L-26 0 L-9 6 L-3 22 L1 12 L18 18 Z"
-          fill="#FFFFFF"
-          stroke="#FFFFFF"
-          stroke-width="1.2"
-          stroke-linejoin="round"/>
-    <!-- crease (gives 3D feel) -->
-    <path d="M-9 6 L28 -22"
-          stroke="#D94E00"
-          stroke-opacity="0.55"
-          stroke-width="2"
-          stroke-linecap="round"
-          fill="none"/>
+  <!-- center crease (3D depth) -->
+  <path d="M46 76 L114 18"
+        stroke="#D94E00"
+        stroke-opacity="0.7"
+        stroke-width="3"
+        stroke-linecap="round"
+        fill="none"/>
+
+  <!-- tail fold (secondary detail) -->
+  <path d="M58 116 L74 96"
+        stroke="#D94E00"
+        stroke-opacity="0.3"
+        stroke-width="1.6"
+        stroke-linecap="round"
+        fill="none"/>
+
+  <!-- tiny down-arrow accent in the corner — "the price is dropping" -->
+  <g transform="translate(96 94)">
+    <circle r="14" fill="#FFFFFF"/>
+    <path d="M-5 -3 L0 4 L5 -3" stroke="#D94E00" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
   </g>
 </svg>
