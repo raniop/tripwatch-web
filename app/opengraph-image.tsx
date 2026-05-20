@@ -75,9 +75,6 @@ export default async function Image() {
               strokeLinecap="round"
               fill="none"
             />
-            {/* down-arrow accent */}
-            <circle cx="96" cy="94" r="14" fill="#FFFFFF"/>
-            <path d="M91 91 L96 98 L101 91" stroke="#D94E00" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
           </svg>
         </div>
 

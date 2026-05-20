@@ -11,43 +11,18 @@
     </radialGradient>
   </defs>
 
-  <!-- rounded square -->
   <rect width="128" height="128" rx="28" fill="url(#bg)"/>
   <rect width="128" height="128" rx="28" fill="url(#shine)"/>
 
-  <!-- a single, large, confident paper plane that fills the icon -->
-  <!-- shadow under the plane -->
   <path d="M114 18 L8 60 L46 76 L58 116 L74 96 L106 110 Z"
-        fill="#000000"
-        fill-opacity="0.18"
+        fill="#000000" fill-opacity="0.18"
         transform="translate(0 4)"/>
-
-  <!-- main plane body -->
   <path d="M114 18 L8 60 L46 76 L58 116 L74 96 L106 110 Z"
-        fill="#FFFFFF"
-        stroke="#FFFFFF"
-        stroke-width="1.6"
-        stroke-linejoin="round"/>
-
-  <!-- center crease (3D depth) -->
+        fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1.6" stroke-linejoin="round"/>
   <path d="M46 76 L114 18"
-        stroke="#D94E00"
-        stroke-opacity="0.7"
-        stroke-width="3"
-        stroke-linecap="round"
-        fill="none"/>
-
-  <!-- tail fold (secondary detail) -->
+        stroke="#D94E00" stroke-opacity="0.7" stroke-width="3"
+        stroke-linecap="round" fill="none"/>
   <path d="M58 116 L74 96"
-        stroke="#D94E00"
-        stroke-opacity="0.3"
-        stroke-width="1.6"
-        stroke-linecap="round"
-        fill="none"/>
-
-  <!-- tiny down-arrow accent in the corner — "the price is dropping" -->
-  <g transform="translate(96 94)">
-    <circle r="14" fill="#FFFFFF"/>
-    <path d="M-5 -3 L0 4 L5 -3" stroke="#D94E00" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-  </g>
+        stroke="#D94E00" stroke-opacity="0.3" stroke-width="1.6"
+        stroke-linecap="round" fill="none"/>
 </svg>
