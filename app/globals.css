@@ -83,3 +83,46 @@
 .animate-float { animation: float 5s ease-in-out infinite; }
 .animate-fade-up { animation: fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
 .animate-pulse-ring { animation: pulse-ring 2s ease-out infinite; }
+
+/* ---------- Accessibility widget toggles ---------- */
+html.a11y-font-large  { font-size: 112.5%; }
+html.a11y-font-xl     { font-size: 125%; }
+
+html.a11y-contrast body {
+  --foreground: 0 0% 0%;
+  --muted-foreground: 0 0% 15%;
+  --background: 0 0% 100%;
+  --border: 0 0% 0%;
+}
+html.a11y-contrast img,
+html.a11y-contrast video { filter: contrast(1.15); }
+
+html.a11y-underline-links a {
+  text-decoration: underline !important;
+  text-underline-offset: 2px;
+}
+
+html.a11y-no-motion *,
+html.a11y-no-motion *::before,
+html.a11y-no-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+html.a11y-strong-focus *:focus-visible {
+  outline: 3px solid hsl(var(--primary)) !important;
+  outline-offset: 2px !important;
+  border-radius: 4px;
+}
+
+/* Respect system preference too — applies even without the widget */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

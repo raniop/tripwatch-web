@@ -57,6 +57,7 @@ export function MarketingFooter() {
           <Col title="חוקי">
             <FLink href="/privacy">פרטיות</FLink>
             <FLink href="/terms">תנאי שימוש</FLink>
+            <FLink href="/accessibility">הצהרת נגישות</FLink>
           </Col>
         </div>
 

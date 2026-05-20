@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from 'next';
 import { Heebo, Poppins } from 'next/font/google';
 import './globals.css';
+import { CookieConsent } from '@/components/cookie-consent';
+import { AccessibilityWidget } from '@/components/accessibility-widget';
 
 const heebo = Heebo({
   subsets: ['hebrew', 'latin'],
@@ -52,7 +54,11 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="he" dir="rtl" className={`${heebo.variable} ${poppins.variable}`}>
-      <body className="min-h-screen antialiased">{children}</body>
+      <body className="min-h-screen antialiased">
+        {children}
+        <AccessibilityWidget />
+        <CookieConsent />
+      </body>
     </html>
   );
 }
