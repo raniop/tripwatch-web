@@ -34,11 +34,20 @@ export async function generateMetadata(): Promise<Metadata> {
       siteName: 'TripWatch',
       title: t.meta.siteTitle,
       description: t.meta.siteDescription,
+      images: [
+        {
+          url: '/opengraph-image',
+          width: 1200,
+          height: 630,
+          alt: t.meta.siteTitle,
+        },
+      ],
     },
     twitter: {
       card: 'summary_large_image',
       title: t.meta.siteTitle,
       description: t.meta.siteDescription,
+      images: ['/opengraph-image'],
     },
   };
 }
