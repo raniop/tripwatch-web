@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { updateNotificationPrefs, updateDefaults, unlinkTelegram } from '@/app/settings/actions';
@@ -15,6 +16,18 @@ export function SettingsForm({ profile, email }: { profile: Profile | null; emai
   const [linkData, setLinkData] = useState<{ token: string; instructions: string } | null>(null);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+  const [telegramCopied, setTelegramCopied] = useState(false);
+
+  async function onCopyLinkCommand() {
+    if (!linkData) return;
+    try {
+      await navigator.clipboard.writeText(`/link ${linkData.token}`);
+      setTelegramCopied(true);
+      setTimeout(() => setTelegramCopied(false), 1500);
+    } catch {
+      // clipboard blocked — user can still select manually
+    }
+  }
 
   async function onSavePrefs() {
     setSaving(true);
@@ -103,8 +116,20 @@ export function SettingsForm({ profile, email }: { profile: Profile | null; emai
           ) : linkData ? (
             <div className="rounded-md bg-muted p-4 text-center">
               <p className="text-sm text-muted-foreground">פתח את הבוט ושלח:</p>
-              <p className="my-2 text-2xl font-mono font-bold tracking-wider" dir="ltr">/link {linkData.token}</p>
+              <button
+                type="button"
+                onClick={onCopyLinkCommand}
+                className="my-2 inline-flex items-center gap-2 rounded-md bg-background px-3 py-2 font-mono font-bold tracking-wider transition-colors hover:bg-background/70"
+                dir="ltr"
+                aria-label="העתק את הפקודה"
+              >
+                <span className="text-2xl">/link {linkData.token}</span>
+                {telegramCopied
+                  ? <Check className="size-5 text-success" />
+                  : <Copy className="size-5 text-muted-foreground" />}
+              </button>
               <p className="text-xs text-muted-foreground" dir="ltr">{linkData.instructions}</p>
+              {telegramCopied && <p className="mt-1 text-xs text-success">הועתק ✓</p>}
             </div>
           ) : (
             <>
