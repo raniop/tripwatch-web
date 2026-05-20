@@ -8,8 +8,16 @@ import { updateNotificationPrefs, updateDefaults, unlinkTelegram } from '@/app/s
 import { ProfileEditor } from '@/components/profile-editor';
 import { LinkedAccounts } from '@/components/linked-accounts';
 import type { Profile } from '@/lib/supabase/types';
+import type { Messages } from '@/lib/i18n/types';
 
-export function SettingsForm({ profile, email }: { profile: Profile | null; email: string }) {
+interface Props {
+  profile: Profile | null;
+  email: string;
+  messages: Messages['settings'];
+}
+
+export function SettingsForm({ profile, email, messages }: Props) {
+  const t = messages;
   const [prefs, setPrefs] = useState(profile?.notification_prefs || { email: true, in_app: true, telegram: false });
   const [pct, setPct] = useState(String(profile?.alert_pct_default ?? 5));
   const [amt, setAmt] = useState(String(profile?.alert_amount_ils_default ?? 100));
@@ -25,7 +33,7 @@ export function SettingsForm({ profile, email }: { profile: Profile | null; emai
       setTelegramCopied(true);
       setTimeout(() => setTelegramCopied(false), 1500);
     } catch {
-      // clipboard blocked — user can still select manually
+      // clipboard blocked
     }
   }
 
@@ -33,7 +41,7 @@ export function SettingsForm({ profile, email }: { profile: Profile | null; emai
     setSaving(true);
     await updateNotificationPrefs(prefs);
     setSaving(false);
-    setMsg('שמור ✅');
+    setMsg(t.saved);
     setTimeout(() => setMsg(null), 2000);
   }
 
@@ -44,14 +52,14 @@ export function SettingsForm({ profile, email }: { profile: Profile | null; emai
       alert_amount_ils_default: Number(amt) || 100,
     });
     setSaving(false);
-    setMsg('שמור ✅');
+    setMsg(t.saved);
     setTimeout(() => setMsg(null), 2000);
   }
 
   async function onLinkTelegram() {
     const r = await fetch('/api/telegram/link', { method: 'POST' });
     if (!r.ok) {
-      setMsg('שגיאה בהפקת קוד');
+      setMsg('error');
       return;
     }
     const data = await r.json();
@@ -59,22 +67,22 @@ export function SettingsForm({ profile, email }: { profile: Profile | null; emai
   }
 
   async function onUnlinkTelegram() {
-    if (!confirm('לנתק את חשבון הטלגרם?')) return;
+    if (!confirm(t.telegramDisconnectConfirm)) return;
     await unlinkTelegram();
     location.reload();
   }
 
   return (
     <div className="space-y-6">
-      <ProfileEditor profile={profile} email={email} />
+      <ProfileEditor profile={profile} email={email} messages={t} />
 
-      <LinkedAccounts />
+      <LinkedAccounts messages={t} />
 
       <Card>
         <CardContent className="space-y-4 p-6">
-          <h2 className="font-semibold">איך לקבל התראות</h2>
+          <h2 className="font-semibold">{t.notificationsHeading}</h2>
           <label className="flex items-center justify-between gap-3 py-1">
-            <span>📧 מייל</span>
+            <span>{t.notifyEmail}</span>
             <input
               type="checkbox"
               checked={prefs.email}
@@ -83,7 +91,7 @@ export function SettingsForm({ profile, email }: { profile: Profile | null; emai
             />
           </label>
           <label className="flex items-center justify-between gap-3 py-1">
-            <span>🔔 בתוך האפליקציה</span>
+            <span>{t.notifyInApp}</span>
             <input
               type="checkbox"
               checked={prefs.in_app}
@@ -92,7 +100,7 @@ export function SettingsForm({ profile, email }: { profile: Profile | null; emai
             />
           </label>
           <label className="flex items-center justify-between gap-3 py-1">
-            <span>✈️ טלגרם</span>
+            <span>{t.notifyTelegram}</span>
             <input
               type="checkbox"
               checked={prefs.telegram && !!profile?.telegram_chat_id}
@@ -101,27 +109,27 @@ export function SettingsForm({ profile, email }: { profile: Profile | null; emai
               className="size-5 accent-primary disabled:opacity-50"
             />
           </label>
-          <Button onClick={onSavePrefs} disabled={saving} className="w-full">שמור</Button>
+          <Button onClick={onSavePrefs} disabled={saving} className="w-full">{t.save}</Button>
         </CardContent>
       </Card>
 
       <Card>
         <CardContent className="space-y-4 p-6">
-          <h2 className="font-semibold">חיבור טלגרם</h2>
+          <h2 className="font-semibold">{t.telegramHeading}</h2>
           {profile?.telegram_chat_id ? (
             <>
-              <p className="text-sm text-success">✓ מחובר</p>
-              <Button onClick={onUnlinkTelegram} variant="outline" size="sm">נתק</Button>
+              <p className="text-sm text-success">{t.telegramConnected}</p>
+              <Button onClick={onUnlinkTelegram} variant="outline" size="sm">{t.telegramDisconnect}</Button>
             </>
           ) : linkData ? (
             <div className="rounded-md bg-muted p-4 text-center">
-              <p className="text-sm text-muted-foreground">פתח את הבוט ושלח:</p>
+              <p className="text-sm text-muted-foreground">{t.telegramInstructionsPrefix}</p>
               <button
                 type="button"
                 onClick={onCopyLinkCommand}
                 className="my-2 inline-flex items-center gap-2 rounded-md bg-background px-3 py-2 font-mono font-bold tracking-wider transition-colors hover:bg-background/70"
                 dir="ltr"
-                aria-label="העתק את הפקודה"
+                aria-label={t.inboundCopy}
               >
                 <span className="text-2xl">/link {linkData.token}</span>
                 {telegramCopied
@@ -129,14 +137,12 @@ export function SettingsForm({ profile, email }: { profile: Profile | null; emai
                   : <Copy className="size-5 text-muted-foreground" />}
               </button>
               <p className="text-xs text-muted-foreground" dir="ltr">{linkData.instructions}</p>
-              {telegramCopied && <p className="mt-1 text-xs text-success">הועתק ✓</p>}
+              {telegramCopied && <p className="mt-1 text-xs text-success">{t.telegramInstructionsCopied}</p>}
             </div>
           ) : (
             <>
-              <p className="text-sm text-muted-foreground">
-                קישור חשבון הטלגרם יאפשר לך לקבל התראות ישירות בטלגרם, מהיר יותר ממייל.
-              </p>
-              <Button onClick={onLinkTelegram} variant="outline">קישור חשבון טלגרם</Button>
+              <p className="text-sm text-muted-foreground">{t.telegramDescription}</p>
+              <Button onClick={onLinkTelegram} variant="outline">{t.telegramLinkCta}</Button>
             </>
           )}
         </CardContent>
@@ -144,13 +150,11 @@ export function SettingsForm({ profile, email }: { profile: Profile | null; emai
 
       <Card>
         <CardContent className="space-y-4 p-6">
-          <h2 className="font-semibold">ספי התראה ברירת מחדל</h2>
-          <p className="text-sm text-muted-foreground">
-            יחולו על הזמנות חדשות. אפשר לשנות לכל הזמנה בנפרד.
-          </p>
+          <h2 className="font-semibold">{t.defaultsHeading}</h2>
+          <p className="text-sm text-muted-foreground">{t.defaultsHelp}</p>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="mb-1 block text-xs text-muted-foreground">% ירידה מינימלי</label>
+              <label className="mb-1 block text-xs text-muted-foreground">{t.defaultsPctLabel}</label>
               <input
                 type="number"
                 value={pct}
@@ -163,7 +167,7 @@ export function SettingsForm({ profile, email }: { profile: Profile | null; emai
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs text-muted-foreground">סכום מינימלי (₪)</label>
+              <label className="mb-1 block text-xs text-muted-foreground">{t.defaultsAmountLabel}</label>
               <input
                 type="number"
                 value={amt}
@@ -175,7 +179,7 @@ export function SettingsForm({ profile, email }: { profile: Profile | null; emai
               />
             </div>
           </div>
-          <Button onClick={onSaveDefaults} disabled={saving} className="w-full">שמור ברירות מחדל</Button>
+          <Button onClick={onSaveDefaults} disabled={saving} className="w-full">{t.defaultsSave}</Button>
         </CardContent>
       </Card>
 

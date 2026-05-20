@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { rotateInboundToken, requestInboundEmailVerification, removeInboundEmail } from '@/app/settings/actions';
 import type { InboundEmail } from '@/lib/supabase/types';
+import type { Messages } from '@/lib/i18n/types';
 
 interface Props {
   globalAddress: string;
@@ -14,17 +15,18 @@ interface Props {
   personalAddress: string | null;
   recent: InboundEmail[];
   verifiedEmails: Array<{ email: string; verified_at: string }>;
+  messages: Messages['settings'];
 }
 
-const STATUS_LABEL: Record<string, { text: string; cls: string }> = {
-  received: { text: 'התקבל', cls: 'bg-muted text-muted-foreground' },
-  parsed:   { text: 'נותח',   cls: 'bg-muted text-muted-foreground' },
-  created:  { text: 'נוסף ✓', cls: 'bg-success/15 text-success' },
-  skipped:  { text: 'דולג',   cls: 'bg-muted text-muted-foreground' },
-  error:    { text: 'שגיאה',  cls: 'bg-destructive/15 text-destructive' },
-};
-
-export function InboundForwardCard({ globalAddress, userEmail, personalAddress: initialPersonal, recent, verifiedEmails: initialVerified }: Props) {
+export function InboundForwardCard({ globalAddress, userEmail, personalAddress: initialPersonal, recent, verifiedEmails: initialVerified, messages }: Props) {
+  const t = messages;
+  const STATUS_LABEL: Record<string, { text: string; cls: string }> = {
+    received: { text: t.statusReceived, cls: 'bg-muted text-muted-foreground' },
+    parsed:   { text: t.statusParsed,   cls: 'bg-muted text-muted-foreground' },
+    created:  { text: t.statusCreated,  cls: 'bg-success/15 text-success' },
+    skipped:  { text: t.statusSkipped,  cls: 'bg-muted text-muted-foreground' },
+    error:    { text: t.statusError,    cls: 'bg-destructive/15 text-destructive' },
+  };
   const [personalAddress, setPersonalAddress] = useState(initialPersonal);
   const [copied, setCopied] = useState<'global' | 'personal' | null>(null);
   const [pending, startTransition] = useTransition();
@@ -41,7 +43,7 @@ export function InboundForwardCard({ globalAddress, userEmail, personalAddress: 
     const r = await requestInboundEmailVerification(newEmail);
     setAddBusy(false);
     if (r.ok) {
-      setAddMsg({ kind: 'ok', text: `נשלח מייל אישור ל-${r.sentTo}` });
+      setAddMsg({ kind: 'ok', text: t.inboundEmailSent.replace('{email}', r.sentTo) });
       setNewEmail('');
     } else {
       setAddMsg({ kind: 'err', text: r.error });
@@ -49,7 +51,7 @@ export function InboundForwardCard({ globalAddress, userEmail, personalAddress: 
   }
 
   async function onRemoveEmail(email: string) {
-    if (!confirm(`להסיר את הכתובת ${email} מהרשימה? לא תוכל לשלוח ממנה הזמנות אחרי שתסיר.`)) return;
+    if (!confirm(t.inboundRemoveConfirm.replace('{email}', email))) return;
     const r = await removeInboundEmail(email);
     if (r.ok) setVerifiedEmails((prev) => prev.filter((v) => v.email !== email));
   }
@@ -65,11 +67,11 @@ export function InboundForwardCard({ globalAddress, userEmail, personalAddress: 
   }
 
   function onRotate() {
-    if (!confirm('להחליף את הכתובת האישית? מיילים שכבר שלחת לכתובת הישנה לא יקלטו יותר.')) return;
+    if (!confirm(t.inboundRotateConfirm)) return;
     startTransition(async () => {
       const res = await rotateInboundToken();
       if (res.ok) setPersonalAddress(res.address);
-      else alert(res.error || 'שגיאה בהחלפת הכתובת');
+      else alert(res.error || t.inboundPersonalFailed);
     });
   }
 
@@ -77,11 +79,8 @@ export function InboundForwardCard({ globalAddress, userEmail, personalAddress: 
     <Card id="inbound">
       <CardContent className="space-y-4 p-6">
         <div>
-          <h2 className="font-semibold">📧 הוספת הזמנות במייל</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            העבר את מייל אישור ההזמנה אל הכתובת הבאה ונחלץ את הפרטים אוטומטית.
-            עובד עם Booking.com, Agoda, Expedia ו-Hotels.com.
-          </p>
+          <h2 className="font-semibold">{t.inboundHeading}</h2>
+          <p className="mt-1 text-sm text-muted-foreground">{t.inboundDescription}</p>
         </div>
 
         <div className="flex items-stretch gap-2">
@@ -98,17 +97,17 @@ export function InboundForwardCard({ globalAddress, userEmail, personalAddress: 
             className="shrink-0"
           >
             {copied === 'global' ? <Check className="size-4" /> : <Copy className="size-4" />}
-            <span className="hidden sm:inline">{copied === 'global' ? 'הועתק' : 'העתק'}</span>
+            <span className="hidden sm:inline">{copied === 'global' ? t.inboundCopied : t.inboundCopy}</span>
           </Button>
         </div>
 
         <div className="rounded-md bg-amber-50 dark:bg-amber-950/30 px-3 py-2 text-xs text-amber-900 dark:text-amber-200">
-          ⚠️ חשוב: צריך לשלוח מאחת מהכתובות המאומתות שלך (ראה למטה).
+          {t.inboundWarning}
         </div>
 
         <details className="text-sm" open>
           <summary className="cursor-pointer text-muted-foreground">
-            כתובות מייל מאומתות לשליחה ({1 + verifiedEmails.length})
+            {t.inboundVerifiedEmails} ({1 + verifiedEmails.length})
           </summary>
           <ul className="mt-2 space-y-1.5">
             <li className="flex items-center justify-between rounded-md border border-border bg-muted/30 px-3 py-2 text-sm">
@@ -116,7 +115,7 @@ export function InboundForwardCard({ globalAddress, userEmail, personalAddress: 
                 <Mail className="size-4 text-muted-foreground" />
                 <span dir="ltr" className="font-mono">{userEmail}</span>
               </span>
-              <span className="text-xs text-muted-foreground">ראשי</span>
+              <span className="text-xs text-muted-foreground">{t.inboundEmailPrimary}</span>
             </li>
             {verifiedEmails.map((v) => (
               <li key={v.email} className="flex items-center justify-between rounded-md border border-border bg-muted/30 px-3 py-2 text-sm">
@@ -128,7 +127,7 @@ export function InboundForwardCard({ globalAddress, userEmail, personalAddress: 
                   type="button"
                   onClick={() => onRemoveEmail(v.email)}
                   className="text-destructive hover:text-destructive/80"
-                  aria-label="הסר"
+                  aria-label="remove"
                 >
                   <Trash2 className="size-4" />
                 </button>
@@ -147,7 +146,7 @@ export function InboundForwardCard({ globalAddress, userEmail, personalAddress: 
             />
             <Button type="submit" disabled={addBusy || !newEmail} size="sm" className="shrink-0 gap-1">
               {addBusy ? <Loader2 className="size-4 animate-spin" /> : <Plus className="size-4" />}
-              שלח אישור
+              {t.inboundSendVerify}
             </Button>
           </form>
           {addMsg && (
@@ -158,23 +157,20 @@ export function InboundForwardCard({ globalAddress, userEmail, personalAddress: 
         </details>
 
         <details className="text-sm">
-          <summary className="cursor-pointer text-muted-foreground">איך זה עובד?</summary>
+          <summary className="cursor-pointer text-muted-foreground">{t.inboundHowItWorks}</summary>
           <ol className="mt-2 list-decimal space-y-1 pr-5 text-muted-foreground">
-            <li>פתח את אישור ההזמנה ב-Gmail / Outlook.</li>
-            <li>לחץ &quot;Forward&quot; (העברה) והדבק את הכתובת למעלה.</li>
-            <li>בתוך כמה שניות ההזמנה תופיע ב-Dashboard ותקבל מייל אישור.</li>
+            <li>{t.inboundStep1}</li>
+            <li>{t.inboundStep2}</li>
+            <li>{t.inboundStep3}</li>
           </ol>
         </details>
 
         <details className="text-sm">
           <summary className="cursor-pointer text-muted-foreground">
-            כתובת אישית — לשליחה ממייל לא מקושר
+            {t.inboundPersonalToggle}
           </summary>
           <div className="mt-3 space-y-2">
-            <p className="text-xs text-muted-foreground">
-              אם אתה רוצה לשלוח ממייל שלא מקושר ל-TripWatch (למשל מייל של מקום העבודה),
-              השתמש בכתובת האישית הסודית הזו. שמור אותה ואל תפרסם.
-            </p>
+            <p className="text-xs text-muted-foreground">{t.inboundPersonalDescription}</p>
             {personalAddress ? (
               <div className="flex items-stretch gap-2">
                 <div
@@ -197,27 +193,27 @@ export function InboundForwardCard({ globalAddress, userEmail, personalAddress: 
                   size="sm"
                   disabled={pending}
                   className="shrink-0"
-                  title="החלף כתובת"
+                  aria-label="rotate"
                 >
                   <RefreshCw className={pending ? 'size-4 animate-spin' : 'size-4'} />
                 </Button>
               </div>
             ) : (
-              <p className="text-xs text-destructive">לא הצלחנו להפיק כתובת אישית.</p>
+              <p className="text-xs text-destructive">{t.inboundPersonalFailed}</p>
             )}
           </div>
         </details>
 
         {recent.length > 0 && (
           <div>
-            <h3 className="mb-2 text-sm font-medium">מיילים אחרונים שקיבלנו</h3>
+            <h3 className="mb-2 text-sm font-medium">{t.recentEmailsTitle}</h3>
             <ul className="divide-y divide-border rounded-md border border-border">
               {recent.map((row) => {
                 const badge = STATUS_LABEL[row.status] || STATUS_LABEL.received;
                 return (
                   <li key={row.id} className="flex items-center justify-between gap-3 px-3 py-2 text-sm">
                     <div className="min-w-0 flex-1">
-                      <div className="truncate">{row.subject || '(ללא נושא)'}</div>
+                      <div className="truncate">{row.subject || '—'}</div>
                       <div className="truncate text-xs text-muted-foreground" dir="ltr">
                         {row.from_address}
                       </div>
@@ -234,7 +230,7 @@ export function InboundForwardCard({ globalAddress, userEmail, personalAddress: 
                           href={`/booking/${row.booking_id}`}
                           className="text-xs text-primary underline"
                         >
-                          פתח
+                          {t.openBooking}
                         </Link>
                       )}
                     </div>

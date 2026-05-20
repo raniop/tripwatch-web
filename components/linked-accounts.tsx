@@ -8,16 +8,34 @@ import { createClient } from '@/lib/supabase/client';
 import { requestAccountMerge } from '@/app/settings/actions';
 import type { UserIdentity } from '@supabase/supabase-js';
 
-const PROVIDER_LABELS: Record<string, string> = {
-  google: 'Google',
-  email: 'מייל (קישור חד-פעמי)',
-  apple: 'Apple',
-  github: 'GitHub',
-  facebook: 'Facebook',
-};
+interface Messages {
+  linkedAccountsHeading: string;
+  linkedAccountsHelp: string;
+  linkedAccountsAddGoogle: string;
+  linkedAccountsUnlink: string;
+  linkedAccountsUnlinkConfirm: string;
+  linkedAccountsUnlinkSuccess: string;
+  linkedAccountsOnlyOne: string;
+  linkedAccountsProviderEmail: string;
+  mergeToggle: string;
+  mergeIntro: string;
+  mergeEmailLabel: string;
+  mergeSend: string;
+  mergeSentTo: string;
+  mergeSentBody: string;
+  mergeSentAdditional: string;
+  mergeWarning: string;
+}
 
-export function LinkedAccounts() {
+export function LinkedAccounts({ messages }: { messages: Messages }) {
   const supabase = createClient();
+  const PROVIDER_LABELS: Record<string, string> = {
+    google: 'Google',
+    email: messages.linkedAccountsProviderEmail,
+    apple: 'Apple',
+    github: 'GitHub',
+    facebook: 'Facebook',
+  };
   const [identities, setIdentities] = useState<UserIdentity[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
@@ -60,18 +78,18 @@ export function LinkedAccounts() {
 
   async function unlink(identity: UserIdentity) {
     if (identities.length <= 1) {
-      setErr('לא ניתן לנתק את שיטת ההתחברות היחידה.');
+      setErr(messages.linkedAccountsOnlyOne);
       return;
     }
     const label = PROVIDER_LABELS[identity.provider] || identity.provider;
-    if (!confirm(`לנתק את ${label}? תוכל לקשר אותו שוב בכל עת.`)) return;
+    if (!confirm(messages.linkedAccountsUnlinkConfirm.replace('{provider}', label))) return;
     setBusy(`unlink-${identity.identity_id}`);
     setErr(null);
     const { error } = await supabase.auth.unlinkIdentity(identity);
     setBusy(null);
     if (error) setErr(error.message);
     else {
-      flash(`${label} נותק`);
+      flash(messages.linkedAccountsUnlinkSuccess.replace('{provider}', label));
       load();
     }
   }
@@ -82,10 +100,8 @@ export function LinkedAccounts() {
     <Card>
       <CardContent className="space-y-4 p-6">
         <div>
-          <h2 className="font-semibold">חיבורי חשבון</h2>
-          <p className="mt-1 text-xs text-muted-foreground">
-            שיטות ההתחברות שמקושרות לחשבון שלך. אפשר להוסיף עוד שיטה כדי להתחבר במהירות.
-          </p>
+          <h2 className="font-semibold">{messages.linkedAccountsHeading}</h2>
+          <p className="mt-1 text-xs text-muted-foreground">{messages.linkedAccountsHelp}</p>
         </div>
 
         {loading ? (
@@ -119,7 +135,7 @@ export function LinkedAccounts() {
                     variant="ghost"
                     size="sm"
                     className="text-destructive disabled:opacity-30"
-                    aria-label="נתק"
+                    aria-label={messages.linkedAccountsUnlink}
                   >
                     {busy === `unlink-${id.identity_id}` ? (
                       <Loader2 className="size-4 animate-spin" />
@@ -136,20 +152,20 @@ export function LinkedAccounts() {
         {!hasGoogle && !loading && (
           <Button onClick={linkGoogle} variant="outline" className="w-full gap-2" disabled={busy === 'link-google'}>
             {busy === 'link-google' ? <Loader2 className="size-4 animate-spin" /> : <Plus className="size-4" />}
-            הוסף התחברות עם Google
+            {messages.linkedAccountsAddGoogle}
           </Button>
         )}
 
         {err && <p className="text-xs text-destructive">⚠ {err}</p>}
         {msg && <p className="text-xs text-success">✓ {msg}</p>}
 
-        <MergeAccountSection />
+        <MergeAccountSection messages={messages} />
       </CardContent>
     </Card>
   );
 }
 
-function MergeAccountSection() {
+function MergeAccountSection({ messages }: { messages: Messages }) {
   const [otherEmail, setOtherEmail] = useState('');
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState<string | null>(null);
@@ -175,7 +191,7 @@ function MergeAccountSection() {
       <summary className="list-none flex items-center justify-between text-sm font-medium">
         <span className="flex items-center gap-2">
           <GitMerge className="size-4 text-muted-foreground" />
-          פתחת בטעות 2 חשבונות? מזג אותם
+          {messages.mergeToggle}
         </span>
         <span className="text-xs text-muted-foreground transition-transform group-open:rotate-45">+</span>
       </summary>
@@ -184,41 +200,37 @@ function MergeAccountSection() {
         {sent ? (
           <div className="text-center">
             <p className="text-2xl">✉️</p>
-            <p className="mt-2 text-sm font-medium">נשלח מייל אישור ל-<span dir="ltr">{sent}</span></p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              היכנס לתיבת המייל הזו, לחץ על הקישור — וההזמנות וההגדרות יעברו לחשבון הנוכחי שלך.
+            <p className="mt-2 text-sm font-medium">
+              {messages.mergeSentTo.replace('{email}', sent)}
             </p>
+            <p className="mt-1 text-xs text-muted-foreground">{messages.mergeSentBody}</p>
             <button
               onClick={() => setSent(null)}
               className="mt-3 text-xs text-primary underline"
             >
-              לשלוח לחשבון נוסף
+              {messages.mergeSentAdditional}
             </button>
           </div>
         ) : (
           <form onSubmit={onSubmit} className="space-y-2">
-            <p className="text-xs text-muted-foreground">
-              הזן מייל של חשבון נוסף שיש לך. נשלח אליו קישור אישור, ואחרי שתלחץ — הנתונים יעברו לכאן והחשבון הישן יימחק.
-            </p>
+            <p className="text-xs text-muted-foreground">{messages.mergeIntro}</p>
             <div className="flex gap-2">
               <input
                 type="email"
                 dir="ltr"
                 required
-                placeholder="other@example.com"
+                placeholder={messages.mergeEmailLabel}
                 value={otherEmail}
                 onChange={(e) => setOtherEmail(e.target.value)}
                 className="h-10 flex-1 rounded-md border border-border bg-background px-3 text-sm text-left focus:outline-none focus:ring-2 focus:ring-primary"
               />
               <Button type="submit" disabled={busy || !otherEmail} size="sm" className="gap-1">
                 {busy ? <Loader2 className="size-4 animate-spin" /> : <GitMerge className="size-4" />}
-                שלח אישור
+                {messages.mergeSend}
               </Button>
             </div>
             {err && <p className="text-xs text-destructive">⚠ {err}</p>}
-            <p className="text-[11px] text-warning">
-              ⚠️ פעולה זו בלתי הפיכה. ההזמנות וההגדרות מהחשבון השני יועברו, והוא יימחק.
-            </p>
+            <p className="text-[11px] text-warning">{messages.mergeWarning}</p>
           </form>
         )}
       </div>

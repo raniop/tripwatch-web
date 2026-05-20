@@ -5,8 +5,16 @@ import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import type { Messages } from '@/lib/i18n/types';
 
-export default function LoginForm() {
+interface Props {
+  messages: Messages['login'] & { magicLinkSentSub?: string; magicLinkSendCta?: string };
+  termsLabel: string;
+  privacyLabel: string;
+}
+
+export default function LoginForm({ messages, termsLabel, privacyLabel }: Props) {
+  const t = messages;
   const params = useSearchParams();
   const next = params.get('next') || '/dashboard';
   const supabase = createClient();
@@ -39,27 +47,34 @@ export default function LoginForm() {
     else setSent(true);
   }
 
+  // Render the "terms" line with placeholders substituted for <a> links.
+  const termsParts = t.terms.split(/(\{termsLink\}|\{privacyLink\})/);
+  const renderedTerms = termsParts.map((part, i) => {
+    if (part === '{termsLink}') return <a key={i} href="/terms" className="underline mx-1">{termsLabel}</a>;
+    if (part === '{privacyLink}') return <a key={i} href="/privacy" className="underline mx-1">{privacyLabel}</a>;
+    return <span key={i}>{part}</span>;
+  });
+
   return (
     <Card className="w-full max-w-md">
       <CardHeader className="text-center">
-        <CardTitle className="text-2xl">TripWatch</CardTitle>
-        <CardDescription>היכנס כדי לעקוב אחרי המחירים של ההזמנות שלך</CardDescription>
+        <CardTitle className="text-2xl">{t.title}</CardTitle>
+        <CardDescription>{t.subtitle}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <Button onClick={signInWithGoogle} variant="outline" size="lg" className="w-full gap-2">
-          <GoogleIcon /> המשך עם Google
+          <GoogleIcon /> {t.google}
         </Button>
 
         <div className="relative my-4">
           <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border" /></div>
-          <div className="relative flex justify-center text-xs"><span className="bg-card px-2 text-muted-foreground">או במייל</span></div>
+          <div className="relative flex justify-center text-xs"><span className="bg-card px-2 text-muted-foreground">{t.or}</span></div>
         </div>
 
         {sent ? (
           <div className="rounded-md border border-success/30 bg-success/5 p-4 text-center">
             <div className="mb-2 text-2xl">✉️</div>
-            <p className="text-sm font-medium text-foreground">קישור התחברות נשלח אליך למייל</p>
-            <p className="mt-1 text-xs text-muted-foreground">בדוק את תיבת הדואר (וגם Spam) ולחץ על הקישור</p>
+            <p className="text-sm font-medium text-foreground">{t.magicLinkSent}</p>
           </div>
         ) : (
           <form onSubmit={sendMagicLink} className="space-y-3">
@@ -67,13 +82,13 @@ export default function LoginForm() {
               type="email"
               required
               dir="ltr"
-              placeholder="you@example.com"
+              placeholder={t.emailPlaceholder}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="h-11 w-full rounded-md border border-border bg-background px-3 text-base text-left focus:outline-none focus:ring-2 focus:ring-primary"
             />
             <Button type="submit" disabled={sending || !email} className="w-full" size="lg">
-              {sending ? 'שולח...' : 'שלח לי קישור התחברות'}
+              {sending ? t.sending : t.sendMagicLink}
             </Button>
           </form>
         )}
@@ -81,19 +96,11 @@ export default function LoginForm() {
         {err && (
           <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3 text-center text-xs">
             <p className="font-medium text-destructive">{err}</p>
-            {err.includes('provider is not enabled') && (
-              <p className="mt-1 text-muted-foreground">
-                Google OAuth עוד לא הוגדר. בינתיים השתמש בקישור במייל למטה.
-              </p>
-            )}
           </div>
         )}
 
         <p className="text-center text-xs text-muted-foreground pt-4">
-          התחברות מסכימה ל
-          <a href="/terms" className="underline mx-1">תנאי שימוש</a>
-          ול
-          <a href="/privacy" className="underline mx-1">מדיניות פרטיות</a>
+          {renderedTerms}
         </p>
       </CardContent>
     </Card>

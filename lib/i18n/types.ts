@@ -317,6 +317,13 @@ export interface Messages {
     profileAvatarRemove: string;
     profileAvatarTooLarge: string;
     profileSave: string;
+    profileChangePicture: string;
+    profileAvatarMimeHint: string;
+    profileRemoveConfirm: string;
+    profileAvatarUpdated: string;
+    profileAvatarRemoved: string;
+    profileNameSaved: string;
+    profileFailed: string;
     linkedAccountsHeading: string;
     linkedAccountsHelp: string;
     linkedAccountsAddGoogle: string;

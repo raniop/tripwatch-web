@@ -7,12 +7,27 @@ import { Card, CardContent } from '@/components/ui/card';
 import { uploadAvatar, removeAvatar, updateDisplayName } from '@/app/settings/actions';
 import type { Profile } from '@/lib/supabase/types';
 
+interface Messages {
+  profileHeading: string;
+  profileNameLabel: string;
+  profileSave: string;
+  profileChangePicture: string;
+  profileAvatarMimeHint: string;
+  profileRemoveConfirm: string;
+  profileAvatarUpdated: string;
+  profileAvatarRemoved: string;
+  profileNameSaved: string;
+  profileFailed: string;
+  profileAvatarRemove: string;
+}
+
 interface Props {
   profile: Profile | null;
   email: string;
+  messages: Messages;
 }
 
-export function ProfileEditor({ profile, email }: Props) {
+export function ProfileEditor({ profile, email, messages }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [avatar, setAvatar] = useState(profile?.avatar_url || null);
   const [name, setName] = useState(profile?.display_name || '');
@@ -35,29 +50,28 @@ export function ProfileEditor({ profile, email }: Props) {
     setUploading(false);
     if (r.ok) {
       setAvatar(r.url);
-      flash('ok', 'תמונה עודכנה');
+      flash('ok', messages.profileAvatarUpdated);
     } else {
-      flash('err', r.error || 'נכשל');
+      flash('err', r.error || messages.profileFailed);
     }
-    // reset input so picking same file works again
     if (fileRef.current) fileRef.current.value = '';
   }
 
   async function onRemove() {
-    if (!confirm('להסיר את תמונת הפרופיל?')) return;
+    if (!confirm(messages.profileRemoveConfirm)) return;
     setUploading(true);
     await removeAvatar();
     setUploading(false);
     setAvatar(null);
-    flash('ok', 'תמונה הוסרה');
+    flash('ok', messages.profileAvatarRemoved);
   }
 
   async function onSaveName() {
     setSavingName(true);
     const r = await updateDisplayName(name);
     setSavingName(false);
-    if (r.ok) flash('ok', 'שם עודכן');
-    else flash('err', r.error || 'נכשל');
+    if (r.ok) flash('ok', messages.profileNameSaved);
+    else flash('err', r.error || messages.profileFailed);
   }
 
   const initials = (name || email).slice(0, 1).toUpperCase();
@@ -65,7 +79,7 @@ export function ProfileEditor({ profile, email }: Props) {
   return (
     <Card>
       <CardContent className="p-6">
-        <h2 className="mb-5 font-semibold">פרופיל</h2>
+        <h2 className="mb-5 font-semibold">{messages.profileHeading}</h2>
 
         <div className="flex items-center gap-5">
           {/* Avatar */}
@@ -75,7 +89,7 @@ export function ProfileEditor({ profile, email }: Props) {
               onClick={() => fileRef.current?.click()}
               disabled={uploading}
               className="group relative grid size-20 place-items-center overflow-hidden rounded-full bg-gradient-to-br from-primary to-purple-600 text-2xl font-bold text-white shadow-md transition-all hover:scale-105 disabled:opacity-50"
-              aria-label="שנה תמונה"
+              aria-label={messages.profileChangePicture}
             >
               {avatar ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -105,14 +119,14 @@ export function ProfileEditor({ profile, email }: Props) {
           {/* Actions */}
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-foreground" dir="ltr">{email}</p>
-            <p className="mt-0.5 text-xs text-muted-foreground">PNG · JPG · WEBP · עד 2MB</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">{messages.profileAvatarMimeHint}</p>
             <div className="mt-3 flex flex-wrap gap-2">
               <Button onClick={() => fileRef.current?.click()} disabled={uploading} variant="outline" size="sm" className="gap-1.5">
-                <Camera className="size-3.5" /> שנה תמונה
+                <Camera className="size-3.5" /> {messages.profileChangePicture}
               </Button>
               {avatar && (
                 <Button onClick={onRemove} disabled={uploading} variant="outline" size="sm" className="gap-1.5 text-destructive">
-                  <Trash2 className="size-3.5" /> הסר
+                  <Trash2 className="size-3.5" /> {messages.profileAvatarRemove}
                 </Button>
               )}
             </div>
@@ -121,7 +135,7 @@ export function ProfileEditor({ profile, email }: Props) {
 
         {/* Display name */}
         <div className="mt-6">
-          <label className="mb-1 block text-xs font-medium text-muted-foreground">שם תצוגה</label>
+          <label className="mb-1 block text-xs font-medium text-muted-foreground">{messages.profileNameLabel}</label>
           <div className="flex gap-2">
             <input
               type="text"
@@ -132,7 +146,7 @@ export function ProfileEditor({ profile, email }: Props) {
             />
             <Button onClick={onSaveName} disabled={savingName || name === (profile?.display_name || '')}>
               {savingName ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />}
-              שמור
+              {messages.profileSave}
             </Button>
           </div>
         </div>
