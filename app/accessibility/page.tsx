@@ -17,7 +17,7 @@ export default async function AccessibilityPage() {
 
   return (
     <div className="relative min-h-screen bg-background">
-      <MarketingNav loggedIn={!!user} messages={t.nav} />
+      <MarketingNav loggedIn={!!user} locale={locale} messages={t.nav} localeMessages={t.localeSwitcher} />
 
       <main className="mx-auto max-w-3xl px-5 py-32 sm:px-8">
         <h1 className="font-display text-4xl sm:text-5xl">הצהרת נגישות</h1>

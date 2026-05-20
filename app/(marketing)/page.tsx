@@ -21,7 +21,7 @@ export default async function LandingPage() {
 
   return (
     <div className="relative min-h-screen bg-background">
-      <MarketingNav loggedIn={loggedIn} messages={t.nav} />
+      <MarketingNav loggedIn={loggedIn} locale={locale} messages={t.nav} localeMessages={t.localeSwitcher} />
 
       {/* ======================== HERO (video) ======================== */}
       <VideoHero>

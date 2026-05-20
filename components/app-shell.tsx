@@ -3,7 +3,8 @@ import { Home, LogOut } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { RealtimeNotifications } from '@/components/realtime-notifications';
 import { CmdKHint } from '@/components/cmdk-hint';
-import { getMessages } from '@/lib/i18n';
+import { LocaleSwitcher } from '@/components/locale-switcher';
+import { getLocaleAndMessages } from '@/lib/i18n';
 
 export async function AppShell({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -12,7 +13,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
     ? await supabase.from('profiles').select('display_name, avatar_url').eq('id', user.id).maybeSingle()
     : { data: null };
   const profile = profileData;
-  const t = await getMessages();
+  const { locale, t } = await getLocaleAndMessages();
 
   return (
     <div className="min-h-screen bg-background">
@@ -32,6 +33,15 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
               </div>
             )}
             <CmdKHint />
+            <div className="hidden sm:inline-flex">
+              <LocaleSwitcher
+                current={locale}
+                variant="dark"
+                ariaLabel={t.localeSwitcher.ariaLabel}
+                heLabel={t.localeSwitcher.he}
+                enLabel={t.localeSwitcher.en}
+              />
+            </div>
             <Link
               href="/"
               className="text-muted-foreground hover:text-foreground"

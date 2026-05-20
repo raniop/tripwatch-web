@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, LayoutDashboard, Menu, Plane, Search, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { LocaleSwitcher } from '@/components/locale-switcher';
+import type { Locale } from '@/lib/i18n/types';
 
 interface NavMessages {
   howItWorks: string;
@@ -17,12 +19,20 @@ interface NavMessages {
   openDashboardShort: string;
 }
 
-interface Props {
-  loggedIn?: boolean;
-  messages: NavMessages;
+interface LocaleMessages {
+  ariaLabel: string;
+  he: string;
+  en: string;
 }
 
-export function MarketingNav({ loggedIn = false, messages }: Props) {
+interface Props {
+  loggedIn?: boolean;
+  locale: Locale;
+  messages: NavMessages;
+  localeMessages: LocaleMessages;
+}
+
+export function MarketingNav({ loggedIn = false, locale, messages, localeMessages }: Props) {
   const LINKS = [
     { href: '#how', label: messages.howItWorks },
     { href: '#testimonials', label: messages.testimonials },
@@ -74,11 +84,20 @@ export function MarketingNav({ loggedIn = false, messages }: Props) {
             type="button"
             onClick={() => window.dispatchEvent(new Event('tw-open-search'))}
             className={`grid size-9 place-items-center rounded-md transition-colors ${scrolled ? 'text-muted-foreground hover:bg-muted hover:text-foreground' : 'text-white/85 hover:bg-white/10 hover:text-white'}`}
-            aria-label="חיפוש (⌘K)"
-            title="חיפוש (⌘K)"
+            aria-label="search (⌘K)"
+            title="⌘K"
           >
             <Search className="size-4" />
           </button>
+          <div className={`hidden sm:inline-flex ${scrolled ? '' : '[&_button]:text-white/85 [&_button:hover]:text-white'}`}>
+            <LocaleSwitcher
+              current={locale}
+              variant={scrolled ? 'dark' : 'light'}
+              ariaLabel={localeMessages.ariaLabel}
+              heLabel={localeMessages.he}
+              enLabel={localeMessages.en}
+            />
+          </div>
           {loggedIn ? (
             <Link href="/dashboard">
               <Button variant="accent" size="sm" className="h-9 gap-1.5 shadow-glow-orange">
