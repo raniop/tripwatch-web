@@ -38,40 +38,29 @@ export default async function Image() {
           {/* Logo mark — same orange rounded square + white paper plane as the favicon */}
           <div
             style={{
-              width: 88,
-              height: 88,
-              background: 'rgba(255,255,255,0.22)',
+              width: 96,
+              height: 96,
+              background: 'rgba(255,255,255,0.18)',
               borderRadius: 22,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              backdropFilter: 'blur(12px)',
-              boxShadow: '0 6px 20px rgba(0,0,0,0.15)',
+              boxShadow: '0 6px 20px rgba(0,0,0,0.18)',
             }}
           >
-            <svg width="58" height="58" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
-              {/* shadow under the plane */}
-              <path
-                d="M106 26 L20 60 L48 68 L58 100 L66 82 L96 92 Z"
-                fill="rgba(0,0,0,0.2)"
-                transform="translate(0 3)"
-              />
-              {/* main body */}
-              <path
-                d="M106 26 L20 60 L48 68 L58 100 L66 82 L96 92 Z"
-                fill="#FFFFFF"
-                stroke="#FFFFFF"
-                strokeWidth="1.4"
-                strokeLinejoin="round"
-              />
-              {/* center crease */}
-              <path
-                d="M48 68 L106 26"
-                stroke="rgba(217,78,0,0.55)"
-                strokeWidth="2.4"
-                strokeLinecap="round"
-                fill="none"
-              />
+            <svg width="84" height="84" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+              {/* watch bezel */}
+              <circle cx="64" cy="64" r="44" fill="none" stroke="#FFFFFF" strokeWidth="5"/>
+              {/* hour marks at 12/3/6/9 */}
+              <rect x="62" y="22" width="4" height="7" rx="1.5" fill="#FFFFFF"/>
+              <rect x="99" y="62" width="7" height="4" rx="1.5" fill="#FFFFFF"/>
+              <rect x="62" y="99" width="4" height="7" rx="1.5" fill="#FFFFFF"/>
+              <rect x="22" y="62" width="7" height="4" rx="1.5" fill="#FFFFFF"/>
+              {/* plane inside (translated path so it's centered inside the dial) */}
+              <g transform="translate(64 64)">
+                <path d="M28 -22 L-26 0 L-9 6 L-3 22 L1 12 L18 18 Z" fill="#FFFFFF" stroke="#FFFFFF" strokeWidth="1.2" strokeLinejoin="round"/>
+                <path d="M-9 6 L28 -22" stroke="rgba(217,78,0,0.55)" strokeWidth="2" strokeLinecap="round" fill="none"/>
+              </g>
             </svg>
           </div>
           <div
