@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Menu, Plane, X } from 'lucide-react';
+import { ArrowLeft, LayoutDashboard, Menu, Plane, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const LINKS = [
@@ -12,7 +12,7 @@ const LINKS = [
   { href: '#faq', label: 'שאלות' },
 ];
 
-export function MarketingNav() {
+export function MarketingNav({ loggedIn = false }: { loggedIn?: boolean }) {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -54,16 +54,28 @@ export function MarketingNav() {
 
         {/* Right side */}
         <div className="flex items-center gap-2">
-          <Link href="/login" className={`hidden sm:inline-block text-sm font-medium transition-colors ${scrolled ? 'text-muted-foreground hover:text-foreground' : 'text-white/85 hover:text-white'}`}>
-            התחבר
-          </Link>
-          <Link href="/login">
-            <Button variant="accent" size="sm" className="h-9 gap-1.5 shadow-glow-orange">
-              <span className="hidden sm:inline">התחל בחינם</span>
-              <span className="sm:hidden">התחל</span>
-              <ArrowLeft className="size-3.5" />
-            </Button>
-          </Link>
+          {loggedIn ? (
+            <Link href="/dashboard">
+              <Button variant="accent" size="sm" className="h-9 gap-1.5 shadow-glow-orange">
+                <LayoutDashboard className="size-3.5" />
+                <span className="hidden sm:inline">פתח את הדשבורד</span>
+                <span className="sm:hidden">דשבורד</span>
+              </Button>
+            </Link>
+          ) : (
+            <>
+              <Link href="/login" className={`hidden sm:inline-block text-sm font-medium transition-colors ${scrolled ? 'text-muted-foreground hover:text-foreground' : 'text-white/85 hover:text-white'}`}>
+                התחבר
+              </Link>
+              <Link href="/login">
+                <Button variant="accent" size="sm" className="h-9 gap-1.5 shadow-glow-orange">
+                  <span className="hidden sm:inline">התחל בחינם</span>
+                  <span className="sm:hidden">התחל</span>
+                  <ArrowLeft className="size-3.5" />
+                </Button>
+              </Link>
+            </>
+          )}
           <button
             onClick={() => setMenuOpen((v) => !v)}
             className={`md:hidden grid size-9 place-items-center rounded-md transition-colors ${scrolled ? 'text-foreground hover:bg-muted' : 'text-white hover:bg-white/15'}`}
@@ -89,11 +101,11 @@ export function MarketingNav() {
               </a>
             ))}
             <Link
-              href="/login"
+              href={loggedIn ? '/dashboard' : '/login'}
               onClick={() => setMenuOpen(false)}
               className="rounded-md px-3 py-2.5 text-sm font-medium text-foreground hover:bg-muted"
             >
-              התחבר
+              {loggedIn ? 'פתח את הדשבורד' : 'התחבר'}
             </Link>
           </nav>
         </div>

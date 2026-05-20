@@ -1,26 +1,32 @@
 import Link from 'next/link';
 import {
   ArrowLeft, Camera, Eye, Bell, ShieldCheck, Sparkles,
-  PiggyBank, Lock, Zap, Globe, Check, Star, Quote,
+  PiggyBank, Lock, Zap, Globe, Check, Star, Quote, LayoutDashboard,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { VideoHero } from '@/components/video-hero';
 import { MarketingNav } from '@/components/marketing-nav';
 import { MarketingFooter } from '@/components/marketing-footer';
+import { createClient } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const loggedIn = !!user;
+  const ctaHref = loggedIn ? '/dashboard' : '/login';
+
   return (
     <div className="relative min-h-screen bg-background">
-      <MarketingNav />
+      <MarketingNav loggedIn={loggedIn} />
 
       {/* ======================== HERO (video) ======================== */}
       <VideoHero>
         <div className="relative z-10 flex h-full flex-col items-center justify-center px-5 text-center text-white sm:px-8">
           <div className="mb-8 inline-flex items-center gap-2 rounded-full glass-dark px-4 py-1.5 text-xs font-medium text-white animate-fade-up">
             <Sparkles className="size-3.5 text-warning" />
-            חינם · 30 שניות להתחבר · בלי הורדה
+            {loggedIn ? 'ברוך הבא חזרה ל-TripWatch' : 'חינם · 30 שניות להתחבר · בלי הורדה'}
           </div>
 
           <h1 className="font-display max-w-5xl text-balance text-5xl leading-[0.95] sm:text-7xl md:text-8xl lg:text-[110px] animate-fade-up [animation-delay:120ms]">
@@ -34,13 +40,22 @@ export default function LandingPage() {
           </p>
 
           <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row animate-fade-up [animation-delay:360ms]">
-            <Link href="/login">
+            <Link href={ctaHref}>
               <Button variant="accent" size="lg" className="h-14 gap-2 px-10 text-base font-bold shadow-glow-orange">
-                התחל לחסוך — חינם
-                <ArrowLeft className="size-4" />
+                {loggedIn ? (
+                  <>
+                    <LayoutDashboard className="size-4" />
+                    פתח את הדשבורד שלך
+                  </>
+                ) : (
+                  <>
+                    התחל לחסוך — חינם
+                    <ArrowLeft className="size-4" />
+                  </>
+                )}
               </Button>
             </Link>
-            <p className="text-xs text-white/70">30 שניות · בלי כרטיס אשראי · בלי הורדה</p>
+            {!loggedIn && <p className="text-xs text-white/70">30 שניות · בלי כרטיס אשראי · בלי הורדה</p>}
           </div>
 
           {/* Floating trust strip */}
@@ -182,10 +197,19 @@ export default function LandingPage() {
                 <Feature>חיבור טלגרם</Feature>
                 <Feature>היסטוריית מחירים מלאה</Feature>
               </ul>
-              <Link href="/login" className="mt-8 block">
+              <Link href={ctaHref} className="mt-8 block">
                 <Button variant="accent" className="w-full h-12 text-base font-semibold shadow-glow-orange">
-                  התחל עכשיו
-                  <ArrowLeft className="size-4" />
+                  {loggedIn ? (
+                    <>
+                      <LayoutDashboard className="size-4" />
+                      פתח את הדשבורד
+                    </>
+                  ) : (
+                    <>
+                      התחל עכשיו
+                      <ArrowLeft className="size-4" />
+                    </>
+                  )}
                 </Button>
               </Link>
             </div>
@@ -265,14 +289,23 @@ export default function LandingPage() {
             השאלה היא אם תדע על זה.
           </p>
           <div className="mt-10 flex justify-center">
-            <Link href="/login">
+            <Link href={ctaHref}>
               <Button size="lg" className="h-14 gap-2 bg-white px-10 text-base font-bold text-accent hover:bg-white/95">
-                התחל בחינם — 30 שניות
-                <ArrowLeft className="size-4" />
+                {loggedIn ? (
+                  <>
+                    <LayoutDashboard className="size-4" />
+                    פתח את הדשבורד
+                  </>
+                ) : (
+                  <>
+                    התחל בחינם — 30 שניות
+                    <ArrowLeft className="size-4" />
+                  </>
+                )}
               </Button>
             </Link>
           </div>
-          <p className="mt-6 text-xs text-white/80">בלי כרטיס אשראי · בלי הורדה · בלי התחייבות</p>
+          {!loggedIn && <p className="mt-6 text-xs text-white/80">בלי כרטיס אשראי · בלי הורדה · בלי התחייבות</p>}
         </div>
       </section>
 
