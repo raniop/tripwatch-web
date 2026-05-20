@@ -5,14 +5,30 @@ import Link from 'next/link';
 import { ArrowLeft, LayoutDashboard, Menu, Plane, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-const LINKS = [
-  { href: '#how', label: 'איך זה עובד' },
-  { href: '#testimonials', label: 'משתמשים' },
-  { href: '#pricing', label: 'תמחור' },
-  { href: '#faq', label: 'שאלות' },
-];
+interface NavMessages {
+  howItWorks: string;
+  testimonials: string;
+  pricing: string;
+  faq: string;
+  login: string;
+  startFree: string;
+  startFreeShort: string;
+  openDashboard: string;
+  openDashboardShort: string;
+}
 
-export function MarketingNav({ loggedIn = false }: { loggedIn?: boolean }) {
+interface Props {
+  loggedIn?: boolean;
+  messages: NavMessages;
+}
+
+export function MarketingNav({ loggedIn = false, messages }: Props) {
+  const LINKS = [
+    { href: '#how', label: messages.howItWorks },
+    { href: '#testimonials', label: messages.testimonials },
+    { href: '#pricing', label: messages.pricing },
+    { href: '#faq', label: messages.faq },
+  ];
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -58,19 +74,19 @@ export function MarketingNav({ loggedIn = false }: { loggedIn?: boolean }) {
             <Link href="/dashboard">
               <Button variant="accent" size="sm" className="h-9 gap-1.5 shadow-glow-orange">
                 <LayoutDashboard className="size-3.5" />
-                <span className="hidden sm:inline">פתח את הדשבורד</span>
-                <span className="sm:hidden">דשבורד</span>
+                <span className="hidden sm:inline">{messages.openDashboard}</span>
+                <span className="sm:hidden">{messages.openDashboardShort}</span>
               </Button>
             </Link>
           ) : (
             <>
               <Link href="/login" className={`hidden sm:inline-block text-sm font-medium transition-colors ${scrolled ? 'text-muted-foreground hover:text-foreground' : 'text-white/85 hover:text-white'}`}>
-                התחבר
+                {messages.login}
               </Link>
               <Link href="/login">
                 <Button variant="accent" size="sm" className="h-9 gap-1.5 shadow-glow-orange">
-                  <span className="hidden sm:inline">התחל בחינם</span>
-                  <span className="sm:hidden">התחל</span>
+                  <span className="hidden sm:inline">{messages.startFree}</span>
+                  <span className="sm:hidden">{messages.startFreeShort}</span>
                   <ArrowLeft className="size-3.5" />
                 </Button>
               </Link>
@@ -105,7 +121,7 @@ export function MarketingNav({ loggedIn = false }: { loggedIn?: boolean }) {
               onClick={() => setMenuOpen(false)}
               className="rounded-md px-3 py-2.5 text-sm font-medium text-foreground hover:bg-muted"
             >
-              {loggedIn ? 'פתח את הדשבורד' : 'התחבר'}
+              {loggedIn ? messages.openDashboard : messages.login}
             </Link>
           </nav>
         </div>

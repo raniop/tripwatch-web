@@ -23,6 +23,21 @@ interface BookingItem {
 
 interface Props {
   bookings: BookingItem[];
+  messages: {
+    placeholder: string;
+    navHeading: string;
+    bookingsHeading: string;
+    empty: string;
+    navHint: string;
+    selectHint: string;
+    cmdDashboard: string;
+    cmdAdd: string;
+    cmdSettings: string;
+    cmdHome: string;
+    cmdA11y: string;
+    cmdSignOut: string;
+    untitled: string;
+  };
 }
 
 interface Cmd {
@@ -34,7 +49,7 @@ interface Cmd {
   group: 'navigation' | 'bookings';
 }
 
-export function CommandPalette({ bookings }: Props) {
+export function CommandPalette({ bookings, messages }: Props) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [activeIdx, setActiveIdx] = useState(0);
@@ -67,23 +82,23 @@ export function CommandPalette({ bookings }: Props) {
 
   const allCommands: Cmd[] = useMemo(() => {
     const nav: Cmd[] = [
-      { id: 'dashboard', label: 'הנסיעות שלי', icon: <LayoutDashboard className="size-4" />, run: () => { router.push('/dashboard'); close(); }, group: 'navigation' },
-      { id: 'add',       label: 'הוסף הזמנה',   icon: <Plus className="size-4" />,            run: () => { router.push('/add'); close(); },       group: 'navigation' },
-      { id: 'settings',  label: 'הגדרות',        icon: <Settings className="size-4" />,        run: () => { router.push('/settings'); close(); },  group: 'navigation' },
-      { id: 'home',      label: 'דף הבית',       icon: <Home className="size-4" />,            run: () => { router.push('/'); close(); },           group: 'navigation' },
-      { id: 'a11y',      label: 'הצהרת נגישות',  icon: <Accessibility className="size-4" />,   run: () => { router.push('/accessibility'); close(); }, group: 'navigation' },
-      { id: 'signout',   label: 'התנתק',         icon: <LogOut className="size-4" />,          run: () => { close(); document.getElementById('cmdk-signout-form')?.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })); }, group: 'navigation' },
+      { id: 'dashboard', label: messages.cmdDashboard, icon: <LayoutDashboard className="size-4" />, run: () => { router.push('/dashboard'); close(); }, group: 'navigation' },
+      { id: 'add',       label: messages.cmdAdd,       icon: <Plus className="size-4" />,            run: () => { router.push('/add'); close(); },       group: 'navigation' },
+      { id: 'settings',  label: messages.cmdSettings,  icon: <Settings className="size-4" />,        run: () => { router.push('/settings'); close(); },  group: 'navigation' },
+      { id: 'home',      label: messages.cmdHome,      icon: <Home className="size-4" />,            run: () => { router.push('/'); close(); },           group: 'navigation' },
+      { id: 'a11y',      label: messages.cmdA11y,      icon: <Accessibility className="size-4" />,   run: () => { router.push('/accessibility'); close(); }, group: 'navigation' },
+      { id: 'signout',   label: messages.cmdSignOut,   icon: <LogOut className="size-4" />,          run: () => { close(); document.getElementById('cmdk-signout-form')?.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })); }, group: 'navigation' },
     ];
     const bks: Cmd[] = bookings.map((b) => ({
       id: `b-${b.id}`,
-      label: b.hotel_name || '(הזמנה ללא שם)',
+      label: b.hotel_name || messages.untitled,
       hint: `${b.check_in} → ${b.check_out}`,
       icon: <Hotel className="size-4" />,
       run: () => { router.push(`/booking/${b.id}`); close(); },
       group: 'bookings',
     }));
     return [...nav, ...bks];
-  }, [bookings, router]);
+  }, [bookings, router, messages]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -117,7 +132,7 @@ export function CommandPalette({ bookings }: Props) {
         {/* Mobile launcher — visible only on small screens */}
         <button
           onClick={() => setOpen(true)}
-          aria-label="חיפוש"
+          aria-label={messages.placeholder}
           className="fixed bottom-5 end-5 z-[55] grid size-12 place-items-center rounded-full bg-foreground text-background shadow-lg sm:hidden focus:outline-none focus-visible:ring-4 focus-visible:ring-foreground/30"
         >
           <Search className="size-5" />
@@ -185,9 +200,9 @@ export function CommandPalette({ bookings }: Props) {
             value={query}
             onChange={(e) => { setQuery(e.target.value); setActiveIdx(0); }}
             onKeyDown={onKeyDown}
-            placeholder="חפש הזמנה, הגדרה, או פעולה..."
+            placeholder={messages.placeholder}
             className="h-12 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-            aria-label="שאילתת חיפוש"
+            aria-label={messages.placeholder}
           />
           <kbd className="hidden sm:inline-block rounded border border-border bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground" dir="ltr">esc</kbd>
           <button onClick={close} className="text-muted-foreground hover:text-foreground sm:hidden" aria-label="סגור">
@@ -198,12 +213,12 @@ export function CommandPalette({ bookings }: Props) {
         <div className="max-h-[60vh] overflow-y-auto">
           {filtered.length === 0 ? (
             <p className="px-3 py-6 text-center text-sm text-muted-foreground">
-              לא נמצאו תוצאות עבור &quot;{query}&quot;
+              {messages.empty.replace('{query}', query)}
             </p>
           ) : (
             <>
-              {renderGroup('ניווט', grouped.navigation)}
-              {renderGroup('הזמנות', grouped.bookings)}
+              {renderGroup(messages.navHeading, grouped.navigation)}
+              {renderGroup(messages.bookingsHeading, grouped.bookings)}
             </>
           )}
         </div>
@@ -212,11 +227,11 @@ export function CommandPalette({ bookings }: Props) {
           <span>
             <kbd className="mx-0.5 rounded border border-border bg-card px-1 py-0.5" dir="ltr">↑</kbd>
             <kbd className="mx-0.5 rounded border border-border bg-card px-1 py-0.5" dir="ltr">↓</kbd>
-            לניווט
+            {messages.navHint}
           </span>
           <span>
             <kbd className="mx-0.5 rounded border border-border bg-card px-1 py-0.5" dir="ltr">enter</kbd>
-            לבחירה
+            {messages.selectHint}
           </span>
         </div>
       </div>

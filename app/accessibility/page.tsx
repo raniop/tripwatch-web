@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { MarketingNav } from '@/components/marketing-nav';
 import { MarketingFooter } from '@/components/marketing-footer';
 import { createClient } from '@/lib/supabase/server';
+import { getLocaleAndMessages } from '@/lib/i18n';
 
 export const metadata = {
   title: 'הצהרת נגישות · TripWatch',
@@ -12,10 +13,11 @@ export const dynamic = 'force-dynamic';
 export default async function AccessibilityPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+  const { locale, t } = await getLocaleAndMessages();
 
   return (
     <div className="relative min-h-screen bg-background">
-      <MarketingNav loggedIn={!!user} />
+      <MarketingNav loggedIn={!!user} messages={t.nav} />
 
       <main className="mx-auto max-w-3xl px-5 py-32 sm:px-8">
         <h1 className="font-display text-4xl sm:text-5xl">הצהרת נגישות</h1>
@@ -113,7 +115,14 @@ export default async function AccessibilityPage() {
         </div>
       </main>
 
-      <MarketingFooter />
+      <MarketingFooter locale={locale} messages={{
+        footer: t.footer,
+        nav: { howItWorks: t.nav.howItWorks, faq: t.nav.faq, login: t.nav.login, startFree: t.nav.startFree },
+        pricing: { eyebrow: t.pricing.eyebrow },
+        faq: { eyebrow: t.faq.eyebrow },
+        testimonials: { eyebrow: t.testimonials.eyebrow },
+        localeSwitcher: t.localeSwitcher,
+      }} />
     </div>
   );
 }

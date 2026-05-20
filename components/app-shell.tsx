@@ -3,6 +3,7 @@ import { Home, LogOut, Search } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { RealtimeNotifications } from '@/components/realtime-notifications';
 import { CommandPalette } from '@/components/command-palette';
+import { getMessages } from '@/lib/i18n';
 
 export async function AppShell({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -26,6 +27,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
     check_in: string;
     check_out: string;
   }>;
+  const t = await getMessages();
 
   return (
     <div className="min-h-screen bg-background">
@@ -48,13 +50,13 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
             <Link
               href="/"
               className="text-muted-foreground hover:text-foreground"
-              title="דף הבית"
-              aria-label="דף הבית"
+              title={t.nav.home}
+              aria-label={t.nav.home}
             >
               <Home className="size-4" />
             </Link>
             <Link href="/settings" className="text-sm text-muted-foreground hover:text-foreground">
-              הגדרות
+              {t.nav.settings}
             </Link>
             <form action="/auth/signout" method="post">
               <button type="submit" className="text-sm text-muted-foreground hover:text-foreground" aria-label="התנתקות">
@@ -66,7 +68,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
       </header>
       <main className="mx-auto max-w-5xl px-4 py-6">{children}</main>
       {user && <RealtimeNotifications userId={user.id} />}
-      {user && <CommandPalette bookings={bookings} />}
+      {user && <CommandPalette bookings={bookings} messages={t.commandPalette} />}
     </div>
   );
 }

@@ -20,7 +20,17 @@ const STORAGE_KEY = 'tw_cookie_consent_v1';
 
 type Consent = 'all' | 'essential';
 
-export function CookieConsent() {
+interface Props {
+  messages: {
+    bannerText: string;
+    privacyLink: string;
+    acceptAll: string;
+    essentialOnly: string;
+    close: string;
+  };
+}
+
+export function CookieConsent({ messages }: Props) {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
@@ -43,10 +53,22 @@ export function CookieConsent() {
 
   if (!show) return null;
 
+  function renderWithPrivacyLink(template: string, linkLabel: string) {
+    const parts = template.split('{privacyLink}');
+    if (parts.length !== 2) return <>{template}</>;
+    return (
+      <>
+        {parts[0]}
+        <Link href="/privacy" className="underline">{linkLabel}</Link>
+        {parts[1]}
+      </>
+    );
+  }
+
   return (
     <div
       role="dialog"
-      aria-label="הודעת קוקיז"
+      aria-label="cookies"
       className="fixed inset-x-3 bottom-3 z-[60] mx-auto max-w-2xl rounded-2xl border border-border bg-card/95 p-4 shadow-2xl backdrop-blur sm:p-5"
     >
       <div className="flex items-start gap-3">
@@ -55,22 +77,21 @@ export function CookieConsent() {
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm leading-relaxed text-foreground">
-            אנחנו משתמשים בקוקיז כדי לזכור אותך מחובר ולגרום למוצר לעבוד.
-            לקרוא עוד ב-<Link href="/privacy" className="underline">מדיניות הפרטיות</Link>.
+            {renderWithPrivacyLink(messages.bannerText, messages.privacyLink)}
           </p>
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <Button onClick={() => decide('all')} size="sm" className="h-8">
-              קבל הכל
+              {messages.acceptAll}
             </Button>
             <Button onClick={() => decide('essential')} variant="outline" size="sm" className="h-8">
-              רק חיוניים
+              {messages.essentialOnly}
             </Button>
           </div>
         </div>
         <button
           onClick={() => decide('essential')}
           className="shrink-0 text-muted-foreground hover:text-foreground"
-          aria-label="סגור"
+          aria-label={messages.close}
         >
           <X className="size-4" />
         </button>

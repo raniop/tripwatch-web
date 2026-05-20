@@ -3,6 +3,7 @@ import { Heebo, Poppins } from 'next/font/google';
 import './globals.css';
 import { CookieConsent } from '@/components/cookie-consent';
 import { AccessibilityWidget } from '@/components/accessibility-widget';
+import { getLocaleAndMessages, dir, htmlLang } from '@/lib/i18n';
 
 const heebo = Heebo({
   subsets: ['hebrew', 'latin'],
@@ -16,31 +17,29 @@ const poppins = Poppins({
   variable: '--font-poppins',
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL('https://tripwatch.net'),
-  title: {
-    default: 'TripWatch — הזמנת חופשה? נחזיר לך כסף.',
-    template: '%s · TripWatch',
-  },
-  description:
-    'עוקבים אחרי המחיר של ההזמנה שלך ב-Booking, כל יום. ברגע שהוא יורד — אתה הראשון לדעת. חינם.',
-  manifest: '/manifest.json',
-  appleWebApp: { capable: true, title: 'TripWatch', statusBarStyle: 'default' },
-  openGraph: {
-    type: 'website',
-    locale: 'he_IL',
-    url: 'https://tripwatch.net',
-    siteName: 'TripWatch',
-    title: 'TripWatch — הזמנת חופשה? נחזיר לך כסף.',
-    description:
-      'עוקבים אחרי המחיר של ההזמנה שלך ב-Booking, כל יום. ברגע שהוא יורד — אתה הראשון לדעת.',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'TripWatch — הזמנת חופשה? נחזיר לך כסף.',
-    description: 'עוקבים אחרי המחיר של ההזמנה ב-Booking. ירד — אתה הראשון לדעת. חינם.',
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { locale, t } = await getLocaleAndMessages();
+  return {
+    metadataBase: new URL('https://tripwatch.net'),
+    title: { default: t.meta.siteTitle, template: '%s · TripWatch' },
+    description: t.meta.siteDescription,
+    manifest: '/manifest.json',
+    appleWebApp: { capable: true, title: 'TripWatch', statusBarStyle: 'default' },
+    openGraph: {
+      type: 'website',
+      locale: locale === 'he' ? 'he_IL' : 'en_US',
+      url: 'https://tripwatch.net',
+      siteName: 'TripWatch',
+      title: t.meta.siteTitle,
+      description: t.meta.siteDescription,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: t.meta.siteTitle,
+      description: t.meta.siteDescription,
+    },
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: [
@@ -51,13 +50,14 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const { locale, t } = await getLocaleAndMessages();
   return (
-    <html lang="he" dir="rtl" className={`${heebo.variable} ${poppins.variable}`}>
+    <html lang={htmlLang(locale)} dir={dir(locale)} className={`${heebo.variable} ${poppins.variable}`}>
       <body className="min-h-screen antialiased">
         {children}
-        <AccessibilityWidget />
-        <CookieConsent />
+        <AccessibilityWidget messages={t.a11y} />
+        <CookieConsent messages={t.cookies} />
       </body>
     </html>
   );

@@ -1,7 +1,22 @@
 import Link from 'next/link';
 import { Plane, Mail, Github } from 'lucide-react';
+import { LocaleSwitcher } from '@/components/locale-switcher';
+import type { Locale, Messages } from '@/lib/i18n/types';
 
-export function MarketingFooter() {
+interface Props {
+  locale: Locale;
+  messages: {
+    footer: Messages['footer'];
+    nav: Pick<Messages['nav'], 'howItWorks' | 'faq' | 'login' | 'startFree'>;
+    pricing: Pick<Messages['pricing'], 'eyebrow'>;
+    faq: Pick<Messages['faq'], 'eyebrow'>;
+    testimonials: Pick<Messages['testimonials'], 'eyebrow'>;
+    localeSwitcher: Messages['localeSwitcher'];
+  };
+}
+
+export function MarketingFooter({ locale, messages }: Props) {
+  const t = messages.footer;
   return (
     <footer className="border-t border-border bg-muted/30">
       <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
@@ -15,14 +30,13 @@ export function MarketingFooter() {
               <span className="ms-1 rounded-full bg-warning/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-warning">Beta</span>
             </Link>
             <p className="mt-3 max-w-sm text-sm leading-relaxed text-muted-foreground">
-              עוקבים אחרי המחיר של ההזמנה שלך ב-Booking — כל יום.
-              ברגע שהוא יורד, אתה הראשון לדעת.
+              {t.blurb}
             </p>
             <div className="mt-5 flex items-center gap-3">
               <a
                 href="mailto:rani@ophirins.co.il"
                 className="grid size-9 place-items-center rounded-lg border border-border bg-card text-muted-foreground transition-colors hover:border-primary hover:text-primary"
-                aria-label="מייל"
+                aria-label="email"
               >
                 <Mail className="size-4" />
               </a>
@@ -36,37 +50,44 @@ export function MarketingFooter() {
                 <Github className="size-4" />
               </a>
             </div>
+            <div className="mt-6">
+              <LocaleSwitcher
+                current={locale}
+                variant="dark"
+                ariaLabel={messages.localeSwitcher.ariaLabel}
+                heLabel={messages.localeSwitcher.he}
+                enLabel={messages.localeSwitcher.en}
+              />
+            </div>
           </div>
 
           {/* Product */}
-          <Col title="מוצר">
-            <FLink href="#how">איך זה עובד</FLink>
-            <FLink href="#pricing">תמחור</FLink>
-            <FLink href="#faq">שאלות נפוצות</FLink>
-            <FLink href="/login">התחל בחינם</FLink>
+          <Col title={t.productHeading}>
+            <FLink href="#how">{messages.nav.howItWorks}</FLink>
+            <FLink href="#pricing">{messages.pricing.eyebrow}</FLink>
+            <FLink href="#faq">{messages.faq.eyebrow}</FLink>
+            <FLink href="/login">{messages.nav.startFree}</FLink>
           </Col>
 
           {/* Support */}
-          <Col title="תמיכה">
-            <FLink href="mailto:rani@ophirins.co.il">צור קשר</FLink>
-            <FLink href="#faq">מרכז עזרה</FLink>
-            <FLink href="#testimonials">סיפורי הצלחה</FLink>
+          <Col title={t.supportHeading}>
+            <FLink href="mailto:rani@ophirins.co.il">{t.contactUs}</FLink>
+            <FLink href="#faq">{messages.faq.eyebrow}</FLink>
+            <FLink href="#testimonials">{messages.testimonials.eyebrow}</FLink>
           </Col>
 
           {/* Legal */}
-          <Col title="חוקי">
-            <FLink href="/privacy">פרטיות</FLink>
-            <FLink href="/terms">תנאי שימוש</FLink>
-            <FLink href="/accessibility">הצהרת נגישות</FLink>
+          <Col title={t.legalHeading}>
+            <FLink href="/privacy">{t.privacy}</FLink>
+            <FLink href="/terms">{t.terms}</FLink>
+            <FLink href="/accessibility">{t.accessibility}</FLink>
           </Col>
         </div>
 
         {/* Bottom bar */}
         <div className="mt-12 flex flex-col items-center justify-between gap-3 border-t border-border pt-6 text-xs text-muted-foreground sm:flex-row">
-          <p>© {new Date().getFullYear()} TripWatch · בנוי באהבה בישראל 🇮🇱</p>
-          <p>
-            לא קשור ל-Booking.com · אנחנו רק עוקבים אחרי מחירים פומביים בשבילך
-          </p>
+          <p>{t.bottomLeft.replace('{year}', String(new Date().getFullYear()))}</p>
+          <p>{t.bottomRight}</p>
         </div>
       </div>
     </footer>

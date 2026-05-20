@@ -61,7 +61,25 @@ function save(s: Settings) {
   }
 }
 
-export function AccessibilityWidget() {
+interface Props {
+  messages: {
+    launcherAria: string;
+    panelTitle: string;
+    fontSizeLabel: string;
+    fontNormal: string;
+    fontLarge: string;
+    fontXl: string;
+    highContrast: string;
+    underlineLinks: string;
+    noMotion: string;
+    strongFocus: string;
+    reset: string;
+    statementLink: string;
+    close: string;
+  };
+}
+
+export function AccessibilityWidget({ messages }: Props) {
   const [open, setOpen] = useState(false);
   const [s, setS] = useState<Settings>(DEFAULTS);
   const [hydrated, setHydrated] = useState(false);
@@ -94,7 +112,7 @@ export function AccessibilityWidget() {
       <button
         onClick={() => setOpen((v) => !v)}
         className="fixed bottom-5 start-5 z-[55] grid size-12 place-items-center rounded-full bg-primary text-white shadow-lg transition-transform hover:scale-105 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/40"
-        aria-label="פתח תפריט נגישות"
+        aria-label={messages.launcherAria}
         aria-expanded={open}
       >
         <Accessibility className="size-6" />
@@ -103,12 +121,12 @@ export function AccessibilityWidget() {
       {open && (
         <div
           role="dialog"
-          aria-label="הגדרות נגישות"
+          aria-label={messages.panelTitle}
           className="fixed bottom-20 start-5 z-[55] w-[300px] max-w-[calc(100vw-2.5rem)] rounded-2xl border border-border bg-card shadow-2xl"
         >
           <div className="flex items-center justify-between border-b border-border p-3">
-            <h2 className="text-sm font-semibold">נגישות</h2>
-            <button onClick={() => setOpen(false)} aria-label="סגור" className="text-muted-foreground hover:text-foreground">
+            <h2 className="text-sm font-semibold">{messages.panelTitle}</h2>
+            <button onClick={() => setOpen(false)} aria-label={messages.close} className="text-muted-foreground hover:text-foreground">
               <X className="size-4" />
             </button>
           </div>
@@ -116,13 +134,13 @@ export function AccessibilityWidget() {
           <div className="space-y-3 p-3 text-sm">
             <div>
               <label className="mb-1 flex items-center gap-2 text-xs text-muted-foreground">
-                <Type className="size-3.5" /> גודל גופן
+                <Type className="size-3.5" /> {messages.fontSizeLabel}
               </label>
               <div className="grid grid-cols-3 gap-1">
                 {([
-                  ['normal', 'רגיל'],
-                  ['large', 'גדול'],
-                  ['xl', 'ענק'],
+                  ['normal', messages.fontNormal],
+                  ['large', messages.fontLarge],
+                  ['xl', messages.fontXl],
                 ] as Array<[FontScale, string]>).map(([k, label]) => (
                   <button
                     key={k}
@@ -137,25 +155,25 @@ export function AccessibilityWidget() {
 
             <Toggle
               icon={<Contrast className="size-3.5" />}
-              label="ניגודיות גבוהה"
+              label={messages.highContrast}
               checked={s.highContrast}
               onChange={(v) => update({ highContrast: v })}
             />
             <Toggle
               icon={<LinkIcon className="size-3.5" />}
-              label="קישורים מודגשים"
+              label={messages.underlineLinks}
               checked={s.underlineLinks}
               onChange={(v) => update({ underlineLinks: v })}
             />
             <Toggle
               icon={<Pause className="size-3.5" />}
-              label="השהיית אנימציות"
+              label={messages.noMotion}
               checked={s.noMotion}
               onChange={(v) => update({ noMotion: v })}
             />
             <Toggle
               icon={<Focus className="size-3.5" />}
-              label="מסגרת מיקוד בולטת"
+              label={messages.strongFocus}
               checked={s.strongFocus}
               onChange={(v) => update({ strongFocus: v })}
             />
@@ -165,14 +183,14 @@ export function AccessibilityWidget() {
                 onClick={reset}
                 className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
               >
-                <RotateCcw className="size-3" /> איפוס
+                <RotateCcw className="size-3" /> {messages.reset}
               </button>
               <Link
                 href="/accessibility"
                 onClick={() => setOpen(false)}
                 className="text-xs text-primary underline"
               >
-                הצהרת נגישות מלאה
+                {messages.statementLink}
               </Link>
             </div>
           </div>
