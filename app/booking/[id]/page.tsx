@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { createClient } from '@/lib/supabase/server';
 import { fmtPrice, fmtDateRange, nightsBetween, priceDiff, fmtRelative } from '@/lib/format';
 import { convertToILS } from '@/lib/fx';
+import { getMessages } from '@/lib/i18n';
 import { CancellationDeadlineEditor } from '@/components/cancellation-deadline-editor';
 import type { Booking, PriceCheck } from '@/lib/supabase/types';
 
@@ -19,6 +20,7 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
+  const t = await getMessages();
 
   const { data: booking } = await supabase
     .from('bookings')
@@ -66,7 +68,7 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
   return (
     <AppShell>
       <Link href="/dashboard" className="mb-4 inline-block text-sm text-muted-foreground hover:text-foreground">
-        ← חזרה לכל ההזמנות
+        {t.bookingDetail.backToList}
       </Link>
 
       <div className="grid gap-6 md:grid-cols-3">
@@ -79,11 +81,11 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
           <CardContent className="space-y-3 p-6">
             <h1 className="text-2xl font-bold">{b.hotel_name}</h1>
             <p className="text-sm text-muted-foreground">
-              {fmtDateRange(b.check_in, b.check_out)} · {nightsBetween(b.check_in, b.check_out)} לילות
+              {fmtDateRange(b.check_in, b.check_out)} · {nightsBetween(b.check_in, b.check_out)} {t.bookingCard.nights}
             </p>
             {b.guests && (
               <p className="text-sm">
-                👥 {b.guests.adults} מבוגרים{b.guests.children > 0 ? `, ${b.guests.children} ילדים` : ''} · 🚪 {b.guests.rooms} חדרים
+                👥 {b.guests.adults} {t.bookingDetail.adults}{b.guests.children > 0 ? `, ${b.guests.children} ${t.bookingDetail.children}` : ''} · 🚪 {b.guests.rooms} {t.bookingDetail.rooms}
               </p>
             )}
             {b.room_type && <p className="text-sm">🛏 <span className="text-foreground">{b.room_type}</span></p>}
@@ -91,11 +93,15 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
             {b.cancellation && !b.cancellation_deadline && (
               <p className="text-sm text-muted-foreground">📋 {b.cancellation}</p>
             )}
-            <CancellationDeadlineEditor bookingId={b.id} initialIso={b.cancellation_deadline} />
+            <CancellationDeadlineEditor
+              bookingId={b.id}
+              initialIso={b.cancellation_deadline}
+              messages={t.bookingDetail}
+            />
             <div className="flex gap-2 pt-2">
               <a href={b.url} target="_blank" rel="noopener noreferrer">
                 <Button variant="outline" size="sm">
-                  <ExternalLink className="size-4" /> פתח ב-Booking
+                  <ExternalLink className="size-4" /> {t.bookingDetail.openBooking}
                 </Button>
               </a>
             </div>
@@ -106,7 +112,7 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
         <Card>
           <CardContent className="space-y-4 p-6">
             <div>
-              <p className="text-xs text-muted-foreground">שילמת</p>
+              <p className="text-xs text-muted-foreground">{t.bookingDetail.paid}</p>
               <p className="tabular-nums text-2xl font-bold">{fmtPrice(b.paid_price, b.currency)}</p>
               {paidCur !== 'ILS' && paidIls && (
                 <p className="text-xs text-muted-foreground">≈ {fmtPrice(paidIls, 'ILS')}</p>
@@ -115,18 +121,18 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
             {hasCheck && diff ? (
               <>
                 <div>
-                  <p className="text-xs text-muted-foreground">מחיר נוכחי</p>
+                  <p className="text-xs text-muted-foreground">{t.bookingDetail.current}</p>
                   <p className={`tabular-nums text-3xl font-bold ${diff.direction === 'down' && diff.pct >= 1 ? 'text-success' : diff.direction === 'up' && diff.pct <= -1 ? 'text-destructive' : ''}`}>
                     {fmtPrice(b.last_price, b.last_currency || b.currency)}
                   </p>
                   {lastCur !== 'ILS' && currentIls && (
                     <p className="text-xs text-muted-foreground">≈ {fmtPrice(currentIls, 'ILS')}</p>
                   )}
-                  <p className="mt-1 text-xs text-muted-foreground">עודכן {fmtRelative(b.last_checked_at)}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{t.bookingDetail.updatedRelative.replace('{when}', fmtRelative(b.last_checked_at))}</p>
                 </div>
                 {diff.direction !== 'same' && (
                   <div className="rounded-md bg-muted p-3">
-                    <p className="text-xs text-muted-foreground">הפרש</p>
+                    <p className="text-xs text-muted-foreground">{t.bookingDetail.diff}</p>
                     <p className={`tabular-nums text-lg font-semibold ${diff.direction === 'down' ? 'text-success' : 'text-destructive'}`}>
                       {diff.direction === 'down' ? '⬇ ' : '⬆ '}
                       {fmtPrice(Math.abs(diff.diff), diff.currency)} ({Math.abs(diff.pct).toFixed(1)}%)
@@ -137,27 +143,27 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
                   <details className="rounded-md border border-border bg-muted/30 p-3 [&_summary]:cursor-pointer">
                     <summary className="text-[10px] uppercase tracking-wider text-muted-foreground list-none flex items-center justify-between">
                       <span>
-                        התאמה
+                        {t.bookingDetail.matchHeading}
                         {lastCheck.match_score !== null && (
                           <span className={`ms-1 font-bold ${Number(lastCheck.match_score) >= 0.8 ? 'text-success' : Number(lastCheck.match_score) >= 0.5 ? 'text-warning' : 'text-destructive'}`}>
                             {(Number(lastCheck.match_score) * 100).toFixed(0)}%
                           </span>
                         )}
                       </span>
-                      <span className="text-[10px] text-muted-foreground">פרטים ⌄</span>
+                      <span className="text-[10px] text-muted-foreground">{t.bookingDetail.matchDetails}</span>
                     </summary>
                     <div className="mt-3 space-y-2">
                       <div>
-                        <p className="text-[10px] text-muted-foreground">חדר שנבחר:</p>
+                        <p className="text-[10px] text-muted-foreground">{t.bookingDetail.selectedRoom}</p>
                         <p className="text-xs">🛏 {lastCheck.matched_room}</p>
                         {lastCheck.matched_meal && <p className="text-[11px] text-muted-foreground mt-0.5">{lastCheck.matched_meal.slice(0, 140)}</p>}
                       </div>
                       {Number(lastCheck.match_score) < 0.7 && (
-                        <p className="text-[11px] text-warning">⚠️ התאמה חלשה — ייתכן שלא התעריף הנכון</p>
+                        <p className="text-[11px] text-warning">{t.bookingDetail.weakMatch}</p>
                       )}
                       {lastCheck.candidates && lastCheck.candidates.length > 1 && (
                         <div>
-                          <p className="text-[10px] text-muted-foreground mb-1">כל המועמדים שנשקלו:</p>
+                          <p className="text-[10px] text-muted-foreground mb-1">{t.bookingDetail.allCandidates}</p>
                           <div className="space-y-1.5">
                             {lastCheck.candidates.map((c, i) => (
                               <div key={i} className={`rounded border p-2 text-[11px] ${i === 0 ? 'border-primary bg-primary/5' : 'border-border'}`}>
@@ -182,10 +188,10 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
               </>
             ) : (
               <p className="text-sm text-muted-foreground">
-                טרם נבדק. הבדיקה הראשונה תתבצע בלילה הקרוב, או לחץ "בדוק עכשיו".
+                {t.bookingDetail.notCheckedYetCta}
               </p>
             )}
-            <BookingActions bookingId={b.id} />
+            <BookingActions bookingId={b.id} messages={t.bookingActions} />
           </CardContent>
         </Card>
 
@@ -193,8 +199,8 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
         <Card className="md:col-span-3">
           <CardContent className="p-6">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold">היסטוריית מחירים</h2>
-              <p className="text-xs text-muted-foreground">{checks.length} בדיקות</p>
+              <h2 className="text-lg font-semibold">{t.bookingDetail.priceHistory}</h2>
+              <p className="text-xs text-muted-foreground">{t.bookingDetail.checksCount.replace('{n}', String(checks.length))}</p>
             </div>
             <PriceChart checks={checks} paidPrice={Number(b.paid_price)} currency={b.currency} />
           </CardContent>
@@ -204,7 +210,7 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
         {checks.length > 0 && (
           <Card className="md:col-span-3">
             <CardContent className="p-6">
-              <h2 className="mb-3 text-lg font-semibold">בדיקות אחרונות</h2>
+              <h2 className="mb-3 text-lg font-semibold">{t.bookingDetail.recentChecks}</h2>
               <div className="divide-y divide-border">
                 {checks.slice(0, 20).map((c) => (
                   <div key={c.id} className="flex items-center justify-between py-2 text-sm">
@@ -216,7 +222,7 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
                         {fmtPrice(c.price, c.currency)}
                         {c.match_score !== null && c.match_score !== undefined && (
                           <span className="ms-2 text-xs text-muted-foreground">
-                            התאמה {(Number(c.match_score) * 100).toFixed(0)}%
+                            {t.bookingDetail.matchPercent.replace('{p}', (Number(c.match_score) * 100).toFixed(0))}
                           </span>
                         )}
                       </span>

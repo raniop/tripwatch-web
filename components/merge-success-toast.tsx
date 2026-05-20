@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CheckCircle2, X } from 'lucide-react';
 
-export function MergeSuccessToast() {
+export function MergeSuccessToast({ message }: { message: string }) {
   const router = useRouter();
   const [visible, setVisible] = useState(true);
 
@@ -24,10 +24,7 @@ export function MergeSuccessToast() {
         <CheckCircle2 className="size-5" />
       </div>
       <div className="flex-1 text-sm">
-        <p className="font-semibold text-foreground">✅ החשבונות אוחדו!</p>
-        <p className="mt-0.5 text-xs text-muted-foreground">
-          כל ההזמנות וההגדרות מהחשבון האחר עברו לכאן. החשבון הישן נמחק.
-        </p>
+        <p className="font-semibold text-foreground">✅ {message}</p>
       </div>
       <button
         onClick={() => {
@@ -35,7 +32,7 @@ export function MergeSuccessToast() {
           router.replace('/dashboard');
         }}
         className="text-muted-foreground hover:text-foreground"
-        aria-label="סגור"
+        aria-label="close"
       >
         <X className="size-4" />
       </button>

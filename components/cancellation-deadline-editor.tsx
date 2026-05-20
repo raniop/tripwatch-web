@@ -4,12 +4,31 @@ import { useState, useTransition } from 'react';
 import { Pencil, Plus, Loader2, Check, X, Trash2 } from 'lucide-react';
 import { setCancellationDeadline } from '@/app/booking/[id]/actions';
 
+interface Messages {
+  addManualDeadlineCta: string;
+  deadlineLabel: string;
+  deadlineSave: string;
+  deadlineCancel: string;
+  deadlineDelete: string;
+  deadlineConfirmDelete: string;
+  deadlinePicker: string;
+  deadlineInvalid: string;
+  cancellationBanner: string;
+  cancellationExpired: string;
+  cancellationUnitHour: string;
+  cancellationUnitHours: string;
+  cancellationUnitDay: string;
+  cancellationUnitDays: string;
+  cancellationLessThanHour: string;
+}
+
 interface Props {
   bookingId: string;
   initialIso: string | null;
+  messages: Messages;
 }
 
-export function CancellationDeadlineEditor({ bookingId, initialIso }: Props) {
+export function CancellationDeadlineEditor({ bookingId, initialIso, messages }: Props) {
   const [iso, setIso] = useState(initialIso);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(toDatetimeLocal(initialIso));
@@ -29,7 +48,7 @@ export function CancellationDeadlineEditor({ bookingId, initialIso }: Props) {
 
   function onSave() {
     if (!draft) {
-      setErr('בחר תאריך ושעה');
+      setErr(messages.deadlinePicker);
       return;
     }
     const isoOut = new Date(draft).toISOString();
@@ -45,7 +64,7 @@ export function CancellationDeadlineEditor({ bookingId, initialIso }: Props) {
   }
 
   function onClear() {
-    if (!confirm('למחוק את תאריך הביטול?')) return;
+    if (!confirm(messages.deadlineConfirmDelete)) return;
     startTransition(async () => {
       const r = await setCancellationDeadline(bookingId, null);
       if (r.ok) {
@@ -61,7 +80,7 @@ export function CancellationDeadlineEditor({ bookingId, initialIso }: Props) {
     return (
       <div className="mt-2 rounded-lg border border-border bg-muted/30 p-3">
         <label className="block text-xs text-muted-foreground mb-1.5">
-          תאריך אחרון לביטול חינמי
+          {messages.deadlineLabel}
         </label>
         <input
           type="datetime-local"
@@ -74,16 +93,16 @@ export function CancellationDeadlineEditor({ bookingId, initialIso }: Props) {
         <div className="mt-2 flex flex-wrap items-center gap-2">
           <button onClick={onSave} disabled={pending} className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-white disabled:opacity-50">
             {pending ? <Loader2 className="size-3 animate-spin" /> : <Check className="size-3" />}
-            שמור
+            {messages.deadlineSave}
           </button>
           <button onClick={onCancel} disabled={pending} className="inline-flex items-center gap-1 rounded-md border border-border px-3 py-1.5 text-xs">
             <X className="size-3" />
-            בטל
+            {messages.deadlineCancel}
           </button>
           {iso && (
             <button onClick={onClear} disabled={pending} className="ms-auto inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-xs text-destructive hover:bg-destructive/10">
               <Trash2 className="size-3" />
-              מחק תאריך
+              {messages.deadlineDelete}
             </button>
           )}
         </div>
@@ -98,15 +117,15 @@ export function CancellationDeadlineEditor({ bookingId, initialIso }: Props) {
         className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-dashed border-border bg-muted/20 px-3 py-2 text-sm text-muted-foreground hover:border-primary hover:text-foreground transition-colors"
       >
         <Plus className="size-4" />
-        הוסף תאריך אחרון לביטול חינמי
+        {messages.addManualDeadlineCta}
       </button>
     );
   }
 
-  return <DeadlineBanner iso={iso} onEdit={onOpen} />;
+  return <DeadlineBanner iso={iso} onEdit={onOpen} messages={messages} />;
 }
 
-function DeadlineBanner({ iso, onEdit }: { iso: string; onEdit: () => void }) {
+function DeadlineBanner({ iso, onEdit, messages }: { iso: string; onEdit: () => void; messages: Messages }) {
   const now = Date.now();
   const deadline = new Date(iso).getTime();
   const msLeft = deadline - now;
@@ -114,12 +133,12 @@ function DeadlineBanner({ iso, onEdit }: { iso: string; onEdit: () => void }) {
   const hoursLeft = Math.round(msLeft / 3_600_000);
   const daysLeft = Math.round(msLeft / 86_400_000);
 
-  let remaining: string;
-  if (expired) remaining = 'פג תוקף';
-  else if (hoursLeft < 1) remaining = `עוד פחות משעה`;
-  else if (hoursLeft < 24) remaining = `עוד ${hoursLeft} שעות`;
-  else if (daysLeft === 1) remaining = `עוד יום`;
-  else remaining = `עוד ${daysLeft} ימים`;
+  let stateText: string;
+  if (expired) stateText = messages.cancellationExpired;
+  else if (hoursLeft < 1) stateText = messages.cancellationLessThanHour;
+  else if (hoursLeft < 24) stateText = (hoursLeft === 1 ? messages.cancellationUnitHour : messages.cancellationUnitHours).replace('{n}', String(hoursLeft));
+  else if (daysLeft === 1) stateText = messages.cancellationUnitDay;
+  else stateText = messages.cancellationUnitDays.replace('{n}', String(daysLeft));
 
   let cls = 'border-success/40 bg-success/10 text-success';
   if (expired) cls = 'border-border bg-muted text-muted-foreground';
@@ -131,14 +150,15 @@ function DeadlineBanner({ iso, onEdit }: { iso: string; onEdit: () => void }) {
   return (
     <div className={`mt-2 rounded-lg border px-3 py-2 text-sm ${cls}`}>
       <div className="flex items-center justify-between gap-3">
-        <span className="font-semibold">⏰ ביטול חינמי {expired ? 'פג' : remaining}</span>
+        <span className="font-semibold">
+          {messages.cancellationBanner.replace('{state}', stateText)}
+        </span>
         <span className="flex items-center gap-2">
           <span className="text-xs opacity-80" dir="ltr">{formatted}</span>
           <button
             onClick={onEdit}
             className="opacity-70 hover:opacity-100"
-            aria-label="ערוך"
-            title="ערוך תאריך"
+            aria-label={messages.deadlineSave}
           >
             <Pencil className="size-3.5" />
           </button>

@@ -5,7 +5,18 @@ import { fmtPrice, fmtDateRange, nightsBetween, priceDiff } from '@/lib/format';
 import { convertToILS } from '@/lib/fx';
 import { cn } from '@/lib/utils';
 
-export async function BookingCard({ booking }: { booking: Booking }) {
+interface CardMessages {
+  paid: string;
+  current: string;
+  notCheckedYet: string;
+  nights: string;
+  cancelExpired: string;
+  cancelUntilHours: string;
+  cancelUntilDays: string;
+  cancelUntilDate: string;
+}
+
+export async function BookingCard({ booking, messages }: { booking: Booking; messages: CardMessages }) {
   const nights = nightsBetween(booking.check_in, booking.check_out);
   const paidCur = (booking.currency || 'ILS').toUpperCase();
   const lastCur = (booking.last_currency || paidCur).toUpperCase();
@@ -28,7 +39,7 @@ export async function BookingCard({ booking }: { booking: Booking }) {
       ? { ...priceDiff(paidIls!, currentIls!), currency: 'ILS' }
       : { ...priceDiff(paidPriceN, lastPriceN!), currency: paidCur })
     : null;
-  const deadline = cancellationChip(booking.cancellation_deadline);
+  const deadline = cancellationChip(booking.cancellation_deadline, messages);
 
   return (
     <Link
@@ -58,7 +69,7 @@ export async function BookingCard({ booking }: { booking: Booking }) {
           <h3 className="line-clamp-1 text-base font-semibold">{booking.hotel_name}</h3>
           <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
             <Calendar className="size-3" />
-            {fmtDateRange(booking.check_in, booking.check_out)} · {nights} לילות
+            {fmtDateRange(booking.check_in, booking.check_out)} · {nights} {messages.nights}
           </p>
           {deadline && (
             <p className={cn(
@@ -90,7 +101,7 @@ export async function BookingCard({ booking }: { booking: Booking }) {
 
         <div className="border-t border-border pt-3">
           <div className="flex items-baseline justify-between gap-2">
-            <span className="text-xs text-muted-foreground">שילמת</span>
+            <span className="text-xs text-muted-foreground">{messages.paid}</span>
             <span className="tabular-nums text-sm font-medium">
               {fmtPrice(booking.paid_price, booking.currency)}
               {paidCur !== 'ILS' && paidIls && (
@@ -100,7 +111,7 @@ export async function BookingCard({ booking }: { booking: Booking }) {
           </div>
           {hasCheck && diff ? (
             <div className="flex items-baseline justify-between gap-2 pt-1">
-              <span className="text-xs text-muted-foreground">נוכחי</span>
+              <span className="text-xs text-muted-foreground">{messages.current}</span>
               <span className={cn(
                 'tabular-nums text-base font-bold',
                 diff.direction === 'down' && diff.pct >= 1 ? 'text-success' : diff.direction === 'up' && diff.pct <= -1 ? 'text-destructive' : '',
@@ -117,7 +128,7 @@ export async function BookingCard({ booking }: { booking: Booking }) {
               </span>
             </div>
           ) : (
-            <p className="pt-1 text-xs text-muted-foreground">טרם נבדק — בודק בלילה הקרוב</p>
+            <p className="pt-1 text-xs text-muted-foreground">{messages.notCheckedYet}</p>
           )}
         </div>
       </div>
@@ -125,19 +136,25 @@ export async function BookingCard({ booking }: { booking: Booking }) {
   );
 }
 
-function cancellationChip(iso: string | null): { text: string; cls: string } | null {
+function cancellationChip(
+  iso: string | null,
+  messages: Pick<CardMessages, 'cancelExpired' | 'cancelUntilHours' | 'cancelUntilDays' | 'cancelUntilDate'>,
+): { text: string; cls: string } | null {
   if (!iso) return null;
   const ms = new Date(iso).getTime() - Date.now();
   const expired = ms <= 0;
   const hours = Math.round(ms / 3_600_000);
   const days = Math.round(ms / 86_400_000);
+  // Format the date in the user's locale — JS uses navigator.language at runtime,
+  // but for SSR we don't have that; "he-IL" gives consistent dates for both langs
+  // since the format ("19 Apr") reads fine in EN too.
   const shortDate = new Date(iso).toLocaleDateString('he-IL', { day: 'numeric', month: 'short' });
 
   let text: string;
-  if (expired) text = `פג ביטול`;
-  else if (hours < 24) text = `ביטול עד ${hours}ש'`;
-  else if (days <= 7) text = `ביטול עד ${shortDate} (${days}י')`;
-  else text = `ביטול עד ${shortDate}`;
+  if (expired) text = messages.cancelExpired;
+  else if (hours < 24) text = messages.cancelUntilHours.replace('{h}', String(hours));
+  else if (days <= 7) text = messages.cancelUntilDays.replace('{date}', shortDate).replace('{d}', String(days));
+  else text = messages.cancelUntilDate.replace('{date}', shortDate);
 
   let cls = 'bg-success/15 text-success';
   if (expired) cls = 'bg-muted text-muted-foreground';

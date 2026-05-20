@@ -7,6 +7,7 @@ import { CheckAllButton } from '@/components/check-all-button';
 import { createClient } from '@/lib/supabase/server';
 import { fmtPrice } from '@/lib/format';
 import { convertToILS } from '@/lib/fx';
+import { getMessages } from '@/lib/i18n';
 import type { Booking } from '@/lib/supabase/types';
 
 import { MergeSuccessToast } from '@/components/merge-success-toast';
@@ -22,6 +23,7 @@ export default async function DashboardPage({
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null; // middleware will redirect
+  const t = await getMessages();
 
   const { data: bookings } = await supabase
     .from('bookings')
@@ -54,32 +56,39 @@ export default async function DashboardPage({
 
   return (
     <AppShell>
-      {sp.merged === 'ok' && <MergeSuccessToast />}
+      {sp.merged === 'ok' && <MergeSuccessToast message={t.dashboard.mergeSuccess} />}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">הנסיעות שלך</h1>
+          <h1 className="text-2xl font-bold">{t.dashboard.h1}</h1>
           {totalSavedIls > 5 && (
             <p className="mt-1 text-sm text-success">
-              💰 חיסכון פוטנציאלי: <span className="font-semibold">{fmtPrice(totalSavedIls, 'ILS')}</span>
+              {t.dashboard.potentialSavingsPrefix} <span className="font-semibold">{fmtPrice(totalSavedIls, 'ILS')}</span>
             </p>
           )}
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <CheckAllButton totalBookings={list.length} />
+          <CheckAllButton totalBookings={list.length} messages={{
+            check: t.dashboard.checkAll,
+            busy: t.dashboard.checkAllBusy,
+            toastDone: t.dashboard.checkAllToastDone,
+            toastDrops: t.dashboard.checkAllToastDrops,
+            toastErrors: t.dashboard.checkAllToastErrors,
+            errorFallback: t.dashboard.checkAllErrorFallback,
+          }} />
           <Link href="/add">
             <Button size="lg" className="h-11">
-              <Plus className="size-4" /> הוסף הזמנה
+              <Plus className="size-4" /> {t.dashboard.addBooking}
             </Button>
           </Link>
         </div>
       </div>
 
       {list.length === 0 ? (
-        <EmptyState />
+        <EmptyState messages={t.dashboard} />
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {list.map((b) => (
-            <BookingCard key={b.id} booking={b} />
+            <BookingCard key={b.id} booking={b} messages={t.bookingCard} />
           ))}
         </div>
       )}
@@ -87,17 +96,15 @@ export default async function DashboardPage({
   );
 }
 
-function EmptyState() {
+function EmptyState({ messages }: { messages: { emptyTitle: string; emptyBody: string; emptyCta: string } }) {
   return (
     <div className="rounded-xl border-2 border-dashed border-border bg-card p-12 text-center">
       <div className="mx-auto mb-4 grid size-16 place-items-center rounded-full bg-muted text-3xl">📸</div>
-      <h2 className="text-lg font-semibold">עוד אין הזמנות במעקב</h2>
-      <p className="mt-2 text-sm text-muted-foreground">
-        שלח לנו צילום מסך של דף ההזמנה מ-Booking, ואנחנו נעקוב אחרי המחיר בשבילך.
-      </p>
+      <h2 className="text-lg font-semibold">{messages.emptyTitle}</h2>
+      <p className="mt-2 text-sm text-muted-foreground">{messages.emptyBody}</p>
       <Link href="/add" className="mt-6 inline-block">
         <Button size="lg">
-          <Plus className="size-4" /> הוסף הזמנה ראשונה
+          <Plus className="size-4" /> {messages.emptyCta}
         </Button>
       </Link>
     </div>

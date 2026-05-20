@@ -9,7 +9,26 @@ import type { ExtractedBooking } from '@/lib/nas-client';
 
 type Phase = 'idle' | 'uploading' | 'preview' | 'saving' | 'error';
 
-export function AddBookingFlow() {
+interface Messages {
+  uploadPrompt: string;
+  uploadSub: string;
+  uploadPersist: string;
+  extracting: string;
+  extractingDelay: string;
+  saving: string;
+  confirmTitle: string;
+  paidPromptLabel: string;
+  paidPlaceholder: string;
+  save: string;
+  cancel: string;
+  invalidPrice: string;
+  tryAgain: string;
+  // borrowed from bookingDetail
+  adults?: string;
+  rooms?: string;
+}
+
+export function AddBookingFlow({ messages }: { messages: Messages }) {
   const [phase, setPhase] = useState<Phase>('idle');
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<{
@@ -42,7 +61,7 @@ export function AddBookingFlow() {
     if (!data) return;
     const price = Number(priceOverride.replace(/,/g, ''));
     if (!price || price <= 0) {
-      setError('המחיר חסר או לא תקין');
+      setError(messages.invalidPrice);
       return;
     }
     setPhase('saving');
@@ -75,8 +94,8 @@ export function AddBookingFlow() {
       <Card>
         <CardContent className="flex flex-col items-center gap-3 py-12">
           <Loader2 className="size-8 animate-spin text-primary" />
-          <p className="text-sm text-muted-foreground">מנתח את הצילום ומחפש את המלון ב-Booking...</p>
-          <p className="text-xs text-muted-foreground">(לוקח ~15 שניות)</p>
+          <p className="text-sm text-muted-foreground">{messages.extracting}</p>
+          <p className="text-xs text-muted-foreground">{messages.extractingDelay}</p>
         </CardContent>
       </Card>
     );
@@ -87,7 +106,7 @@ export function AddBookingFlow() {
       <Card>
         <CardContent className="flex flex-col items-center gap-3 py-12">
           <Loader2 className="size-8 animate-spin text-success" />
-          <p className="text-sm text-muted-foreground">שומר את ההזמנה...</p>
+          <p className="text-sm text-muted-foreground">{messages.saving}</p>
         </CardContent>
       </Card>
     );
@@ -101,7 +120,7 @@ export function AddBookingFlow() {
           <div className="rounded-lg border bg-muted/30 p-4">
             <h3 className="font-semibold">{e.hotel_name}</h3>
             <p className="text-sm text-muted-foreground">
-              {e.check_in} → {e.check_out} · {e.guests.adults} מבוגרים · {e.guests.rooms} חדרים
+              {e.check_in} → {e.check_out} · {e.guests.adults} {messages.adults} · {e.guests.rooms} {messages.rooms}
             </p>
             {e.room_type && <p className="mt-2 text-sm">🛏 {e.room_type}</p>}
             {e.meal_plan && <p className="text-sm">🍽 {e.meal_plan}</p>}
@@ -109,7 +128,7 @@ export function AddBookingFlow() {
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium">כמה שילמת בסה"כ?</label>
+            <label className="mb-1 block text-sm font-medium">{messages.paidPromptLabel}</label>
             <div className="flex gap-2">
               <input
                 type="text"
@@ -117,7 +136,7 @@ export function AddBookingFlow() {
                 inputMode="decimal"
                 value={priceOverride}
                 onChange={(e) => setPriceOverride(e.target.value)}
-                placeholder="7192"
+                placeholder={messages.paidPlaceholder}
                 className="h-10 flex-1 rounded-md border border-border bg-background px-3 text-base focus:outline-none focus:ring-2 focus:ring-primary"
               />
               <select
@@ -139,10 +158,10 @@ export function AddBookingFlow() {
           <div className="flex gap-2 pt-2">
             <Button onClick={onConfirm} className="flex-1" size="lg" disabled={phase === ('saving' as Phase)}>
               {(phase as Phase) === 'saving' ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />}
-              שמור והתחל לעקוב
+              {messages.save}
             </Button>
             <Button onClick={() => { setPhase('idle'); setData(null); setError(null); }} variant="outline" size="lg">
-              בטל
+              {messages.cancel}
             </Button>
           </div>
         </CardContent>
@@ -160,8 +179,8 @@ export function AddBookingFlow() {
         >
           <Camera className="size-10 text-muted-foreground" />
           <div className="text-center">
-            <p className="font-medium">לחץ או גרור לכאן צילום מסך</p>
-            <p className="mt-1 text-xs text-muted-foreground">דף ההזמנה ב-Booking.com</p>
+            <p className="font-medium">{messages.uploadPrompt}</p>
+            <p className="mt-1 text-xs text-muted-foreground">{messages.uploadSub}</p>
           </div>
           <input
             id="booking-photo"
@@ -176,12 +195,12 @@ export function AddBookingFlow() {
             {error}
             <br />
             <button className="mt-1 text-xs underline" onClick={() => setError(null)}>
-              נסה שוב
+              {messages.tryAgain}
             </button>
           </p>
         )}
         <p className="mt-4 text-center text-xs text-muted-foreground">
-          הצילום נשמר אצלנו רק כדי לשחזר אם משהו ישתבש. אפשר למחוק אותו בכל עת.
+          {messages.uploadPersist}
         </p>
       </CardContent>
     </Card>
