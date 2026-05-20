@@ -1,19 +1,13 @@
 import { ImageResponse } from 'next/og';
 
-export const runtime = 'edge';
-export const alt = 'TripWatch — מעקב מחירים אוטומטי על המלון שכבר הזמנת';
+// Default Node runtime instead of edge — avoids the Google Fonts fetch
+// failing inside Vercel's edge sandbox (which had been returning a 200
+// with 0 bytes, so social-media crawlers saw a corrupted image).
+export const alt = 'TripWatch — Booked a trip? Let us get you money back.';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
 export default async function Image() {
-  // Hebrew-supporting font (Heebo ExtraBold)
-  const heeboBold = await fetch(
-    'https://fonts.gstatic.com/s/heebo/v26/NGSpv5_NC0k9P_v6ZUCbLRAHxK1EiSysd0Y.ttf',
-  ).then((r) => r.arrayBuffer());
-  const heeboReg = await fetch(
-    'https://fonts.gstatic.com/s/heebo/v26/NGS6v5_NC0k9P9H7RcLcb0V8.ttf',
-  ).then((r) => r.arrayBuffer());
-
   return new ImageResponse(
     (
       <div
@@ -25,47 +19,48 @@ export default async function Image() {
           background: 'linear-gradient(135deg, #FF7A00 0%, #FF9F40 35%, #FFB877 60%, #2563EB 100%)',
           position: 'relative',
           padding: 80,
-          fontFamily: 'Heebo',
+          fontFamily: 'sans-serif',
         }}
       >
-        {/* Decorative overlay pattern */}
+        {/* Decorative top-right radial */}
         <div
           style={{
             position: 'absolute',
             inset: 0,
             background:
-              'radial-gradient(ellipse at top right, rgba(255,255,255,0.15) 0%, transparent 50%)',
+              'radial-gradient(ellipse at top right, rgba(255,255,255,0.18) 0%, transparent 55%)',
             display: 'flex',
           }}
         />
 
-        {/* TOP: brand */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 18,
-            position: 'relative',
-          }}
-        >
+        {/* Brand row */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 18, position: 'relative' }}>
+          {/* Logo mark — same orange rounded square + white paper plane as the favicon */}
           <div
             style={{
-              width: 64,
-              height: 64,
+              width: 72,
+              height: 72,
               background: 'rgba(255,255,255,0.22)',
               borderRadius: 18,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: 40,
               backdropFilter: 'blur(12px)',
             }}
           >
-            ✈️
+            <svg width="44" height="44" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M52 13 L11 31 L24 36 L28 50 L33 42 L46 48 L52 13 Z"
+                fill="#FFFFFF"
+                stroke="#FFFFFF"
+                strokeWidth="1.5"
+                strokeLinejoin="round"
+              />
+            </svg>
           </div>
           <div
             style={{
-              fontSize: 44,
+              fontSize: 52,
               fontWeight: 800,
               color: 'white',
               letterSpacing: -1,
@@ -77,11 +72,11 @@ export default async function Image() {
           <div
             style={{
               marginInlineStart: 8,
-              padding: '6px 12px',
-              background: 'rgba(255,255,255,0.2)',
+              padding: '6px 14px',
+              background: 'rgba(255,255,255,0.22)',
               color: 'white',
               borderRadius: 999,
-              fontSize: 18,
+              fontSize: 20,
               fontWeight: 700,
               letterSpacing: 2,
               display: 'flex',
@@ -91,62 +86,58 @@ export default async function Image() {
           </div>
         </div>
 
-        {/* MIDDLE: hero message (RTL) */}
+        {/* Hero copy */}
         <div
           style={{
             flex: 1,
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
-            marginTop: 30,
+            marginTop: 24,
             position: 'relative',
           }}
         >
           <div
             style={{
-              fontSize: 120,
+              fontSize: 96,
               fontWeight: 800,
               color: 'white',
-              lineHeight: 1.0,
-              letterSpacing: -3,
+              lineHeight: 1.05,
+              letterSpacing: -2,
               display: 'flex',
-              direction: 'rtl',
             }}
           >
-            הזמנת חופשה?
+            Booked a trip?
           </div>
           <div
             style={{
-              fontSize: 120,
+              fontSize: 96,
               fontWeight: 800,
               color: 'white',
-              lineHeight: 1.0,
-              letterSpacing: -3,
-              marginTop: 14,
+              lineHeight: 1.05,
+              letterSpacing: -2,
+              marginTop: 8,
               display: 'flex',
-              direction: 'rtl',
-              textShadow: '0 2px 24px rgba(0,0,0,0.15)',
+              textShadow: '0 2px 24px rgba(0,0,0,0.18)',
             }}
           >
-            נחזיר לך כסף.
+            Let us get you money back.
           </div>
           <div
             style={{
-              fontSize: 36,
+              fontSize: 32,
               color: 'rgba(255,255,255,0.94)',
-              marginTop: 42,
-              maxWidth: 980,
+              marginTop: 36,
+              maxWidth: 1000,
               lineHeight: 1.35,
               display: 'flex',
-              direction: 'rtl',
-              fontWeight: 400,
             }}
           >
-            עוקבים אחרי המחיר של ההזמנה שלך ב-Booking, כל יום. ירד — אתה הראשון לדעת.
+            We watch your Booking reservation&apos;s price every day. The moment it drops — you&apos;re the first to know.
           </div>
         </div>
 
-        {/* BOTTOM: URL */}
+        {/* URL + CTA */}
         <div
           style={{
             display: 'flex',
@@ -171,20 +162,13 @@ export default async function Image() {
               fontWeight: 800,
               fontSize: 26,
               boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
-              direction: 'rtl',
             }}
           >
-            התחל בחינם →
+            Start free →
           </div>
         </div>
       </div>
     ),
-    {
-      ...size,
-      fonts: [
-        { name: 'Heebo', data: heeboBold, weight: 800, style: 'normal' },
-        { name: 'Heebo', data: heeboReg, weight: 400, style: 'normal' },
-      ],
-    },
+    { ...size },
   );
 }
