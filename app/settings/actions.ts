@@ -7,6 +7,7 @@ import { signVerifyEmailToken } from '@/lib/inbound/verify-token';
 import { sendMergeEmail } from '@/lib/notify/merge-email';
 import { sendVerifyInboundEmail } from '@/lib/notify/email';
 import { generateInboundToken, formatInboundAddress } from '@/lib/inbound/address';
+import { getLocale } from '@/lib/i18n';
 
 export async function updateNotificationPrefs(prefs: { email: boolean; in_app: boolean; telegram: boolean }) {
   const supabase = await createClient();
@@ -152,7 +153,8 @@ export async function requestAccountMerge(otherEmail: string) {
   const link = `${base}/api/merge/confirm?token=${encodeURIComponent(token)}`;
 
   try {
-    await sendMergeEmail({ to: other.email, keepEmail: user.email, link });
+    const locale = await getLocale();
+    await sendMergeEmail({ to: other.email, locale, keepEmail: user.email, mergeEmail: other.email, link });
   } catch (err) {
     return { ok: false as const, error: err instanceof Error ? err.message : 'שליחת המייל נכשלה' };
   }
@@ -254,7 +256,8 @@ export async function requestInboundEmailVerification(rawEmail: string) {
   const link = `${base}/api/email/verify-inbound?token=${encodeURIComponent(token)}`;
 
   try {
-    await sendVerifyInboundEmail({ to: email, link, appUrl: base });
+    const locale = await getLocale();
+    await sendVerifyInboundEmail({ to: email, locale, link, appUrl: base });
   } catch (err) {
     return { ok: false as const, error: err instanceof Error ? err.message : 'שליחת המייל נכשלה' };
   }

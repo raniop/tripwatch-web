@@ -26,6 +26,7 @@ import {
 import { detectSource } from '@/lib/inbound/source-detect';
 import { verifySvixSignature } from '@/lib/inbound/signature';
 import { sendInboundConfirmation, sendInboundBounce } from '@/lib/notify/email';
+import type { Locale } from '@/lib/i18n/types';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -131,6 +132,8 @@ export async function POST(req: Request) {
   // Resolve user email for confirmation/bounce
   const { data: userResp } = await admin.auth.admin.getUserById(userId);
   const userEmail = userResp.user?.email || null;
+  const { data: userProfile } = await admin.from('profiles').select('locale').eq('id', userId).maybeSingle();
+  const userLocale: Locale = (userProfile?.locale === 'en' ? 'en' : 'he');
 
   // Idempotency: insert inbound_emails first (UNIQUE on message_id). Treat
   // duplicate-key as "already processed".
@@ -218,7 +221,8 @@ export async function POST(req: Request) {
       if (userEmail) {
         await sendInboundBounce({
           to: userEmail,
-          reason: 'המייל לא נראה כמו אישור הזמנה',
+          locale: userLocale,
+          reason: userLocale === 'en' ? 'The email doesn\'t look like a booking confirmation.' : 'המייל לא נראה כמו אישור הזמנה',
           settingsUrl: `${APP_URL}/settings#inbound`,
         }).catch((e) => console.warn('[inbound] bounce email failed', e));
       }
@@ -235,7 +239,10 @@ export async function POST(req: Request) {
     if (userEmail) {
       await sendInboundBounce({
         to: userEmail,
-        reason: 'נכשל חילוץ פרטי ההזמנה — נסה להעביר את המייל המקורי במלואו',
+        locale: userLocale,
+        reason: userLocale === 'en'
+          ? 'We couldn\'t extract booking details — try forwarding the original email in full.'
+          : 'נכשל חילוץ פרטי ההזמנה — נסה להעביר את המייל המקורי במלואו',
         settingsUrl: `${APP_URL}/settings#inbound`,
       }).catch((e) => console.warn('[inbound] bounce email failed', e));
     }
@@ -250,7 +257,10 @@ export async function POST(req: Request) {
     if (userEmail) {
       await sendInboundBounce({
         to: userEmail,
-        reason: 'חסרים פרטים בסיסיים (מלון / תאריכים / מחיר)',
+        locale: userLocale,
+        reason: userLocale === 'en'
+          ? 'Missing basic details (hotel / dates / price).'
+          : 'חסרים פרטים בסיסיים (מלון / תאריכים / מחיר)',
         settingsUrl: `${APP_URL}/settings#inbound`,
       }).catch((e) => console.warn('[inbound] bounce email failed', e));
     }
@@ -346,13 +356,14 @@ export async function POST(req: Request) {
 
   // Confirmation email (non-fatal if it fails)
   if (userEmail) {
-    const paidFormatted = new Intl.NumberFormat('he-IL', {
+    const paidFormatted = new Intl.NumberFormat(userLocale === 'en' ? 'en-US' : 'he-IL', {
       style: 'currency',
       currency,
       maximumFractionDigits: 0,
     }).format(extracted.total_price);
     await sendInboundConfirmation({
       to: userEmail,
+      locale: userLocale,
       hotelName: extracted.hotel_name,
       checkIn: extracted.check_in,
       checkOut: extracted.check_out,

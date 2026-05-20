@@ -16,6 +16,7 @@ import { createAdminClient } from '@/lib/supabase/server';
 import { sendPriceDropEmail, sendCancellationReminderEmail } from '@/lib/notify/email';
 import { telegramSend } from '@/lib/notify/telegram';
 import { fmtPrice } from '@/lib/format';
+import type { Locale } from '@/lib/i18n/types';
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://tripwatch.vercel.app';
 
@@ -46,12 +47,13 @@ export async function POST(request: Request) {
   const sb = createAdminClient();
 
   const [{ data: profile }, { data: authUser }, { data: booking }] = await Promise.all([
-    sb.from('profiles').select('notification_prefs, telegram_chat_id').eq('id', row.user_id).maybeSingle(),
+    sb.from('profiles').select('notification_prefs, telegram_chat_id, locale').eq('id', row.user_id).maybeSingle(),
     sb.auth.admin.getUserById(row.user_id),
     row.booking_id
       ? sb.from('bookings').select('hotel_name, check_in, check_out, currency, paid_price, url').eq('id', row.booking_id).maybeSingle()
       : Promise.resolve({ data: null }),
   ]);
+  const userLocale: Locale = (profile?.locale === 'en' ? 'en' : 'he');
 
   if (!profile || !authUser?.user || !booking) {
     return NextResponse.json({ ok: false, error: 'missing related rows' });
@@ -77,7 +79,8 @@ export async function POST(request: Request) {
       try {
         await sendPriceDropEmail({
           to: authUser.user.email,
-          hotelName: booking.hotel_name || 'המלון שלך',
+          locale: userLocale,
+          hotelName: booking.hotel_name || (userLocale === 'en' ? 'your hotel' : 'המלון שלך'),
           checkIn: booking.check_in,
           checkOut: booking.check_out,
           paidFormatted: fmtPrice(payload.paid_price ?? booking.paid_price, payload.currency ?? booking.currency),
@@ -117,7 +120,8 @@ export async function POST(request: Request) {
       try {
         await sendCancellationReminderEmail({
           to: authUser.user.email,
-          hotelName: booking.hotel_name || 'המלון שלך',
+          locale: userLocale,
+          hotelName: booking.hotel_name || (userLocale === 'en' ? 'your hotel' : 'המלון שלך'),
           checkIn: booking.check_in,
           checkOut: booking.check_out,
           hoursRemaining: hours,

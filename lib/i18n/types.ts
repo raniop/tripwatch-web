@@ -362,6 +362,29 @@ export interface Messages {
     welcomeTitle: string;
     openBooking: string;
   };
+  legal: {
+    lastUpdated: string;
+    privacyTitle: string;
+    privacyCollectHeading: string;
+    privacyCollectBody: string;
+    privacyDontHeading: string;
+    privacyDontBody: string;
+    privacyShareHeading: string;
+    privacyShareBody: string;
+    privacyRightsHeading: string;
+    privacyRightsBody: string;
+    privacyContactHeading: string;
+    privacyContactBody: string;
+    termsTitle: string;
+    termsIntro: string;
+    termsResponsibilityHeading: string;
+    termsResponsibilityBody: string;
+    termsChangesHeading: string;
+    termsChangesBody: string;
+    termsContactHeading: string;
+    termsContactBody: string;
+    dir: 'rtl' | 'ltr';
+  };
   emails: {
     priceDropSubject: string;
     priceDropTitle: string;

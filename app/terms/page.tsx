@@ -1,31 +1,26 @@
-export const metadata = { title: 'תנאי שימוש · TripWatch' };
+import { getMessages } from '@/lib/i18n';
 
-export default function TermsPage() {
+export const metadata = { title: 'Terms · TripWatch' };
+export const dynamic = 'force-dynamic';
+
+export default async function TermsPage() {
+  const t = (await getMessages()).legal;
   return (
-    <div className="mx-auto max-w-2xl px-4 py-12 text-sm leading-7" dir="rtl">
-      <h1 className="mb-4 text-2xl font-bold">תנאי שימוש</h1>
-      <p className="text-muted-foreground">עדכון אחרון: מאי 2026</p>
+    <div className="mx-auto max-w-2xl px-4 py-12 text-sm leading-7" dir={t.dir}>
+      <h1 className="mb-4 text-2xl font-bold">{t.termsTitle}</h1>
+      <p className="text-muted-foreground">{t.lastUpdated}</p>
 
-      <p className="mt-6">
-        TripWatch הוא שירות בטא חינמי. אנחנו עוקבים אחר מחירים בשבילך ושולחים לך התראות —
-        אבל לא מבטיחים זמינות, דיוק או הצלחה.
-      </p>
+      <p className="mt-6">{t.termsIntro}</p>
 
-      <h2 className="mt-6 text-lg font-semibold">אתה אחראי על ההזמנות שלך</h2>
+      <h2 className="mt-6 text-lg font-semibold">{t.termsResponsibilityHeading}</h2>
+      <p>{t.termsResponsibilityBody}</p>
+
+      <h2 className="mt-6 text-lg font-semibold">{t.termsChangesHeading}</h2>
+      <p>{t.termsChangesBody}</p>
+
+      <h2 className="mt-6 text-lg font-semibold">{t.termsContactHeading}</h2>
       <p>
-        ההחלטה לבטל הזמנה ולהזמין מחדש היא שלך בלבד. אנחנו לא צד להזמנה. ודא שיש לך ביטול חופשי
-        לפני שאתה מסתמך על התראות שלנו.
-      </p>
-
-      <h2 className="mt-6 text-lg font-semibold">שינויים בשירות</h2>
-      <p>
-        זה בטא — דברים יכולים להישבר, להשתנות, או להיעצר ללא הודעה מראש.
-        ננסה להודיע במייל לפני שינויים גדולים.
-      </p>
-
-      <h2 className="mt-6 text-lg font-semibold">פניות</h2>
-      <p>
-        שאלות? <a href="mailto:rani@ophirins.co.il" className="underline">rani@ophirins.co.il</a>
+        <a href="mailto:rani@ophirins.co.il" className="underline">{t.termsContactBody}</a>
       </p>
     </div>
   );

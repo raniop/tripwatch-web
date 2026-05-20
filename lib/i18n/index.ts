@@ -47,3 +47,24 @@ export function htmlLang(locale: Locale): string {
 }
 
 export type { Locale, Messages };
+
+/**
+ * Lookup the dictionary for a specific user_id. Used by cron-driven email
+ * sends where there's no request cookie. Falls back to the default locale
+ * if the profile doesn't have a locale set (or doesn't exist).
+ */
+import type { SupabaseClient } from '@supabase/supabase-js';
+
+export async function getMessagesForUser(
+  supabase: SupabaseClient,
+  userId: string,
+): Promise<{ locale: Locale; t: Messages }> {
+  const { data } = await supabase
+    .from('profiles')
+    .select('locale')
+    .eq('id', userId)
+    .maybeSingle();
+  const stored = (data?.locale as Locale | undefined) ?? DEFAULT_LOCALE;
+  const locale = LOCALES.includes(stored) ? stored : DEFAULT_LOCALE;
+  return { locale, t: DICTIONARIES[locale] };
+}
