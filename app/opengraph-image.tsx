@@ -38,23 +38,39 @@ export default async function Image() {
           {/* Logo mark — same orange rounded square + white paper plane as the favicon */}
           <div
             style={{
-              width: 72,
-              height: 72,
+              width: 88,
+              height: 88,
               background: 'rgba(255,255,255,0.22)',
-              borderRadius: 18,
+              borderRadius: 22,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               backdropFilter: 'blur(12px)',
+              boxShadow: '0 6px 20px rgba(0,0,0,0.15)',
             }}
           >
-            <svg width="44" height="44" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+            <svg width="58" height="58" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+              {/* shadow under the plane */}
               <path
-                d="M52 13 L11 31 L24 36 L28 50 L33 42 L46 48 L52 13 Z"
+                d="M106 26 L20 60 L48 68 L58 100 L66 82 L96 92 Z"
+                fill="rgba(0,0,0,0.2)"
+                transform="translate(0 3)"
+              />
+              {/* main body */}
+              <path
+                d="M106 26 L20 60 L48 68 L58 100 L66 82 L96 92 Z"
                 fill="#FFFFFF"
                 stroke="#FFFFFF"
-                strokeWidth="1.5"
+                strokeWidth="1.4"
                 strokeLinejoin="round"
+              />
+              {/* center crease */}
+              <path
+                d="M48 68 L106 26"
+                stroke="rgba(217,78,0,0.55)"
+                strokeWidth="2.4"
+                strokeLinecap="round"
+                fill="none"
               />
             </svg>
           </div>
