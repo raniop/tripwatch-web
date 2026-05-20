@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, LayoutDashboard, Menu, Plane, X } from 'lucide-react';
+import { ArrowLeft, LayoutDashboard, Menu, Plane, Search, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface NavMessages {
@@ -70,6 +70,15 @@ export function MarketingNav({ loggedIn = false, messages }: Props) {
 
         {/* Right side */}
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new Event('tw-open-search'))}
+            className={`grid size-9 place-items-center rounded-md transition-colors ${scrolled ? 'text-muted-foreground hover:bg-muted hover:text-foreground' : 'text-white/85 hover:bg-white/10 hover:text-white'}`}
+            aria-label="חיפוש (⌘K)"
+            title="חיפוש (⌘K)"
+          >
+            <Search className="size-4" />
+          </button>
           {loggedIn ? (
             <Link href="/dashboard">
               <Button variant="accent" size="sm" className="h-9 gap-1.5 shadow-glow-orange">

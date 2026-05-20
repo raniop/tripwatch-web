@@ -21,9 +21,18 @@ export async function getLocale(): Promise<Locale> {
   const c = await cookies();
   const stored = c.get(LOCALE_COOKIE)?.value as Locale | undefined;
   if (stored && LOCALES.includes(stored)) return stored;
-  // First-visit hint from the browser's Accept-Language
+
   const h = await headers();
+
+  // Vercel populates x-vercel-ip-country on production. Israeli visitors
+  // default to Hebrew; everyone else to English.
+  const country = (h.get('x-vercel-ip-country') || '').toUpperCase();
+  if (country === 'IL') return 'he';
+  if (country && country !== 'IL') return 'en';
+
+  // Fallback (local dev or non-Vercel host): browser Accept-Language
   const accept = (h.get('accept-language') || '').toLowerCase();
+  if (accept.startsWith('he')) return 'he';
   if (accept.startsWith('en') || accept.includes(',en')) return 'en';
   return DEFAULT_LOCALE;
 }

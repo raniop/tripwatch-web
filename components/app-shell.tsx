@@ -1,32 +1,17 @@
 import Link from 'next/link';
-import { Home, LogOut, Search } from 'lucide-react';
+import { Home, LogOut } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { RealtimeNotifications } from '@/components/realtime-notifications';
-import { CommandPalette } from '@/components/command-palette';
+import { CmdKHint } from '@/components/cmdk-hint';
 import { getMessages } from '@/lib/i18n';
 
 export async function AppShell({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  const [profileRes, bookingsRes] = user
-    ? await Promise.all([
-        supabase.from('profiles').select('display_name, avatar_url').eq('id', user.id).maybeSingle(),
-        supabase
-          .from('bookings')
-          .select('id, hotel_name, check_in, check_out')
-          .eq('user_id', user.id)
-          .eq('status', 'active')
-          .order('check_in', { ascending: true })
-          .limit(50),
-      ])
-    : [{ data: null } as { data: null }, { data: null } as { data: null }];
-  const profile = profileRes.data;
-  const bookings = (bookingsRes.data ?? []) as Array<{
-    id: string;
-    hotel_name: string | null;
-    check_in: string;
-    check_out: string;
-  }>;
+  const { data: profileData } = user
+    ? await supabase.from('profiles').select('display_name, avatar_url').eq('id', user.id).maybeSingle()
+    : { data: null };
+  const profile = profileData;
   const t = await getMessages();
 
   return (
@@ -68,22 +53,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
       </header>
       <main className="mx-auto max-w-5xl px-4 py-6">{children}</main>
       {user && <RealtimeNotifications userId={user.id} />}
-      {user && <CommandPalette bookings={bookings} messages={t.commandPalette} />}
     </div>
   );
 }
 
-function CmdKHint() {
-  // Visual ⌘K hint in the header — pressing it opens the palette via the
-  // keyboard shortcut listener. Hidden on small screens to save space.
-  return (
-    <kbd
-      className="hidden md:inline-flex items-center gap-1 rounded-md border border-border bg-muted px-2 py-1 text-[10px] text-muted-foreground"
-      title="חיפוש מהיר (⌘K / Ctrl+K)"
-      dir="ltr"
-    >
-      <Search className="size-3" />
-      ⌘K
-    </kbd>
-  );
-}

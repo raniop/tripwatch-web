@@ -3,6 +3,8 @@ import { Heebo, Poppins } from 'next/font/google';
 import './globals.css';
 import { CookieConsent } from '@/components/cookie-consent';
 import { AccessibilityWidget } from '@/components/accessibility-widget';
+import { CommandPalette } from '@/components/command-palette';
+import { createClient } from '@/lib/supabase/server';
 import { getLocaleAndMessages, dir, htmlLang } from '@/lib/i18n';
 
 const heebo = Heebo({
@@ -52,12 +54,34 @@ export const viewport: Viewport = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const { locale, t } = await getLocaleAndMessages();
+
+  // Load bookings for the palette only when the user is signed in. Logged-out
+  // visitors get a navigation-only palette.
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const { data: bookingsData } = user
+    ? await supabase
+        .from('bookings')
+        .select('id, hotel_name, check_in, check_out')
+        .eq('user_id', user.id)
+        .eq('status', 'active')
+        .order('check_in', { ascending: true })
+        .limit(50)
+    : { data: null };
+  const bookings = (bookingsData ?? []) as Array<{
+    id: string;
+    hotel_name: string | null;
+    check_in: string;
+    check_out: string;
+  }>;
+
   return (
     <html lang={htmlLang(locale)} dir={dir(locale)} className={`${heebo.variable} ${poppins.variable}`}>
       <body className="min-h-screen antialiased">
         {children}
         <AccessibilityWidget messages={t.a11y} />
         <CookieConsent messages={t.cookies} />
+        <CommandPalette bookings={bookings} loggedIn={!!user} messages={t.commandPalette} />
       </body>
     </html>
   );

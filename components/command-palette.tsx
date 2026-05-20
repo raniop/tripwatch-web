@@ -23,6 +23,7 @@ interface BookingItem {
 
 interface Props {
   bookings: BookingItem[];
+  loggedIn?: boolean;
   messages: {
     placeholder: string;
     navHeading: string;
@@ -49,14 +50,14 @@ interface Cmd {
   group: 'navigation' | 'bookings';
 }
 
-export function CommandPalette({ bookings, messages }: Props) {
+export function CommandPalette({ bookings, loggedIn = false, messages }: Props) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [activeIdx, setActiveIdx] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
-  // ⌘K / Ctrl+K toggle
+  // ⌘K / Ctrl+K + custom event for header buttons to open the palette.
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
@@ -65,8 +66,13 @@ export function CommandPalette({ bookings, messages }: Props) {
       }
       if (e.key === 'Escape') setOpen(false);
     }
+    function onOpenEvent() { setOpen(true); }
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    window.addEventListener('tw-open-search', onOpenEvent);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('tw-open-search', onOpenEvent);
+    };
   }, []);
 
   useEffect(() => {
@@ -81,14 +87,20 @@ export function CommandPalette({ bookings, messages }: Props) {
   const close = () => setOpen(false);
 
   const allCommands: Cmd[] = useMemo(() => {
-    const nav: Cmd[] = [
-      { id: 'dashboard', label: messages.cmdDashboard, icon: <LayoutDashboard className="size-4" />, run: () => { router.push('/dashboard'); close(); }, group: 'navigation' },
-      { id: 'add',       label: messages.cmdAdd,       icon: <Plus className="size-4" />,            run: () => { router.push('/add'); close(); },       group: 'navigation' },
-      { id: 'settings',  label: messages.cmdSettings,  icon: <Settings className="size-4" />,        run: () => { router.push('/settings'); close(); },  group: 'navigation' },
-      { id: 'home',      label: messages.cmdHome,      icon: <Home className="size-4" />,            run: () => { router.push('/'); close(); },           group: 'navigation' },
-      { id: 'a11y',      label: messages.cmdA11y,      icon: <Accessibility className="size-4" />,   run: () => { router.push('/accessibility'); close(); }, group: 'navigation' },
-      { id: 'signout',   label: messages.cmdSignOut,   icon: <LogOut className="size-4" />,          run: () => { close(); document.getElementById('cmdk-signout-form')?.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })); }, group: 'navigation' },
-    ];
+    const nav: Cmd[] = loggedIn
+      ? [
+          { id: 'dashboard', label: messages.cmdDashboard, icon: <LayoutDashboard className="size-4" />, run: () => { router.push('/dashboard'); close(); }, group: 'navigation' },
+          { id: 'add',       label: messages.cmdAdd,       icon: <Plus className="size-4" />,            run: () => { router.push('/add'); close(); },       group: 'navigation' },
+          { id: 'settings',  label: messages.cmdSettings,  icon: <Settings className="size-4" />,        run: () => { router.push('/settings'); close(); },  group: 'navigation' },
+          { id: 'home',      label: messages.cmdHome,      icon: <Home className="size-4" />,            run: () => { router.push('/'); close(); },           group: 'navigation' },
+          { id: 'a11y',      label: messages.cmdA11y,      icon: <Accessibility className="size-4" />,   run: () => { router.push('/accessibility'); close(); }, group: 'navigation' },
+          { id: 'signout',   label: messages.cmdSignOut,   icon: <LogOut className="size-4" />,          run: () => { close(); document.getElementById('cmdk-signout-form')?.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })); }, group: 'navigation' },
+        ]
+      : [
+          { id: 'home',     label: messages.cmdHome,    icon: <Home className="size-4" />,          run: () => { router.push('/'); close(); },             group: 'navigation' },
+          { id: 'login',    label: messages.cmdDashboard, icon: <LayoutDashboard className="size-4" />, run: () => { router.push('/login'); close(); },     group: 'navigation' },
+          { id: 'a11y',     label: messages.cmdA11y,    icon: <Accessibility className="size-4" />, run: () => { router.push('/accessibility'); close(); }, group: 'navigation' },
+        ];
     const bks: Cmd[] = bookings.map((b) => ({
       id: `b-${b.id}`,
       label: b.hotel_name || messages.untitled,
@@ -98,7 +110,7 @@ export function CommandPalette({ bookings, messages }: Props) {
       group: 'bookings',
     }));
     return [...nav, ...bks];
-  }, [bookings, router, messages]);
+  }, [bookings, loggedIn, router, messages]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
