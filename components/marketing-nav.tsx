@@ -89,7 +89,7 @@ export function MarketingNav({ loggedIn = false, locale, messages, localeMessage
           >
             <Search className="size-4" />
           </button>
-          <div className={`hidden sm:inline-flex ${scrolled ? '' : '[&_button]:text-white/85 [&_button:hover]:text-white'}`}>
+          <div className="hidden sm:inline-flex">
             <LocaleSwitcher
               current={locale}
               variant={scrolled ? 'dark' : 'light'}
