@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { LogOut } from 'lucide-react';
+import { Home, LogOut } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { RealtimeNotifications } from '@/components/realtime-notifications';
 
@@ -27,6 +27,14 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
                 {(profile?.display_name || user?.email || '?').slice(0, 1).toUpperCase()}
               </div>
             )}
+            <Link
+              href="/"
+              className="text-muted-foreground hover:text-foreground"
+              title="דף הבית"
+              aria-label="דף הבית"
+            >
+              <Home className="size-4" />
+            </Link>
             <Link href="/settings" className="text-sm text-muted-foreground hover:text-foreground">
               הגדרות
             </Link>
