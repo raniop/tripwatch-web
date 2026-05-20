@@ -79,11 +79,11 @@ export function MarketingNav({ loggedIn = false, locale, messages, localeMessage
         </nav>
 
         {/* Right side */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={() => window.dispatchEvent(new Event('tw-open-search'))}
-            className={`grid size-9 place-items-center rounded-md transition-colors ${scrolled ? 'text-muted-foreground hover:bg-muted hover:text-foreground' : 'text-white/85 hover:bg-white/10 hover:text-white'}`}
+            className={`grid size-9 place-items-center rounded-full transition-colors ${scrolled ? 'text-muted-foreground hover:bg-muted hover:text-foreground' : 'text-white/85 hover:bg-white/10 hover:text-white'}`}
             aria-label="search (⌘K)"
             title="⌘K"
           >

@@ -17,6 +17,11 @@ interface Props {
  * Segmented-control style language switcher: a single capsule with both
  * options visible. The active one gets the brand-accent orange background.
  */
+
+// Short visible labels — the full names (passed in via heLabel/enLabel)
+// stay around for the aria title/tooltip so screen readers still get them.
+const SHORT: Record<Locale, string> = { he: 'עב', en: 'En' };
+
 export function LocaleSwitcher({ current, variant = 'dark', ariaLabel, heLabel, enLabel }: Props) {
   const [pending, startTransition] = useTransition();
   const router = useRouter();
@@ -29,7 +34,6 @@ export function LocaleSwitcher({ current, variant = 'dark', ariaLabel, heLabel, 
     });
   }
 
-  // Capsule background — slightly different for light/dark backdrops
   const trackCls =
     variant === 'light'
       ? 'bg-white/15 ring-1 ring-white/25'
@@ -50,7 +54,7 @@ export function LocaleSwitcher({ current, variant = 'dark', ariaLabel, heLabel, 
       aria-label={ariaLabel}
       className={`inline-flex items-center gap-0.5 rounded-full p-0.5 text-xs font-medium ${trackCls}`}
     >
-      {items.map(([code, label]) => {
+      {items.map(([code, fullLabel]) => {
         const active = current === code;
         return (
           <button
@@ -59,14 +63,14 @@ export function LocaleSwitcher({ current, variant = 'dark', ariaLabel, heLabel, 
             onClick={() => pick(code)}
             disabled={pending}
             aria-pressed={active}
-            dir={code === 'he' ? 'rtl' : 'ltr'}
-            className={`rounded-full px-2.5 py-1 transition-colors ${
-              active
-                ? 'bg-accent text-white shadow-sm'
-                : inactiveCls
+            aria-label={fullLabel}
+            title={fullLabel}
+            dir="ltr"
+            className={`rounded-full px-2 py-0.5 transition-colors ${
+              active ? 'bg-accent text-white shadow-sm' : inactiveCls
             }`}
           >
-            {label}
+            {SHORT[code]}
           </button>
         );
       })}
