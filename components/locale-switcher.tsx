@@ -52,7 +52,8 @@ export function LocaleSwitcher({ current, variant = 'dark', ariaLabel, heLabel, 
     <div
       role="group"
       aria-label={ariaLabel}
-      className={`inline-flex items-center gap-0.5 rounded-full p-0.5 text-xs font-medium ${trackCls}`}
+      // h-9 keeps the capsule aligned with the 36px search button and CTA button
+      className={`inline-flex h-9 items-center gap-0.5 rounded-full p-1 text-xs font-medium ${trackCls}`}
     >
       {items.map(([code, fullLabel]) => {
         const active = current === code;
@@ -66,7 +67,7 @@ export function LocaleSwitcher({ current, variant = 'dark', ariaLabel, heLabel, 
             aria-label={fullLabel}
             title={fullLabel}
             dir="ltr"
-            className={`rounded-full px-2 py-0.5 transition-colors ${
+            className={`inline-flex h-7 min-w-[28px] items-center justify-center rounded-full px-2 transition-colors ${
               active ? 'bg-accent text-white shadow-sm' : inactiveCls
             }`}
           >
