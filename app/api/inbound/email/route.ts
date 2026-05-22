@@ -18,6 +18,7 @@ import { NextResponse, after } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/server';
 import { nas, type ExtractedBooking } from '@/lib/nas-client';
 import { runPriceCheck } from '@/lib/booking/run-check';
+import { normalizeChildrenAges } from '@/lib/guests';
 import {
   extractTokenFromAddresses,
   matchesGlobalAddress,
@@ -278,6 +279,7 @@ export async function POST(req: Request) {
       check_out: extracted.check_out,
       adults: extracted.guests?.adults,
       children: extracted.guests?.children,
+      children_ages: extracted.guests?.children_ages,
       rooms: extracted.guests?.rooms,
     });
     url = search.url;
@@ -313,7 +315,9 @@ export async function POST(req: Request) {
       hotel_name: extracted.hotel_name,
       check_in: extracted.check_in,
       check_out: extracted.check_out,
-      guests: extracted.guests || { adults: 2, children: 0, rooms: 1 },
+      guests: extracted.guests
+        ? { ...extracted.guests, children_ages: normalizeChildrenAges(extracted.guests) }
+        : { adults: 2, children: 0, rooms: 1, children_ages: [] },
       room_type: extracted.room_type,
       meal_plan: extracted.meal_plan,
       cancellation: extracted.cancellation,

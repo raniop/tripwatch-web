@@ -56,7 +56,7 @@ export interface Booking {
   hotel_lng: number | null;
   check_in: string;
   check_out: string;
-  guests: { adults: number; children: number; rooms: number } | null;
+  guests: { adults: number; children: number; rooms: number; children_ages?: number[] } | null;
   room_type: string | null;
   meal_plan: string | null;
   cancellation: string | null;

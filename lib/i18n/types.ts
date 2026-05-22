@@ -231,6 +231,17 @@ export interface Messages {
     cancellationUnitDay: string;
     cancellationUnitDays: string;
     cancellationLessThanHour: string;
+    guestsAgesPrefix: string;
+    editGuestsAria: string;
+    guestsEditTitle: string;
+    childAgeLabel: string;
+    childAgeHint: string;
+    guestsSave: string;
+    guestsCancel: string;
+    guestsRechecking: string;
+    guestsRecheckedTo: string;
+    guestsRecheckFailed: string;
+    guestsRecheckSkipped: string;
   };
   bookingActions: {
     checkNow: string;

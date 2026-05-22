@@ -10,6 +10,12 @@ const KEY = process.env.NAS_API_KEY;
 export interface NasGuests {
   adults: number;
   children: number;
+  /**
+   * Age per child. Length should equal `children`. Booking.com requires one
+   * `age=X` query param per child or it silently returns the no-children
+   * price. We default to 10 (mid 7–12 band) when unknown.
+   */
+  children_ages: number[];
   rooms: number;
 }
 
@@ -90,8 +96,15 @@ export const nas = {
   visionExtract: (image_url: string) => call<ExtractedBooking>('/vision/extract', { image_url }),
   textExtract: (input: TextExtractInput) =>
     call<ExtractedBooking | { not_a_booking: true }>('/text/extract', input),
-  search: (params: { hotel_name: string; check_in: string; check_out: string; adults?: number; children?: number; rooms?: number }) =>
-    call<{ url: string }>('/search', params),
+  search: (params: {
+    hotel_name: string;
+    check_in: string;
+    check_out: string;
+    adults?: number;
+    children?: number;
+    children_ages?: number[];
+    rooms?: number;
+  }) => call<{ url: string }>('/search', params),
   resolveShare: (url: string) => call<{ url: string; resolved: boolean }>('/resolve-share', { url }),
   parseUrl: (url: string) => call<{
     source: string;

@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { runPriceCheck } from '@/lib/booking/run-check';
+import { normalizeChildrenAges } from '@/lib/guests';
 
 export async function checkNow(bookingId: string) {
   const supabase = await createClient();
@@ -63,6 +64,65 @@ export async function setCancellationDeadline(bookingId: string, iso: string | n
   revalidatePath(`/booking/${bookingId}`);
   revalidatePath('/dashboard');
   return { ok: true as const };
+}
+
+/**
+ * Update guest composition (adults / children / per-child ages / rooms) and
+ * rebuild the booking URL with proper `age=X` params — Booking ignores
+ * `group_children` without one age per child.
+ *
+ * Triggers a fresh price check after saving so the dashboard reflects the
+ * corrected party composition immediately.
+ */
+export async function updateGuests(
+  bookingId: string,
+  input: { adults: number; children: number; children_ages: number[]; rooms: number },
+) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false as const, error: 'unauthorized' };
+
+  const adults = Math.max(1, Math.floor(input.adults));
+  const children = Math.max(0, Math.floor(input.children));
+  const rooms = Math.max(1, Math.floor(input.rooms));
+  const children_ages = normalizeChildrenAges({ children, children_ages: input.children_ages });
+
+  const { data: b, error: loadErr } = await supabase
+    .from('bookings')
+    .select('id, url, room_type, meal_plan, hotel_image_url')
+    .eq('id', bookingId)
+    .eq('user_id', user.id)
+    .single();
+  if (loadErr || !b) return { ok: false as const, error: 'booking not found' };
+
+  let url: string;
+  try {
+    const u = new URL(b.url);
+    u.searchParams.set('group_adults', String(adults));
+    u.searchParams.set('group_children', String(children));
+    u.searchParams.set('no_rooms', String(rooms));
+    // Delete all existing `age` params, then re-append in order.
+    u.searchParams.delete('age');
+    for (const a of children_ages) u.searchParams.append('age', String(a));
+    url = u.toString();
+  } catch {
+    return { ok: false as const, error: 'invalid stored URL' };
+  }
+
+  const { error: updErr } = await supabase
+    .from('bookings')
+    .update({ guests: { adults, children, rooms, children_ages }, url })
+    .eq('id', bookingId)
+    .eq('user_id', user.id);
+  if (updErr) return { ok: false as const, error: updErr.message };
+
+  // Re-check price with the corrected URL so the dashboard updates right away.
+  const r = await runPriceCheck(supabase, { ...b, url });
+
+  revalidatePath(`/booking/${bookingId}`);
+  revalidatePath('/dashboard');
+  if (!r.ok) return { ok: true as const, recheckError: r.error };
+  return { ok: true as const, result: { amount: r.amount, currency: r.currency } };
 }
 
 export async function updateThreshold(bookingId: string, alert_pct: number, alert_amount_ils: number) {

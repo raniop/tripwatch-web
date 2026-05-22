@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
 import { nas, type ExtractedBooking } from '@/lib/nas-client';
+import { normalizeChildrenAges } from '@/lib/guests';
 
 const SaveSchema = z.object({
   source: z.string().default('booking.com'),
@@ -15,6 +16,7 @@ const SaveSchema = z.object({
   guests: z.object({
     adults: z.number().int().min(1).default(2),
     children: z.number().int().min(0).default(0),
+    children_ages: z.array(z.number().int().min(0).max(17)).default([]),
     rooms: z.number().int().min(1).default(1),
   }),
   room_type: z.string().nullable().optional(),
@@ -64,6 +66,7 @@ export async function extractFromImage(formData: FormData): Promise<
       check_out: extracted.check_out,
       adults: extracted.guests?.adults,
       children: extracted.guests?.children,
+      children_ages: extracted.guests?.children_ages,
       rooms: extracted.guests?.rooms,
     });
     return { ok: true, extracted, url, image_path: path };
@@ -106,11 +109,18 @@ export async function saveBooking(input: unknown) {
     paid_price_ils = parsed.data.paid_price;
   }
 
+  // Make sure children_ages length === children before insert (DB has a CHECK).
+  const normalizedGuests = {
+    ...parsed.data.guests,
+    children_ages: normalizeChildrenAges(parsed.data.guests),
+  };
+
   const { data, error } = await supabase
     .from('bookings')
     .insert({
       user_id: user.id,
       ...parsed.data,
+      guests: normalizedGuests,
       paid_price_ils,
       status: 'active',
     })

@@ -11,6 +11,8 @@ import { fmtPrice, fmtDateRange, nightsBetween, priceDiff, fmtRelative } from '@
 import { convertToILS } from '@/lib/fx';
 import { getMessages } from '@/lib/i18n';
 import { CancellationDeadlineEditor } from '@/components/cancellation-deadline-editor';
+import { GuestsEditor } from '@/components/guests-editor';
+import { normalizeChildrenAges } from '@/lib/guests';
 import type { Booking, PriceCheck } from '@/lib/supabase/types';
 
 export const dynamic = 'force-dynamic';
@@ -84,9 +86,14 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
               {fmtDateRange(b.check_in, b.check_out)} · {nightsBetween(b.check_in, b.check_out)} {t.bookingCard.nights}
             </p>
             {b.guests && (
-              <p className="text-sm">
-                👥 {b.guests.adults} {t.bookingDetail.adults}{b.guests.children > 0 ? `, ${b.guests.children} ${t.bookingDetail.children}` : ''} · 🚪 {b.guests.rooms} {t.bookingDetail.rooms}
-              </p>
+              <GuestsEditor
+                bookingId={b.id}
+                initialAdults={b.guests.adults}
+                initialChildren={b.guests.children}
+                initialChildrenAges={normalizeChildrenAges(b.guests)}
+                initialRooms={b.guests.rooms}
+                messages={t.bookingDetail}
+              />
             )}
             {b.room_type && <p className="text-sm">🛏 <span className="text-foreground">{b.room_type}</span></p>}
             {b.meal_plan && <p className="text-sm">🍽 {b.meal_plan}</p>}
