@@ -355,6 +355,9 @@ export async function POST(req: Request) {
       room_type: extracted.room_type,
       meal_plan: extracted.meal_plan,
       hotel_image_url: null,
+      guests: extracted.guests
+        ? { adults: extracted.guests.adults, children: extracted.guests.children }
+        : null,
     });
   });
 

@@ -117,8 +117,15 @@ export const nas = {
     currency: string | null;
     canonicalUrl: string;
   }>('/parse-url', { url }),
-  scrape: (params: { url: string; room_type?: string | null; meal_plan?: string | null }) =>
-    call<ScrapeMatchResult>('/scrape', params),
+  scrape: (params: {
+    url: string;
+    room_type?: string | null;
+    meal_plan?: string | null;
+    /** Critical for accurate matching — Booking shows multiple rate-rows per
+     * room (one per occupancy) and we need to pick the one for the booking's
+     * actual party size, not the cheapest variant. */
+    guests?: { adults: number; children: number } | null;
+  }) => call<ScrapeMatchResult>('/scrape', params),
   triggerDailyCheck: () => call<{ ok: true; started_at: string }>('/trigger-daily-check', {}),
 };
 

@@ -19,6 +19,9 @@ interface BookingRow {
   room_type: string | null;
   meal_plan: string | null;
   hotel_image_url: string | null;
+  /** Required for accurate matching — without this we'll pick a 2-adult rate
+   * for a family booking and report a fake "price drop." */
+  guests?: { adults: number; children: number } | null;
 }
 
 export async function runPriceCheck(
@@ -30,6 +33,9 @@ export async function runPriceCheck(
       url: booking.url,
       room_type: booking.room_type,
       meal_plan: booking.meal_plan,
+      guests: booking.guests
+        ? { adults: booking.guests.adults, children: booking.guests.children }
+        : null,
     });
 
     const { error: checkErr } = await supabase.from('price_checks').insert({
