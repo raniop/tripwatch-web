@@ -43,6 +43,10 @@ export interface HotelMeta {
 export interface ScrapeMatchResult {
   amount: number;
   currency: string;
+  /** Pre-discount price shown as strikethrough on Booking, when present.
+   * Lets us display "₪current (was ₪original)" so users see how Booking
+   * is framing the deal — and what the headline rate looks like. */
+  original_amount?: number | null;
   match_score: number;
   matched_room: string | null;
   matched_meal: string | null;

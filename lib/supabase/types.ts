@@ -66,6 +66,9 @@ export interface Booking {
   paid_price: number;
   paid_price_ils: number | null;
   last_price: number | null;
+  /** Booking's strikethrough "original" price for the matched rate (null when
+   * no discount is shown). Use to render "from ₪X" alongside last_price. */
+  last_original_price: number | null;
   last_currency: string | null;
   last_checked_at: string | null;
   last_alert_sent_at: string | null;
@@ -90,6 +93,8 @@ export interface PriceCheck {
   booking_id: string;
   checked_at: string;
   price: number | null;
+  /** Strikethrough/pre-discount price when Booking showed one. */
+  original_price: number | null;
   currency: string | null;
   match_score: number | null;
   matched_room: string | null;

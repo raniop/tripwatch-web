@@ -217,6 +217,7 @@ export const he: Messages = {
     openBooking: 'פתח ב-Booking',
     paid: 'שילמת',
     current: 'מחיר נוכחי',
+    originalPricePrefix: 'מחיר רשום:',
     updatedRelative: 'עודכן {when}',
     diff: 'הפרש',
     matchHeading: 'התאמה',

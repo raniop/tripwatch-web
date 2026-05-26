@@ -132,6 +132,13 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
                   <p className={`tabular-nums text-3xl font-bold ${diff.direction === 'down' && diff.pct >= 1 ? 'text-success' : diff.direction === 'up' && diff.pct <= -1 ? 'text-destructive' : ''}`}>
                     {fmtPrice(b.last_price, b.last_currency || b.currency)}
                   </p>
+                  {b.last_original_price && Number(b.last_original_price) > Number(b.last_price) && (
+                    <p className="text-xs text-muted-foreground">
+                      {t.bookingDetail.originalPricePrefix}{' '}
+                      <span className="line-through tabular-nums">{fmtPrice(b.last_original_price, b.last_currency || b.currency)}</span>
+                      {' '}<span className="text-success">−{Math.round((1 - Number(b.last_price) / Number(b.last_original_price)) * 100)}%</span>
+                    </p>
+                  )}
                   {lastCur !== 'ILS' && currentIls && (
                     <p className="text-xs text-muted-foreground">≈ {fmtPrice(currentIls, 'ILS')}</p>
                   )}

@@ -203,6 +203,7 @@ export interface Messages {
     openBooking: string;
     paid: string;
     current: string;
+    originalPricePrefix: string;
     updatedRelative: string;
     diff: string;
     matchHeading: string;

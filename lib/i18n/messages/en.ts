@@ -217,6 +217,7 @@ export const en: Messages = {
     openBooking: 'Open on Booking',
     paid: 'Paid',
     current: 'Current price',
+    originalPricePrefix: 'Listed at:',
     updatedRelative: 'Updated {when}',
     diff: 'Difference',
     matchHeading: 'Match',

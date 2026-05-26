@@ -41,6 +41,7 @@ export async function runPriceCheck(
     const { error: checkErr } = await supabase.from('price_checks').insert({
       booking_id: booking.id,
       price: r.amount,
+      original_price: r.original_amount ?? null,
       currency: r.currency,
       match_score: r.match_score,
       matched_room: r.matched_room,
@@ -53,6 +54,7 @@ export async function runPriceCheck(
 
     const updates: Record<string, unknown> = {
       last_price: r.amount,
+      last_original_price: r.original_amount ?? null,
       last_currency: r.currency,
       last_checked_at: new Date().toISOString(),
     };
