@@ -38,8 +38,11 @@ export async function BookingCard({ booking, messages }: { booking: Booking; mes
   const useIls = currenciesDiffer && paidIls !== null && currentIls !== null;
   // If the matcher had no room hint or scored weak, last_price is "Booking's
   // cheapest fallback" — not the user's actual room. Don't claim a savings.
+  // NOTE: null score means "never checked with the new scorer" — that's
+  // legacy data, not low-confidence. Trust the existing last_price unless we
+  // have positive evidence the match is weak.
   const score = booking.last_match_score !== null ? Number(booking.last_match_score) : null;
-  const lowConfidence = !booking.room_type || score === null || score < 0.5;
+  const lowConfidence = !booking.room_type || (score !== null && score < 0.5);
   const diff = hasCheck && !lowConfidence
     ? (useIls
       ? { ...priceDiff(paidIls!, currentIls!), currency: 'ILS' }

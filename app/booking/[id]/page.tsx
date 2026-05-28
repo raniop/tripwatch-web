@@ -85,7 +85,11 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
   // If the matcher couldn't find a confident match (no room_type, weak score),
   // the price is just Booking's cheapest — not a like-for-like comparison.
   // Show it as a reference and hide the diff so we don't claim a fake savings.
-  const lowConfidence = !lastCheck?.match_score || Number(lastCheck.match_score) < 0.5;
+  // NOTE: a null score means "never checked with the new scorer" — that's
+  // legacy data, not low-confidence. Only mark low-confidence on positive
+  // evidence (no room_type, or a weak score).
+  const hasScore = lastCheck?.match_score !== null && lastCheck?.match_score !== undefined;
+  const lowConfidence = !b.room_type || (hasScore && Number(lastCheck.match_score) < 0.5);
   const diff = hasCheck && !lowConfidence
     ? (useIls
       ? { ...priceDiff(paidIls!, currentIls!), currency: 'ILS' }
