@@ -10,6 +10,7 @@ interface CardMessages {
   current: string;
   referencePriceLabel: string;
   notCheckedYet: string;
+  trackingPausedShort: string;
   nights: string;
   cancelExpired: string;
   cancelUntilHours: string;
@@ -114,11 +115,11 @@ export async function BookingCard({ booking, messages }: { booking: Booking; mes
               )}
             </span>
           </div>
-          {hasCheck ? (
+          {lowConfidence ? (
+            <p className="pt-1 text-xs text-warning">⚠ {messages.trackingPausedShort}</p>
+          ) : hasCheck ? (
             <div className="flex items-baseline justify-between gap-2 pt-1">
-              <span className="text-xs text-muted-foreground">
-                {lowConfidence ? messages.referencePriceLabel : messages.current}
-              </span>
+              <span className="text-xs text-muted-foreground">{messages.current}</span>
               <span className={cn(
                 'tabular-nums text-base font-bold',
                 diff && diff.direction === 'down' && diff.pct >= 1 ? 'text-success' : diff && diff.direction === 'up' && diff.pct <= -1 ? 'text-destructive' : '',

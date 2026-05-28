@@ -189,6 +189,7 @@ export interface Messages {
     current: string;
     referencePriceLabel: string;
     notCheckedYet: string;
+    trackingPausedShort: string;
     nights: string;
     cancelExpired: string;
     cancelUntilHours: string;
@@ -210,6 +211,8 @@ export interface Messages {
     viaBookingReference: string;
     referencePriceLabel: string;
     lowConfidenceNote: string;
+    trackingPausedTitle: string;
+    trackingPausedBody: string;
     diff: string;
     matchHeading: string;
     matchDetails: string;

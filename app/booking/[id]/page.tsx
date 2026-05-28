@@ -160,11 +160,23 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
                 <p className="text-xs text-muted-foreground">≈ {fmtPrice(paidIls, 'ILS')}</p>
               )}
             </div>
-            {hasCheck ? (
+            {lowConfidence ? (
+              // Don't show a number we know isn't comparable — that's the bug
+              // that fired the fake "savings" emails. Hand the user a clear
+              // action to unlock tracking instead.
+              <div className="rounded-lg border border-warning/40 bg-warning/10 p-4 text-sm">
+                <p className="font-semibold text-warning mb-1">
+                  {t.bookingDetail.trackingPausedTitle}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {t.bookingDetail.trackingPausedBody}
+                </p>
+              </div>
+            ) : hasCheck ? (
               <>
                 <div>
                   <p className="text-xs text-muted-foreground">
-                    {lowConfidence ? t.bookingDetail.referencePriceLabel : t.bookingDetail.current}
+                    {t.bookingDetail.current}
                     {b.source && b.source.toLowerCase() !== 'booking.com' && (
                       <span className="ms-1">· {t.bookingDetail.viaBookingReference}</span>
                     )}
@@ -172,9 +184,6 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
                   <p className={`tabular-nums text-3xl font-bold ${diff && diff.direction === 'down' && diff.pct >= 1 ? 'text-success' : diff && diff.direction === 'up' && diff.pct <= -1 ? 'text-destructive' : ''}`}>
                     {fmtPrice(b.last_price, b.last_currency || b.currency)}
                   </p>
-                  {lowConfidence && (
-                    <p className="mt-1 text-xs text-warning">{t.bookingDetail.lowConfidenceNote}</p>
-                  )}
                   {b.last_original_price && Number(b.last_original_price) > Number(b.last_price) && (
                     <p className="text-xs text-muted-foreground">
                       {t.bookingDetail.originalPricePrefix}{' '}
