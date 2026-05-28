@@ -69,6 +69,9 @@ export interface Booking {
   /** Booking's strikethrough "original" price for the matched rate (null when
    * no discount is shown). Use to render "from ₪X" alongside last_price. */
   last_original_price: number | null;
+  /** Confidence score of the matched rate (0-1). Null when never checked.
+   * Below 0.5: don't show a price-drop diff — the comparison isn't trustworthy. */
+  last_match_score: number | null;
   last_currency: string | null;
   last_checked_at: string | null;
   last_alert_sent_at: string | null;

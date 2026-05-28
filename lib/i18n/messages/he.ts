@@ -201,6 +201,7 @@ export const he: Messages = {
   bookingCard: {
     paid: 'שילמת',
     current: 'נוכחי',
+    referencePriceLabel: 'רפרנס',
     notCheckedYet: 'טרם נבדק — בודק בלילה הקרוב',
     nights: 'לילות',
     cancelExpired: 'פג ביטול',

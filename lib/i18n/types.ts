@@ -187,6 +187,7 @@ export interface Messages {
   bookingCard: {
     paid: string;
     current: string;
+    referencePriceLabel: string;
     notCheckedYet: string;
     nights: string;
     cancelExpired: string;

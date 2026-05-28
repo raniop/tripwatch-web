@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 interface CardMessages {
   paid: string;
   current: string;
+  referencePriceLabel: string;
   notCheckedYet: string;
   nights: string;
   cancelExpired: string;
@@ -34,7 +35,11 @@ export async function BookingCard({ booking, messages }: { booking: Booking; mes
   }
   const currenciesDiffer = paidCur !== lastCur;
   const useIls = currenciesDiffer && paidIls !== null && currentIls !== null;
-  const diff = hasCheck
+  // If the matcher had no room hint or scored weak, last_price is "Booking's
+  // cheapest fallback" — not the user's actual room. Don't claim a savings.
+  const score = booking.last_match_score !== null ? Number(booking.last_match_score) : null;
+  const lowConfidence = !booking.room_type || score === null || score < 0.5;
+  const diff = hasCheck && !lowConfidence
     ? (useIls
       ? { ...priceDiff(paidIls!, currentIls!), currency: 'ILS' }
       : { ...priceDiff(paidPriceN, lastPriceN!), currency: paidCur })
@@ -109,18 +114,20 @@ export async function BookingCard({ booking, messages }: { booking: Booking; mes
               )}
             </span>
           </div>
-          {hasCheck && diff ? (
+          {hasCheck ? (
             <div className="flex items-baseline justify-between gap-2 pt-1">
-              <span className="text-xs text-muted-foreground">{messages.current}</span>
+              <span className="text-xs text-muted-foreground">
+                {lowConfidence ? messages.referencePriceLabel : messages.current}
+              </span>
               <span className={cn(
                 'tabular-nums text-base font-bold',
-                diff.direction === 'down' && diff.pct >= 1 ? 'text-success' : diff.direction === 'up' && diff.pct <= -1 ? 'text-destructive' : '',
+                diff && diff.direction === 'down' && diff.pct >= 1 ? 'text-success' : diff && diff.direction === 'up' && diff.pct <= -1 ? 'text-destructive' : '',
               )}>
                 {fmtPrice(booking.last_price, booking.last_currency || booking.currency)}
                 {lastCur !== 'ILS' && currentIls && (
                   <span className="ms-1 text-[10px] font-normal text-muted-foreground">≈ {fmtPrice(currentIls, 'ILS')}</span>
                 )}
-                {diff.direction !== 'same' && (
+                {diff && diff.direction !== 'same' && (
                   <span className="ms-2 text-xs font-normal">
                     {diff.direction === 'down' ? '⬇' : '⬆'} {Math.abs(diff.pct).toFixed(1)}%
                   </span>

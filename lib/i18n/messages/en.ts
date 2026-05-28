@@ -201,6 +201,7 @@ export const en: Messages = {
   bookingCard: {
     paid: 'Paid',
     current: 'Current',
+    referencePriceLabel: 'Reference',
     notCheckedYet: 'Not checked yet — first check is tonight',
     nights: 'nights',
     cancelExpired: 'Cancel expired',
