@@ -68,14 +68,23 @@ export function parseCountryFromBookingUrl(url: string | null | undefined): stri
 }
 
 /**
- * Country code → flag emoji (regional indicator pair). "CY" → 🇨🇾.
- * Works in every modern browser & email client that supports emoji 11+.
+ * Country code → localized country name. "CY" → "Cyprus" / "קפריסין".
+ * Uses Intl.DisplayNames (Node 18+, every modern browser). Returns null
+ * when the runtime can't resolve the name — caller should fall back to
+ * the raw code or hide.
+ *
+ * Note: we used to render flag emoji (🇨🇾) but Windows desktop's system
+ * font doesn't include country flags — they render as the literal letter
+ * pair "CY", which looks like a bug. Names work everywhere.
  */
-export function countryFlag(code: string | null | undefined): string {
-  if (!code || code.length !== 2) return '';
-  const A = 0x1f1e6; // regional indicator 'A'
-  const cc = code.toUpperCase();
-  return String.fromCodePoint(A + (cc.charCodeAt(0) - 65), A + (cc.charCodeAt(1) - 65));
+export function countryName(code: string | null | undefined, locale: 'he' | 'en' = 'he'): string | null {
+  if (!code || code.length !== 2) return null;
+  try {
+    const dn = new Intl.DisplayNames([locale === 'he' ? 'he-IL' : 'en-US'], { type: 'region' });
+    return dn.of(code.toUpperCase()) ?? null;
+  } catch {
+    return null;
+  }
 }
 
 /**

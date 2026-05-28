@@ -1,8 +1,9 @@
 import Link from 'next/link';
 import { Bed, Calendar, UtensilsCrossed, Clock } from 'lucide-react';
 import type { Booking } from '@/lib/supabase/types';
-import { fmtPrice, fmtDateRange, nightsBetween, priceDiff, parseCountryFromBookingUrl, countryFlag } from '@/lib/format';
+import { fmtPrice, fmtDateRange, nightsBetween, priceDiff, parseCountryFromBookingUrl, countryName } from '@/lib/format';
 import { convertToILS } from '@/lib/fx';
+import { getLocale } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 
 interface CardMessages {
@@ -49,15 +50,15 @@ export async function BookingCard({ booking, messages }: { booking: Booking; mes
       : { ...priceDiff(paidPriceN, lastPriceN!), currency: paidCur })
     : null;
   const deadline = cancellationChip(booking.cancellation_deadline, messages);
-  const country = parseCountryFromBookingUrl(booking.url);
-  const flag = countryFlag(country);
+  const locale = await getLocale();
+  const country = countryName(parseCountryFromBookingUrl(booking.url), locale);
 
   return (
     <Link
       href={`/booking/${booking.id}`}
       className="group block overflow-hidden rounded-xl border border-border bg-card transition-all hover:border-primary/40 hover:shadow-md"
     >
-      <div className="relative aspect-[16/10] w-full bg-muted">
+      <div className="relative aspect-[16/9] w-full bg-muted">
         {booking.hotel_image_url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -66,28 +67,28 @@ export async function BookingCard({ booking, messages }: { booking: Booking; mes
             className="size-full object-cover"
           />
         ) : (
-          <div className="grid size-full place-items-center text-4xl">🏨</div>
+          <div className="grid size-full place-items-center text-3xl">🏨</div>
         )}
         {hasCheck && diff && diff.direction === 'down' && diff.pct >= 1 && (
-          <div className="absolute right-3 top-3 rounded-full bg-success px-3 py-1 text-xs font-semibold text-white shadow">
+          <div className="absolute right-2 top-2 rounded-full bg-success px-2.5 py-0.5 text-[11px] font-semibold text-white shadow">
             ⬇ {diff.pct.toFixed(0)}%
           </div>
         )}
       </div>
 
-      <div className="space-y-3 p-4">
+      <div className="space-y-2 p-3">
         <div>
-          <h3 className="line-clamp-1 text-base font-semibold">
-            {flag && <span className="me-1 align-middle">{flag}</span>}
-            {booking.hotel_name}
-          </h3>
-          <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
-            <Calendar className="size-3" />
-            {fmtDateRange(booking.check_in, booking.check_out)} · {nights} {messages.nights}
+          <h3 className="line-clamp-1 text-sm font-semibold">{booking.hotel_name}</h3>
+          <p className="mt-0.5 flex items-center gap-1 text-[11px] text-muted-foreground">
+            <Calendar className="size-3 shrink-0" />
+            <span className="line-clamp-1">
+              {fmtDateRange(booking.check_in, booking.check_out)} · {nights} {messages.nights}
+              {country && <> · {country}</>}
+            </span>
           </p>
           {deadline && (
             <p className={cn(
-              'mt-1.5 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px]',
+              'mt-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px]',
               deadline.cls,
             )}>
               <Clock className="size-3" />
@@ -97,7 +98,7 @@ export async function BookingCard({ booking, messages }: { booking: Booking; mes
         </div>
 
         {(booking.room_type || booking.meal_plan) && (
-          <div className="space-y-1 text-xs text-muted-foreground">
+          <div className="space-y-0.5 text-[11px] text-muted-foreground">
             {booking.room_type && (
               <p className="flex items-center gap-1.5 line-clamp-1">
                 <Bed className="size-3 shrink-0" />
@@ -105,7 +106,7 @@ export async function BookingCard({ booking, messages }: { booking: Booking; mes
               </p>
             )}
             {booking.meal_plan && (
-              <p className="flex items-center gap-1.5">
+              <p className="flex items-center gap-1.5 line-clamp-1">
                 <UtensilsCrossed className="size-3 shrink-0" />
                 {booking.meal_plan}
               </p>
@@ -113,10 +114,10 @@ export async function BookingCard({ booking, messages }: { booking: Booking; mes
           </div>
         )}
 
-        <div className="border-t border-border pt-3">
+        <div className="border-t border-border pt-2">
           <div className="flex items-baseline justify-between gap-2">
-            <span className="text-xs text-muted-foreground">{messages.paid}</span>
-            <span className="tabular-nums text-sm font-medium">
+            <span className="text-[11px] text-muted-foreground">{messages.paid}</span>
+            <span className="tabular-nums text-xs font-medium">
               {fmtPrice(booking.paid_price, booking.currency)}
               {paidCur !== 'ILS' && paidIls && (
                 <span className="ms-1 text-[10px] font-normal text-muted-foreground">≈ {fmtPrice(paidIls, 'ILS')}</span>
@@ -124,12 +125,12 @@ export async function BookingCard({ booking, messages }: { booking: Booking; mes
             </span>
           </div>
           {lowConfidence ? (
-            <p className="pt-1 text-xs text-warning">⚠ {messages.trackingPausedShort}</p>
+            <p className="pt-1 text-[11px] text-warning">⚠ {messages.trackingPausedShort}</p>
           ) : hasCheck ? (
             <div className="flex items-baseline justify-between gap-2 pt-1">
-              <span className="text-xs text-muted-foreground">{messages.current}</span>
+              <span className="text-[11px] text-muted-foreground">{messages.current}</span>
               <span className={cn(
-                'tabular-nums text-base font-bold',
+                'tabular-nums text-sm font-bold',
                 diff && diff.direction === 'down' && diff.pct >= 1 ? 'text-success' : diff && diff.direction === 'up' && diff.pct <= -1 ? 'text-destructive' : '',
               )}>
                 {fmtPrice(booking.last_price, booking.last_currency || booking.currency)}
@@ -137,14 +138,14 @@ export async function BookingCard({ booking, messages }: { booking: Booking; mes
                   <span className="ms-1 text-[10px] font-normal text-muted-foreground">≈ {fmtPrice(currentIls, 'ILS')}</span>
                 )}
                 {diff && diff.direction !== 'same' && (
-                  <span className="ms-2 text-xs font-normal">
+                  <span className="ms-2 text-[11px] font-normal">
                     {diff.direction === 'down' ? '⬇' : '⬆'} {Math.abs(diff.pct).toFixed(1)}%
                   </span>
                 )}
               </span>
             </div>
           ) : (
-            <p className="pt-1 text-xs text-muted-foreground">{messages.notCheckedYet}</p>
+            <p className="pt-1 text-[11px] text-muted-foreground">{messages.notCheckedYet}</p>
           )}
         </div>
       </div>
