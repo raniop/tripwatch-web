@@ -12,6 +12,7 @@ import { convertToILS } from '@/lib/fx';
 import { getMessages } from '@/lib/i18n';
 import { CancellationDeadlineEditor } from '@/components/cancellation-deadline-editor';
 import { GuestsEditor } from '@/components/guests-editor';
+import { RoomTypeEditor } from '@/components/room-type-editor';
 import { normalizeChildrenAges } from '@/lib/guests';
 
 /** Human-readable source label. Falls back to the raw value for unknowns. */
@@ -79,13 +80,17 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
 
   const currenciesDiffer = paidCur !== lastCur;
   const useIls = currenciesDiffer && paidIls !== null && currentIls !== null;
-  const diff = hasCheck
+
+  const lastCheck = checks.find((c) => !c.error) ?? null;
+  // If the matcher couldn't find a confident match (no room_type, weak score),
+  // the price is just Booking's cheapest — not a like-for-like comparison.
+  // Show it as a reference and hide the diff so we don't claim a fake savings.
+  const lowConfidence = !lastCheck?.match_score || Number(lastCheck.match_score) < 0.5;
+  const diff = hasCheck && !lowConfidence
     ? (useIls
       ? { ...priceDiff(paidIls!, currentIls!), currency: 'ILS' }
       : { ...priceDiff(paidPriceN, lastPriceN!), currency: paidCur })
     : null;
-
-  const lastCheck = checks.find((c) => !c.error) ?? null;
 
   return (
     <AppShell>
@@ -121,8 +126,12 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
                 messages={t.bookingDetail}
               />
             )}
-            {b.room_type && <p className="text-sm">🛏 <span className="text-foreground">{b.room_type}</span></p>}
-            {b.meal_plan && <p className="text-sm">🍽 {b.meal_plan}</p>}
+            <RoomTypeEditor
+              bookingId={b.id}
+              initialRoomType={b.room_type}
+              initialMealPlan={b.meal_plan}
+              messages={t.bookingDetail}
+            />
             {b.cancellation && !b.cancellation_deadline && (
               <p className="text-sm text-muted-foreground">📋 {b.cancellation}</p>
             )}
@@ -151,18 +160,21 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
                 <p className="text-xs text-muted-foreground">≈ {fmtPrice(paidIls, 'ILS')}</p>
               )}
             </div>
-            {hasCheck && diff ? (
+            {hasCheck ? (
               <>
                 <div>
                   <p className="text-xs text-muted-foreground">
-                    {t.bookingDetail.current}
+                    {lowConfidence ? t.bookingDetail.referencePriceLabel : t.bookingDetail.current}
                     {b.source && b.source.toLowerCase() !== 'booking.com' && (
                       <span className="ms-1">· {t.bookingDetail.viaBookingReference}</span>
                     )}
                   </p>
-                  <p className={`tabular-nums text-3xl font-bold ${diff.direction === 'down' && diff.pct >= 1 ? 'text-success' : diff.direction === 'up' && diff.pct <= -1 ? 'text-destructive' : ''}`}>
+                  <p className={`tabular-nums text-3xl font-bold ${diff && diff.direction === 'down' && diff.pct >= 1 ? 'text-success' : diff && diff.direction === 'up' && diff.pct <= -1 ? 'text-destructive' : ''}`}>
                     {fmtPrice(b.last_price, b.last_currency || b.currency)}
                   </p>
+                  {lowConfidence && (
+                    <p className="mt-1 text-xs text-warning">{t.bookingDetail.lowConfidenceNote}</p>
+                  )}
                   {b.last_original_price && Number(b.last_original_price) > Number(b.last_price) && (
                     <p className="text-xs text-muted-foreground">
                       {t.bookingDetail.originalPricePrefix}{' '}
@@ -175,7 +187,7 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
                   )}
                   <p className="mt-1 text-xs text-muted-foreground">{t.bookingDetail.updatedRelative.replace('{when}', fmtRelative(b.last_checked_at))}</p>
                 </div>
-                {diff.direction !== 'same' && (
+                {diff && diff.direction !== 'same' && (
                   <div className="rounded-md bg-muted p-3">
                     <p className="text-xs text-muted-foreground">{t.bookingDetail.diff}</p>
                     <p className={`tabular-nums text-lg font-semibold ${diff.direction === 'down' ? 'text-success' : 'text-destructive'}`}>

@@ -207,6 +207,8 @@ export interface Messages {
     updatedRelative: string;
     bookedVia: string;
     viaBookingReference: string;
+    referencePriceLabel: string;
+    lowConfidenceNote: string;
     diff: string;
     matchHeading: string;
     matchDetails: string;
@@ -245,6 +247,21 @@ export interface Messages {
     guestsRecheckedTo: string;
     guestsRecheckFailed: string;
     guestsRecheckSkipped: string;
+    roomIconPrefix: string;
+    mealIconPrefix: string;
+    roomEditTitle: string;
+    roomAddCta: string;
+    roomLabel: string;
+    roomPlaceholder: string;
+    mealLabel: string;
+    mealPlaceholder: string;
+    roomSave: string;
+    roomSaving: string;
+    roomCancel: string;
+    roomAriaEdit: string;
+    roomRecheckedTo: string;
+    roomRecheckFailed: string;
+    roomSavedNoRecheck: string;
   };
   bookingActions: {
     checkNow: string;

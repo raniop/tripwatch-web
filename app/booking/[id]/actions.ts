@@ -125,6 +125,61 @@ export async function updateGuests(
   return { ok: true as const, result: { amount: r.amount, currency: r.currency } };
 }
 
+/**
+ * Update room name + meal plan and immediately re-run a price check so the
+ * matcher can lock onto the right rate. Use this on LHW / non-Booking
+ * bookings where the email didn't include a clean room name, or to correct
+ * a bad match.
+ *
+ * Both values are trimmed; empty strings are stored as NULL so the matcher
+ * falls back to "cheapest" rather than scoring against "".
+ */
+export async function updateRoomType(
+  bookingId: string,
+  input: { room_type: string; meal_plan: string },
+) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false as const, error: 'unauthorized' };
+
+  const room_type = input.room_type.trim() || null;
+  const meal_plan = input.meal_plan.trim() || null;
+
+  const { data: b, error: loadErr } = await supabase
+    .from('bookings')
+    .select('id, url, room_type, meal_plan, hotel_image_url, guests')
+    .eq('id', bookingId)
+    .eq('user_id', user.id)
+    .single();
+  if (loadErr || !b) return { ok: false as const, error: 'booking not found' };
+
+  const { error: updErr } = await supabase
+    .from('bookings')
+    .update({ room_type, meal_plan })
+    .eq('id', bookingId)
+    .eq('user_id', user.id);
+  if (updErr) return { ok: false as const, error: updErr.message };
+
+  // Re-check with the new room/meal so the dashboard reflects the proper
+  // match immediately. Skip if there's still no room_type (no point — the
+  // matcher would just return the cheapest).
+  let recheck: { ok: true; amount: number; currency: string } | { ok: false; error: string } | null = null;
+  if (room_type) {
+    recheck = await runPriceCheck(supabase, { ...b, room_type, meal_plan });
+  }
+
+  revalidatePath(`/booking/${bookingId}`);
+  revalidatePath('/dashboard');
+
+  if (recheck && recheck.ok) {
+    return { ok: true as const, result: { amount: recheck.amount, currency: recheck.currency } };
+  }
+  if (recheck && !recheck.ok) {
+    return { ok: true as const, recheckError: recheck.error };
+  }
+  return { ok: true as const };
+}
+
 export async function updateThreshold(bookingId: string, alert_pct: number, alert_amount_ils: number) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
