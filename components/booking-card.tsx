@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Bed, Calendar, UtensilsCrossed, Clock } from 'lucide-react';
 import type { Booking } from '@/lib/supabase/types';
-import { fmtPrice, fmtDateRange, nightsBetween, priceDiff } from '@/lib/format';
+import { fmtPrice, fmtDateRange, nightsBetween, priceDiff, parseCountryFromBookingUrl, countryFlag } from '@/lib/format';
 import { convertToILS } from '@/lib/fx';
 import { cn } from '@/lib/utils';
 
@@ -49,6 +49,8 @@ export async function BookingCard({ booking, messages }: { booking: Booking; mes
       : { ...priceDiff(paidPriceN, lastPriceN!), currency: paidCur })
     : null;
   const deadline = cancellationChip(booking.cancellation_deadline, messages);
+  const country = parseCountryFromBookingUrl(booking.url);
+  const flag = countryFlag(country);
 
   return (
     <Link
@@ -75,7 +77,10 @@ export async function BookingCard({ booking, messages }: { booking: Booking; mes
 
       <div className="space-y-3 p-4">
         <div>
-          <h3 className="line-clamp-1 text-base font-semibold">{booking.hotel_name}</h3>
+          <h3 className="line-clamp-1 text-base font-semibold">
+            {flag && <span className="me-1 align-middle">{flag}</span>}
+            {booking.hotel_name}
+          </h3>
           <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
             <Calendar className="size-3" />
             {fmtDateRange(booking.check_in, booking.check_out)} · {nights} {messages.nights}

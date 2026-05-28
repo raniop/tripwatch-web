@@ -5,9 +5,9 @@ import { BookingCard } from '@/components/booking-card';
 import { Button } from '@/components/ui/button';
 import { CheckAllButton } from '@/components/check-all-button';
 import { createClient } from '@/lib/supabase/server';
-import { fmtPrice } from '@/lib/format';
+import { fmtPrice, groupByCheckInMonth, fmtMonthHeader } from '@/lib/format';
 import { convertToILS } from '@/lib/fx';
-import { getMessages } from '@/lib/i18n';
+import { getMessages, getLocale } from '@/lib/i18n';
 import type { Booking } from '@/lib/supabase/types';
 
 import { MergeSuccessToast } from '@/components/merge-success-toast';
@@ -24,6 +24,7 @@ export default async function DashboardPage({
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null; // middleware will redirect
   const t = await getMessages();
+  const locale = await getLocale();
 
   const { data: bookings } = await supabase
     .from('bookings')
@@ -86,13 +87,44 @@ export default async function DashboardPage({
       {list.length === 0 ? (
         <EmptyState messages={t.dashboard} />
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {list.map((b) => (
-            <BookingCard key={b.id} booking={b} messages={t.bookingCard} />
-          ))}
-        </div>
+        <TripsByMonth list={list} locale={locale} cardMessages={t.bookingCard} />
       )}
     </AppShell>
+  );
+}
+
+/**
+ * Render bookings grouped under their check-in month, sorted closest first.
+ * Server component — `BookingCard` is async so groups render in parallel.
+ */
+function TripsByMonth({
+  list,
+  locale,
+  cardMessages,
+}: {
+  list: Booking[];
+  locale: 'he' | 'en';
+  cardMessages: Parameters<typeof BookingCard>[0]['messages'];
+}) {
+  const groups = groupByCheckInMonth(list);
+  return (
+    <div className="space-y-8">
+      {groups.map(([monthKey, items]) => (
+        <section key={monthKey}>
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            {fmtMonthHeader(monthKey, locale)}
+            <span className="ms-2 font-normal normal-case text-muted-foreground/70">
+              · {items.length}
+            </span>
+          </h2>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {items.map((b) => (
+              <BookingCard key={b.id} booking={b} messages={cardMessages} />
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
   );
 }
 

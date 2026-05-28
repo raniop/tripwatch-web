@@ -49,3 +49,55 @@ export function priceDiff(paid: number, current: number) {
   const pct = (diff / paid) * 100;
   return { diff, pct, direction: diff > 0 ? 'down' : diff < 0 ? 'up' : 'same' as const };
 }
+
+/**
+ * Extract the ISO 3166-1 alpha-2 country code from a Booking.com hotel URL.
+ * Booking encodes it in the path: /hotel/cy/anassa.html → "CY".
+ * Returns uppercased code, or null for non-Booking URLs / unknown shape.
+ */
+export function parseCountryFromBookingUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+  try {
+    const u = new URL(url);
+    if (!/(^|\.)booking\.com$/i.test(u.hostname)) return null;
+    const m = u.pathname.match(/^\/hotel\/([a-z]{2})\//i);
+    return m ? m[1].toUpperCase() : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Country code → flag emoji (regional indicator pair). "CY" → 🇨🇾.
+ * Works in every modern browser & email client that supports emoji 11+.
+ */
+export function countryFlag(code: string | null | undefined): string {
+  if (!code || code.length !== 2) return '';
+  const A = 0x1f1e6; // regional indicator 'A'
+  const cc = code.toUpperCase();
+  return String.fromCodePoint(A + (cc.charCodeAt(0) - 65), A + (cc.charCodeAt(1) - 65));
+}
+
+/**
+ * Group bookings by check-in month. Returns sorted [monthKey, bookings][]
+ * where monthKey is "YYYY-MM" and bookings preserve their input order.
+ */
+export function groupByCheckInMonth<T extends { check_in: string }>(items: T[]): Array<[string, T[]]> {
+  const map = new Map<string, T[]>();
+  for (const it of items) {
+    const key = it.check_in.slice(0, 7);
+    if (!map.has(key)) map.set(key, []);
+    map.get(key)!.push(it);
+  }
+  return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b));
+}
+
+/** "2026-07" → "יולי 2026" / "July 2026" depending on locale. */
+export function fmtMonthHeader(monthKey: string, locale: 'he' | 'en' = 'he'): string {
+  const [y, m] = monthKey.split('-').map(Number);
+  const d = new Date(Date.UTC(y, (m || 1) - 1, 1));
+  return d.toLocaleDateString(locale === 'he' ? 'he-IL' : 'en-US', {
+    month: 'long',
+    year: 'numeric',
+  });
+}
