@@ -19,6 +19,7 @@ import { createAdminClient } from '@/lib/supabase/server';
 import { nas, type ExtractedBooking } from '@/lib/nas-client';
 import { runPriceCheck } from '@/lib/booking/run-check';
 import { normalizeChildrenAges } from '@/lib/guests';
+import { fetchOgImage } from '@/lib/og';
 import {
   extractTokenFromAddresses,
   matchesGlobalAddress,
@@ -343,23 +344,42 @@ export async function POST(req: Request) {
     booking_id: booking.id,
   }).eq('id', inboundId);
 
-  // Kick off the first price check in the background (populates hotel image,
-  // baseline price). after() returns 200 immediately; the scrape can take
-  // up to ~30s and runs after the webhook responds.
   const bookingId = booking.id as string;
+
+  // Fetch a hero image right now (cheap HTTP fetch, no Playwright) so every
+  // booking has one — even non-Booking sources like LHW where we never run a
+  // price check. The price-check after() below may overwrite with a better
+  // image from the scraper when room_type is set.
   after(async () => {
-    const newAdmin = createAdminClient();
-    await runPriceCheck(newAdmin, {
-      id: bookingId,
-      url,
-      room_type: extracted.room_type,
-      meal_plan: extracted.meal_plan,
-      hotel_image_url: null,
-      guests: extracted.guests
-        ? { adults: extracted.guests.adults, children: extracted.guests.children }
-        : null,
-    });
+    try {
+      const img = await fetchOgImage(url);
+      if (img) {
+        const sb = createAdminClient();
+        await sb.from('bookings').update({ hotel_image_url: img }).eq('id', bookingId);
+      }
+    } catch (e) {
+      console.warn('[inbound] OG image fetch failed', e);
+    }
   });
+
+  // Skip the price check when there's no room_type — the matcher would just
+  // return "Booking's cheapest", which the UI hides as low-confidence anyway,
+  // and we'd waste 30s of Playwright bandwidth for nothing.
+  if (extracted.room_type) {
+    after(async () => {
+      const newAdmin = createAdminClient();
+      await runPriceCheck(newAdmin, {
+        id: bookingId,
+        url,
+        room_type: extracted.room_type,
+        meal_plan: extracted.meal_plan,
+        hotel_image_url: null,
+        guests: extracted.guests
+          ? { adults: extracted.guests.adults, children: extracted.guests.children }
+          : null,
+      });
+    });
+  }
 
   // Confirmation email (non-fatal if it fails)
   if (userEmail) {
