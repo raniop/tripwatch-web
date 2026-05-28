@@ -13,6 +13,26 @@ import { getMessages } from '@/lib/i18n';
 import { CancellationDeadlineEditor } from '@/components/cancellation-deadline-editor';
 import { GuestsEditor } from '@/components/guests-editor';
 import { normalizeChildrenAges } from '@/lib/guests';
+
+/** Human-readable source label. Falls back to the raw value for unknowns. */
+function formatSource(s: string): string {
+  const map: Record<string, string> = {
+    'booking.com': 'Booking.com',
+    'agoda': 'Agoda',
+    'expedia': 'Expedia',
+    'hotels.com': 'Hotels.com',
+    'lhw': 'Leading Hotels of the World',
+    'marriott': 'Marriott',
+    'hilton': 'Hilton',
+    'hyatt': 'Hyatt',
+    'four-seasons': 'Four Seasons',
+    'hotel-direct': 'Hotel direct',
+    'kayak': 'Kayak',
+    'trivago': 'Trivago',
+    'other': 'Other',
+  };
+  return map[s.toLowerCase()] || s;
+}
 import type { Booking, PriceCheck } from '@/lib/supabase/types';
 
 export const dynamic = 'force-dynamic';
@@ -85,6 +105,12 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
             <p className="text-sm text-muted-foreground">
               {fmtDateRange(b.check_in, b.check_out)} · {nightsBetween(b.check_in, b.check_out)} {t.bookingCard.nights}
             </p>
+            {b.source && (
+              <p className="text-xs text-muted-foreground">
+                {t.bookingDetail.bookedVia}{' '}
+                <span className="font-medium text-foreground">{formatSource(b.source)}</span>
+              </p>
+            )}
             {b.guests && (
               <GuestsEditor
                 bookingId={b.id}
@@ -128,7 +154,12 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
             {hasCheck && diff ? (
               <>
                 <div>
-                  <p className="text-xs text-muted-foreground">{t.bookingDetail.current}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t.bookingDetail.current}
+                    {b.source && b.source.toLowerCase() !== 'booking.com' && (
+                      <span className="ms-1">· {t.bookingDetail.viaBookingReference}</span>
+                    )}
+                  </p>
                   <p className={`tabular-nums text-3xl font-bold ${diff.direction === 'down' && diff.pct >= 1 ? 'text-success' : diff.direction === 'up' && diff.pct <= -1 ? 'text-destructive' : ''}`}>
                     {fmtPrice(b.last_price, b.last_currency || b.currency)}
                   </p>

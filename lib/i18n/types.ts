@@ -205,6 +205,8 @@ export interface Messages {
     current: string;
     originalPricePrefix: string;
     updatedRelative: string;
+    bookedVia: string;
+    viaBookingReference: string;
     diff: string;
     matchHeading: string;
     matchDetails: string;

@@ -218,6 +218,8 @@ export const he: Messages = {
     paid: 'שילמת',
     current: 'מחיר נוכחי',
     originalPricePrefix: 'מחיר רשום:',
+    bookedVia: 'הוזמן דרך',
+    viaBookingReference: 'מעקב ב-Booking (להשוואה)',
     updatedRelative: 'עודכן {when}',
     diff: 'הפרש',
     matchHeading: 'התאמה',

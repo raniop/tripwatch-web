@@ -218,6 +218,8 @@ export const en: Messages = {
     paid: 'Paid',
     current: 'Current price',
     originalPricePrefix: 'Listed at:',
+    bookedVia: 'Booked via',
+    viaBookingReference: 'tracked via Booking.com (reference)',
     updatedRelative: 'Updated {when}',
     diff: 'Difference',
     matchHeading: 'Match',
