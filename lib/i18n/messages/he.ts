@@ -201,7 +201,7 @@ export const he: Messages = {
   bookingCard: {
     paid: 'שילמת',
     current: 'נוכחי',
-    referencePriceLabel: 'רפרנס',
+    referencePriceLabel: 'להשוואה',
     notCheckedYet: 'טרם נבדק — בודק בלילה הקרוב',
     nights: 'לילות',
     cancelExpired: 'פג ביטול',
@@ -221,7 +221,7 @@ export const he: Messages = {
     originalPricePrefix: 'מחיר רשום:',
     bookedVia: 'הוזמן דרך',
     viaBookingReference: 'מעקב ב-Booking (להשוואה)',
-    referencePriceLabel: 'מחיר רפרנס ב-Booking',
+    referencePriceLabel: 'מחיר ב-Booking (להשוואה)',
     lowConfidenceNote: '⚠️ בלי שם חדר מדויק — מציג את הזול ביותר ב-Booking, לא בהכרח אותו חדר. הוסף שם חדר למעקב מדויק.',
     updatedRelative: 'עודכן {when}',
     diff: 'הפרש',
