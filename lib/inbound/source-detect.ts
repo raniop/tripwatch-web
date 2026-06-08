@@ -31,6 +31,13 @@ const RULES: Array<{ source: string; from?: RegExp; subject?: RegExp }> = [
   { source: 'hilton',      from: /@(?:[a-z0-9.-]+\.)?hilton\.com$/i, subject: /\bhilton\b|honors/i },
   { source: 'hyatt',       from: /@(?:[a-z0-9.-]+\.)?hyatt\.com$/i, subject: /\bhyatt\b|world of hyatt/i },
   { source: 'four-seasons', from: /@(?:[a-z0-9.-]+\.)?fourseasons\.com$/i, subject: /four seasons/i },
+  // Isrotel — Israeli chain, direct booking via isrotel.co.il. Members get
+  // Isrotel Privilege loyalty perks not visible on Booking.com.
+  { source: 'isrotel',     from: /@(?:[a-z0-9.-]+\.)?isrotel\.(?:co\.il|com)$/i, subject: /\bisrotel\b|ישרוטל/i },
+  // Fattal / Leonardo — second-largest Israeli chain, books direct + via fattal.co.il
+  { source: 'fattal',      from: /@(?:[a-z0-9.-]+\.)?(?:fattal|leonardo-hotels)\.(?:co\.il|com)$/i, subject: /\bfattal\b|\bleonardo\b|פתאל|לאונרדו/i },
+  // Dan Hotels — third major Israeli chain
+  { source: 'dan-hotels',  from: /@(?:[a-z0-9.-]+\.)?danhotels\.(?:co\.il|com)$/i, subject: /\bdan\s+hotels?\b|מלונות דן/i },
   { source: 'kayak',       from: /@(?:[a-z0-9.-]+\.)?kayak\.com$/i, subject: /\bkayak\b/i },
   { source: 'trivago',     from: /@(?:[a-z0-9.-]+\.)?trivago\.[a-z.]+$/i, subject: /\btrivago\b/i },
 ];
