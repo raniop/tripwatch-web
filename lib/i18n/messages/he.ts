@@ -203,7 +203,7 @@ export const he: Messages = {
     current: 'נוכחי',
     referencePriceLabel: 'להשוואה',
     notCheckedYet: 'טרם נבדק — בודק בלילה הקרוב',
-    trackingPausedShort: 'מעקב מושהה — חסר שם חדר',
+    trackingPausedShort: 'הוסף שם חדר להפעלת מעקב',
     nights: 'לילות',
     cancelExpired: 'פג ביטול',
     cancelUntilHours: 'ביטול עד {h}ש\'',

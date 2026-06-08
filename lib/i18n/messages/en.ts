@@ -203,7 +203,7 @@ export const en: Messages = {
     current: 'Current',
     referencePriceLabel: 'Reference',
     notCheckedYet: 'Not checked yet — first check is tonight',
-    trackingPausedShort: 'Tracking paused — room name missing',
+    trackingPausedShort: 'Add room name to start tracking',
     nights: 'nights',
     cancelExpired: 'Cancel expired',
     cancelUntilHours: 'Cancel until {h}h',

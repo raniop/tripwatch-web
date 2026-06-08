@@ -60,10 +60,15 @@ export async function BookingCard({ booking, messages }: { booking: Booking; mes
   const deadline = cancellationChip(booking.cancellation_deadline, messages);
   const locale = await getLocale();
   const country = countryName(parseCountryFromBookingUrl(booking.url), locale);
+  // When tracking is paused because there's no room info, deep-link straight
+  // into the editor on the detail page so the user can fix it in one click.
+  const detailHref = lowConfidence && !booking.room_type && !hasBreakdown
+    ? `/booking/${booking.id}#room-edit`
+    : `/booking/${booking.id}`;
 
   return (
     <Link
-      href={`/booking/${booking.id}`}
+      href={detailHref}
       className="group block overflow-hidden rounded-xl border border-border bg-card transition-all hover:border-primary/40 hover:shadow-md"
     >
       <div className="relative aspect-[16/9] w-full bg-muted">
@@ -140,7 +145,9 @@ export async function BookingCard({ booking, messages }: { booking: Booking; mes
             </span>
           </div>
           {lowConfidence ? (
-            <p className="pt-1 text-[11px] text-warning">⚠ {messages.trackingPausedShort}</p>
+            <p className="pt-1 text-[11px] font-medium text-warning group-hover:underline">
+              ↗ {messages.trackingPausedShort}
+            </p>
           ) : hasCheck ? (
             <div className="flex items-baseline justify-between gap-2 pt-1">
               <span className="text-[11px] text-muted-foreground">{messages.current}</span>

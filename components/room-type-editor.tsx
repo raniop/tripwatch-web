@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useEffect, useRef, useState, useTransition } from 'react';
 import { Pencil, Plus, Loader2, Check, X } from 'lucide-react';
 import { updateRoomType } from '@/app/booking/[id]/actions';
 
@@ -37,10 +37,23 @@ export function RoomTypeEditor({ bookingId, initialRoomType, initialMealPlan, me
   const [editing, setEditing] = useState(false);
   const [pending, startTransition] = useTransition();
   const [status, setStatus] = useState<{ kind: 'ok' | 'err' | 'note'; text: string } | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Stable initial values for cancel/revert.
   const savedRoom = initialRoomType ?? '';
   const savedMeal = initialMealPlan ?? '';
+
+  // Deep-link: dashboard card sends users here with `#room-edit` when
+  // tracking is paused for missing room info. Open the editor + scroll to
+  // it so they land directly inside the form.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (window.location.hash !== '#room-edit') return;
+    setEditing(true);
+    requestAnimationFrame(() => {
+      containerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  }, []);
 
   function onSave() {
     setStatus(null);
@@ -74,7 +87,7 @@ export function RoomTypeEditor({ bookingId, initialRoomType, initialMealPlan, me
 
   if (editing) {
     return (
-      <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-2">
+      <div ref={containerRef} className="rounded-lg border border-border bg-muted/30 p-3 space-y-2">
         <p className="text-xs font-semibold text-muted-foreground">{messages.roomEditTitle}</p>
 
         <label className="block">
@@ -125,7 +138,7 @@ export function RoomTypeEditor({ bookingId, initialRoomType, initialMealPlan, me
 
   // Display mode
   return (
-    <div className="space-y-1">
+    <div ref={containerRef} className="space-y-1">
       {savedRoom ? (
         <p className="text-sm group">
           {messages.roomIconPrefix}
