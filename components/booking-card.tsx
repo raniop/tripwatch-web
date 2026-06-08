@@ -41,9 +41,17 @@ export async function BookingCard({ booking, messages }: { booking: Booking; mes
   // cheapest fallback" — not the user's actual room. Don't claim a savings.
   // NOTE: null score means "never checked with the new scorer" — that's
   // legacy data, not low-confidence. Trust the existing last_price unless we
-  // have positive evidence the match is weak.
+  // have positive evidence the match is weak. Also flag suspiciously low
+  // current prices on multi-room bookings — the matcher returns per-room
+  // rates and we don't yet multiply by no_rooms, so a 3-room booking that
+  // matches against a single room is hugely misleading.
   const score = booking.last_match_score !== null ? Number(booking.last_match_score) : null;
-  const lowConfidence = !booking.room_type || (score !== null && score < 0.5);
+  const multiRoom = booking.guests && booking.guests.rooms > 1;
+  const suspiciouslyCheap = booking.last_price !== null && Number(booking.last_price) < Number(booking.paid_price) * 0.6;
+  const lowConfidence =
+    !booking.room_type ||
+    (score !== null && score < 0.6) ||
+    Boolean(multiRoom && suspiciouslyCheap);
   const diff = hasCheck && !lowConfidence
     ? (useIls
       ? { ...priceDiff(paidIls!, currentIls!), currency: 'ILS' }

@@ -90,9 +90,16 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
   // Show it as a reference and hide the diff so we don't claim a fake savings.
   // NOTE: a null score means "never checked with the new scorer" — that's
   // legacy data, not low-confidence. Only mark low-confidence on positive
-  // evidence (no room_type, or a weak score).
+  // evidence (no room_type, weak score, or a multi-room booking that
+  // matched a single per-room rate — paid >> current means we're comparing
+  // 3 rooms against 1).
   const hasScore = lastCheck?.match_score !== null && lastCheck?.match_score !== undefined;
-  const lowConfidence = !b.room_type || (hasScore && Number(lastCheck.match_score) < 0.5);
+  const multiRoom = (b.guests?.rooms ?? 1) > 1;
+  const suspiciouslyCheap = lastPriceN !== null && lastPriceN < paidPriceN * 0.6;
+  const lowConfidence =
+    !b.room_type ||
+    (hasScore && Number(lastCheck.match_score) < 0.6) ||
+    Boolean(multiRoom && suspiciouslyCheap);
   const diff = hasCheck && !lowConfidence
     ? (useIls
       ? { ...priceDiff(paidIls!, currentIls!), currency: 'ILS' }
