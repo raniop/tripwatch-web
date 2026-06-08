@@ -58,6 +58,10 @@ export interface Booking {
   check_out: string;
   guests: { adults: number; children: number; rooms: number; children_ages?: number[] } | null;
   room_type: string | null;
+  /** Multi-room breakdown for bookings that span distinct room types
+   * (e.g. "Oren Room ×2 + Carmel Deluxe ×1"). When set, price tracking sums
+   * each room's current rate × count instead of matching a single rate. */
+  rooms_breakdown: Array<{ name: string; count: number }> | null;
   meal_plan: string | null;
   cancellation: string | null;
   cancellation_deadline: string | null;

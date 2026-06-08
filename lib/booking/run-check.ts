@@ -22,6 +22,8 @@ interface BookingRow {
   /** Required for accurate matching — without this we'll pick a 2-adult rate
    * for a family booking and report a fake "price drop." */
   guests?: { adults: number; children: number } | null;
+  /** Multi-room: when set, the scraper matches each room and sums rates. */
+  rooms_breakdown?: Array<{ name: string; count: number }> | null;
 }
 
 export async function runPriceCheck(
@@ -36,6 +38,7 @@ export async function runPriceCheck(
       guests: booking.guests
         ? { adults: booking.guests.adults, children: booking.guests.children }
         : null,
+      rooms_breakdown: booking.rooms_breakdown,
     });
 
     const { error: checkErr } = await supabase.from('price_checks').insert({

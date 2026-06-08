@@ -320,6 +320,7 @@ export async function POST(req: Request) {
         ? { ...extracted.guests, children_ages: normalizeChildrenAges(extracted.guests) }
         : { adults: 2, children: 0, rooms: 1, children_ages: [] },
       room_type: extracted.room_type,
+      rooms_breakdown: extracted.rooms_breakdown,
       meal_plan: extracted.meal_plan,
       cancellation: extracted.cancellation,
       cancellation_deadline: extracted.cancellation_deadline,
@@ -362,16 +363,18 @@ export async function POST(req: Request) {
     }
   });
 
-  // Skip the price check when there's no room_type — the matcher would just
-  // return "Booking's cheapest", which the UI hides as low-confidence anyway,
-  // and we'd waste 30s of Playwright bandwidth for nothing.
-  if (extracted.room_type) {
+  // Skip the price check when there's nothing to match against (no room_type
+  // AND no rooms_breakdown). Otherwise we'd waste 30s of Playwright for a
+  // result the UI hides as low-confidence anyway.
+  const hasBreakdown = Array.isArray(extracted.rooms_breakdown) && extracted.rooms_breakdown.length > 0;
+  if (extracted.room_type || hasBreakdown) {
     after(async () => {
       const newAdmin = createAdminClient();
       await runPriceCheck(newAdmin, {
         id: bookingId,
         url,
         room_type: extracted.room_type,
+        rooms_breakdown: extracted.rooms_breakdown,
         meal_plan: extracted.meal_plan,
         hotel_image_url: null,
         guests: extracted.guests

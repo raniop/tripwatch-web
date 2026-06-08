@@ -42,16 +42,16 @@ export async function BookingCard({ booking, messages }: { booking: Booking; mes
   // NOTE: null score means "never checked with the new scorer" — that's
   // legacy data, not low-confidence. Trust the existing last_price unless we
   // have positive evidence the match is weak. Also flag suspiciously low
-  // current prices on multi-room bookings — the matcher returns per-room
-  // rates and we don't yet multiply by no_rooms, so a 3-room booking that
-  // matches against a single room is hugely misleading.
+  // current prices on multi-room bookings WITHOUT a breakdown — when we
+  // have a breakdown, the multi-room sum is apples-to-apples.
   const score = booking.last_match_score !== null ? Number(booking.last_match_score) : null;
+  const hasBreakdown = Array.isArray(booking.rooms_breakdown) && booking.rooms_breakdown.length > 0;
   const multiRoom = booking.guests && booking.guests.rooms > 1;
   const suspiciouslyCheap = booking.last_price !== null && Number(booking.last_price) < Number(booking.paid_price) * 0.6;
   const lowConfidence =
-    !booking.room_type ||
+    (!booking.room_type && !hasBreakdown) ||
     (score !== null && score < 0.6) ||
-    Boolean(multiRoom && suspiciouslyCheap);
+    Boolean(multiRoom && !hasBreakdown && suspiciouslyCheap);
   const diff = hasCheck && !lowConfidence
     ? (useIls
       ? { ...priceDiff(paidIls!, currentIls!), currency: 'ILS' }
@@ -105,14 +105,21 @@ export async function BookingCard({ booking, messages }: { booking: Booking; mes
           )}
         </div>
 
-        {(booking.room_type || booking.meal_plan) && (
+        {(booking.room_type || booking.meal_plan || booking.rooms_breakdown) && (
           <div className="space-y-0.5 text-[11px] text-muted-foreground">
-            {booking.room_type && (
+            {(booking.rooms_breakdown && booking.rooms_breakdown.length > 0) ? (
+              <p className="flex items-center gap-1.5 line-clamp-2">
+                <Bed className="size-3 shrink-0" />
+                {booking.rooms_breakdown
+                  .map((r) => (r.count > 1 ? `${r.name} ×${r.count}` : r.name))
+                  .join(' + ')}
+              </p>
+            ) : booking.room_type ? (
               <p className="flex items-center gap-1.5 line-clamp-1">
                 <Bed className="size-3 shrink-0" />
                 {booking.room_type}
               </p>
-            )}
+            ) : null}
             {booking.meal_plan && (
               <p className="flex items-center gap-1.5 line-clamp-1">
                 <UtensilsCrossed className="size-3 shrink-0" />

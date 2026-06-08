@@ -85,21 +85,20 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
   const useIls = currenciesDiffer && paidIls !== null && currentIls !== null;
 
   const lastCheck = checks.find((c) => !c.error) ?? null;
-  // If the matcher couldn't find a confident match (no room_type, weak score),
-  // the price is just Booking's cheapest — not a like-for-like comparison.
-  // Show it as a reference and hide the diff so we don't claim a fake savings.
-  // NOTE: a null score means "never checked with the new scorer" — that's
-  // legacy data, not low-confidence. Only mark low-confidence on positive
-  // evidence (no room_type, weak score, or a multi-room booking that
-  // matched a single per-room rate — paid >> current means we're comparing
-  // 3 rooms against 1).
+  // If the matcher couldn't find a confident match (no room_type/breakdown,
+  // weak score), the price is just Booking's cheapest — not a like-for-like
+  // comparison. Show as reference and hide the diff so we don't claim a
+  // fake savings. NOTE: a null score means "never checked with the new
+  // scorer" — that's legacy data, not low-confidence. Multi-room WITHOUT
+  // a breakdown is suspicious; WITH one, the summed rate is apples-to-apples.
   const hasScore = lastCheck?.match_score !== null && lastCheck?.match_score !== undefined;
+  const hasBreakdown = Array.isArray(b.rooms_breakdown) && b.rooms_breakdown.length > 0;
   const multiRoom = (b.guests?.rooms ?? 1) > 1;
   const suspiciouslyCheap = lastPriceN !== null && lastPriceN < paidPriceN * 0.6;
   const lowConfidence =
-    !b.room_type ||
+    (!b.room_type && !hasBreakdown) ||
     (hasScore && Number(lastCheck.match_score) < 0.6) ||
-    Boolean(multiRoom && suspiciouslyCheap);
+    Boolean(multiRoom && !hasBreakdown && suspiciouslyCheap);
   const diff = hasCheck && !lowConfidence
     ? (useIls
       ? { ...priceDiff(paidIls!, currentIls!), currency: 'ILS' }

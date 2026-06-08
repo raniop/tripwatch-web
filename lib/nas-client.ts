@@ -26,6 +26,8 @@ export interface ExtractedBooking {
   check_out: string;
   guests: NasGuests;
   room_type: string | null;
+  /** Multi-room confirmations only — per-distinct-room {name, count}. */
+  rooms_breakdown: Array<{ name: string; count: number }> | null;
   meal_plan: string | null;
   cancellation: string | null;
   /** ISO 8601 datetime of the free-cancellation deadline, or null if unknown / non-refundable. */
@@ -57,6 +59,16 @@ export interface ScrapeMatchResult {
     meal: string;
     amount: number;
     currency: string;
+    score: number;
+  }>;
+  /** Per-room breakdown when /scrape was called with rooms_breakdown.
+   * The web side displays this so users see why the total is what it is. */
+  breakdown?: Array<{
+    name: string;
+    count: number;
+    matched_room: string;
+    rate: number;
+    subtotal: number;
     score: number;
   }>;
 }
@@ -129,6 +141,10 @@ export const nas = {
      * room (one per occupancy) and we need to pick the one for the booking's
      * actual party size, not the cheapest variant. */
     guests?: { adults: number; children: number } | null;
+    /** Multi-room: scraper finds each room by name, multiplies by count,
+     * sums. When set, room_type is ignored (the breakdown is the source
+     * of truth) and the response `amount` is the summed total. */
+    rooms_breakdown?: Array<{ name: string; count: number }> | null;
   }) => call<ScrapeMatchResult>('/scrape', params),
   triggerDailyCheck: () => call<{ ok: true; started_at: string }>('/trigger-daily-check', {}),
 };
