@@ -13,7 +13,7 @@ export async function checkNow(bookingId: string) {
 
   const { data: b, error } = await supabase
     .from('bookings')
-    .select('id, url, room_type, rooms_breakdown, meal_plan, hotel_image_url, guests')
+    .select('id, url, room_type, rooms_breakdown, meal_plan, hotel_image_url, guests, cancellation, cancellation_deadline')
     .eq('id', bookingId)
     .eq('user_id', user.id)
     .single();
@@ -89,7 +89,7 @@ export async function updateGuests(
 
   const { data: b, error: loadErr } = await supabase
     .from('bookings')
-    .select('id, url, room_type, rooms_breakdown, meal_plan, hotel_image_url, guests')
+    .select('id, url, room_type, rooms_breakdown, meal_plan, hotel_image_url, guests, cancellation, cancellation_deadline')
     .eq('id', bookingId)
     .eq('user_id', user.id)
     .single();
@@ -147,7 +147,7 @@ export async function updateRoomType(
 
   const { data: b, error: loadErr } = await supabase
     .from('bookings')
-    .select('id, url, room_type, rooms_breakdown, meal_plan, hotel_image_url, guests')
+    .select('id, url, room_type, rooms_breakdown, meal_plan, hotel_image_url, guests, cancellation, cancellation_deadline')
     .eq('id', bookingId)
     .eq('user_id', user.id)
     .single();

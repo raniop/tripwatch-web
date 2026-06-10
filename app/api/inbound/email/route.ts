@@ -380,6 +380,8 @@ export async function POST(req: Request) {
         guests: extracted.guests
           ? { adults: extracted.guests.adults, children: extracted.guests.children }
           : null,
+        cancellation: extracted.cancellation,
+        cancellation_deadline: extracted.cancellation_deadline,
       });
     });
   }

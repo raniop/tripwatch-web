@@ -145,6 +145,11 @@ export const nas = {
      * sums. When set, room_type is ignored (the breakdown is the source
      * of truth) and the response `amount` is the summed total. */
     rooms_breakdown?: Array<{ name: string; count: number }> | null;
+    /** Cancellation hint — distinguishes "flexible" from "non-refundable"
+     * rates that share the same room+meal. Pass `{ flexible: true }` when
+     * the booking has a free-cancellation deadline, or the raw cancellation
+     * text from the original confirmation. */
+    cancellation?: { flexible?: boolean; nonRefundable?: boolean } | string | null;
   }) => call<ScrapeMatchResult>('/scrape', params),
   triggerDailyCheck: () => call<{ ok: true; started_at: string }>('/trigger-daily-check', {}),
 };

@@ -24,6 +24,11 @@ interface BookingRow {
   guests?: { adults: number; children: number } | null;
   /** Multi-room: when set, the scraper matches each room and sums rates. */
   rooms_breakdown?: Array<{ name: string; count: number }> | null;
+  /** Hints the matcher toward refundable vs non-refundable rate variants
+   * — Booking often has both at the same room+meal, with the non-refundable
+   * one ~20-30% cheaper. Picking the wrong bucket shows a fake "savings." */
+  cancellation?: string | null;
+  cancellation_deadline?: string | null;
 }
 
 export async function runPriceCheck(
@@ -31,6 +36,13 @@ export async function runPriceCheck(
   booking: BookingRow,
 ): Promise<{ ok: true; amount: number; currency: string } | { ok: false; error: string }> {
   try {
+    // A free-cancellation deadline implies the booking is on a flexible
+    // rate. Otherwise pass the raw cancellation text and let the matcher's
+    // keyword check decide.
+    const cancellation = booking.cancellation_deadline
+      ? { flexible: true }
+      : (booking.cancellation || null);
+
     const r = await nas.scrape({
       url: booking.url,
       room_type: booking.room_type,
@@ -39,6 +51,7 @@ export async function runPriceCheck(
         ? { adults: booking.guests.adults, children: booking.guests.children }
         : null,
       rooms_breakdown: booking.rooms_breakdown,
+      cancellation,
     });
 
     const { error: checkErr } = await supabase.from('price_checks').insert({
