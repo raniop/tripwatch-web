@@ -86,7 +86,7 @@ export default function CounterPage() {
             <p className="mt-3 text-lg text-white/85">בון וויאז׳, ג&apos;ורדן וסיגרים — הפלגה בלתי נשכחת!</p>
           </div>
         ) : (
-          <div className="mt-12 grid grid-cols-4 gap-2.5 sm:gap-4" aria-live="polite">
+          <div dir="ltr" className="mt-12 grid grid-cols-4 gap-2.5 sm:gap-4" aria-live="polite">
             {units.map((u, i) => (
               <div
                 key={u.label}
