@@ -6,13 +6,7 @@ import { useEffect, useMemo, useState } from 'react';
 // offset מפורש כדי שהספירה תהיה נכונה מכל אזור זמן.
 const TARGET = new Date('2026-06-20T13:55:00+03:00').getTime();
 
-type Remaining = {
-  days: number;
-  hours: number;
-  minutes: number;
-  seconds: number;
-  done: boolean;
-};
+type Remaining = { days: number; hours: number; minutes: number; seconds: number; done: boolean };
 
 function getRemaining(now: number): Remaining {
   const diff = TARGET - now;
@@ -45,179 +39,93 @@ export default function CounterPage() {
   ];
 
   return (
-    <main dir="rtl" className="relative min-h-screen overflow-hidden text-white">
-      <Scene />
+    <main dir="rtl" className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-5 py-16 text-white">
+      {/* ===== רקע ===== */}
+      <div className="absolute inset-0 -z-20 bg-cover bg-center" style={{ backgroundImage: 'url(/counter-bg.jpg)' }} />
+      <div
+        className="absolute inset-0 -z-10"
+        style={{
+          background:
+            'linear-gradient(180deg, rgba(10,8,25,0.62) 0%, rgba(10,8,25,0.18) 30%, rgba(10,8,25,0.20) 58%, rgba(8,6,20,0.78) 100%)',
+        }}
+      />
 
       {/* ===== תוכן ===== */}
-      <div className="relative z-20 mx-auto flex min-h-screen max-w-3xl flex-col items-center px-5 pb-44 pt-14 text-center sm:pt-20">
-        <span className="tw-rise mb-6 inline-flex items-center gap-2 rounded-full border border-amber-200/40 bg-white/10 px-4 py-1.5 text-xs font-semibold tracking-wide text-amber-100 backdrop-blur-md">
-          ⛵ Bali 4.6 · קטמרן יוקרה
-        </span>
-
-        <p
-          className="tw-rise text-sm font-medium uppercase tracking-[0.35em] text-white/70 [animation-delay:80ms]"
+      <div className="relative z-10 flex w-full max-w-2xl flex-col items-center text-center">
+        {/* קיקר */}
+        <div
+          className="tw-rise inline-flex items-center gap-2 rounded-full border border-amber-200/40 bg-black/20 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.3em] text-amber-100 backdrop-blur-sm"
           style={{ animationFillMode: 'both' }}
         >
-          החבורה של
-        </p>
+          ⛵ Bali 4.6
+        </div>
 
+        {/* שם החבורה */}
         <h1
-          className="tw-rise mt-2 text-balance text-5xl font-black leading-[0.95] sm:text-7xl [animation-delay:140ms]"
-          style={{ fontFamily: 'var(--font-heebo), sans-serif', letterSpacing: '-0.02em', animationFillMode: 'both' }}
+          className="tw-rise mt-7 text-balance text-6xl font-black leading-[0.92] tracking-tight drop-shadow-[0_3px_30px_rgba(0,0,0,0.55)] sm:text-8xl [animation-delay:80ms]"
+          style={{ fontFamily: 'var(--font-heebo), sans-serif', animationFillMode: 'both' }}
         >
-          <span
-            className="bg-gradient-to-b from-amber-100 via-amber-300 to-amber-500 bg-clip-text text-transparent"
-            style={{ filter: 'drop-shadow(0 4px 24px rgba(244,207,115,0.35))' }}
-          >
-            ג&apos;ורדן וסיגרים
-          </span>
+          ג&apos;ורדן וסיגרים
         </h1>
 
-        <p className="tw-rise mt-5 max-w-md text-balance text-base leading-relaxed text-white/85 sm:text-lg [animation-delay:220ms]" style={{ animationFillMode: 'both' }}>
-          מפליגים אל השקיעה באיים הסרוניים.
-          <br />
-          סופרים לאחור עד שמרימים עוגן ⚓
+        {/* קו הפרדה זהב */}
+        <div className="tw-rise mt-7 h-px w-24 bg-gradient-to-l from-transparent via-amber-300/80 to-transparent [animation-delay:160ms]" style={{ animationFillMode: 'both' }} />
+
+        {/* טאגליין */}
+        <p className="tw-rise mt-6 max-w-md text-balance text-lg font-light leading-relaxed text-white/90 drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)] sm:text-xl [animation-delay:220ms]" style={{ animationFillMode: 'both' }}>
+          ספירה לאחור עד ההפלגה לאיים הסרוניים
         </p>
 
         {/* ===== הספירה ===== */}
         {r?.done ? (
-          <div className="tw-rise mt-12 rounded-3xl border border-amber-200/40 bg-white/10 px-8 py-10 backdrop-blur-md">
-            <p className="text-4xl font-black sm:text-6xl">🥂 הרמנו עוגן!</p>
-            <p className="mt-3 text-lg text-white/85">בון וויאז׳, ג&apos;ורדן וסיגרים — הפלגה בלתי נשכחת!</p>
+          <div className="tw-rise mt-12 rounded-2xl border border-amber-200/40 bg-black/30 px-10 py-9 backdrop-blur-md [animation-delay:320ms]" style={{ animationFillMode: 'both' }}>
+            <p className="text-4xl font-black sm:text-5xl">🥂 הרמנו עוגן!</p>
+            <p className="mt-3 text-base text-white/85">בון וויאז׳, ג&apos;ורדן וסיגרים</p>
           </div>
         ) : (
-          <div dir="ltr" className="mt-12 grid grid-cols-4 gap-2.5 sm:gap-4" aria-live="polite">
+          <div
+            dir="ltr"
+            className="tw-rise mt-12 flex items-stretch gap-1 rounded-2xl border border-white/15 bg-black/30 px-3 py-5 shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur-md sm:gap-2 sm:px-6 sm:py-7 [animation-delay:320ms]"
+            style={{ animationFillMode: 'both' }}
+            aria-live="polite"
+          >
             {units.map((u, i) => (
-              <div
-                key={u.label}
-                className="tw-rise flex flex-col items-center rounded-2xl border border-white/15 bg-white/[0.08] px-1 py-5 shadow-[0_10px_40px_rgba(8,20,45,0.45)] backdrop-blur-xl sm:px-3 sm:py-7"
-                style={{ animationDelay: `${300 + i * 90}ms`, animationFillMode: 'both' }}
-              >
-                <span
-                  key={u.live ? u.value : undefined /* re-mount seconds each tick → pop animation */}
-                  className="tabular-nums bg-gradient-to-b from-white to-amber-100/80 bg-clip-text text-4xl font-black leading-none text-transparent sm:text-6xl"
-                  style={{
-                    fontFamily: 'var(--font-heebo), sans-serif',
-                    animation: u.live ? 'tw-pop 0.6s ease-out' : undefined,
-                  }}
-                >
-                  {u.value === undefined ? '--' : String(u.value).padStart(2, '0')}
-                </span>
-                <span className="mt-2.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-amber-100/70 sm:text-sm">
-                  {u.label}
-                </span>
+              <div key={u.label} className="flex items-stretch">
+                <div className="flex min-w-[58px] flex-col items-center sm:min-w-[86px]">
+                  <span
+                    key={u.live ? u.value : undefined}
+                    className="tabular-nums text-4xl font-black leading-none tracking-tight sm:text-7xl"
+                    style={{ fontFamily: 'var(--font-heebo), sans-serif', animation: u.live ? 'tw-pop 0.6s ease-out' : undefined }}
+                  >
+                    {u.value === undefined ? '--' : String(u.value).padStart(2, '0')}
+                  </span>
+                  <span className="mt-2.5 text-[10px] font-medium uppercase tracking-[0.2em] text-amber-100/75 sm:text-xs">
+                    {u.label}
+                  </span>
+                </div>
+                {i < units.length - 1 && <span className="mx-0.5 w-px self-stretch bg-white/10 sm:mx-1.5" />}
               </div>
             ))}
           </div>
         )}
 
-        {/* ===== כרטיס עלייה למטוס ===== */}
-        <BoardingPass />
+        {/* ===== שורת פרטים ===== */}
+        <div className="tw-rise mt-9 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm font-medium text-white/85 drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)] [animation-delay:420ms]" style={{ animationFillMode: 'both' }}>
+          <Pill>✈️ שבת · 20.06</Pill>
+          <Dot />
+          <Pill>🕞 13:55</Pill>
+          <Dot />
+          <Pill>📍 האיים הסרוניים · יוון</Pill>
+        </div>
       </div>
     </main>
   );
 }
 
-/* ============================================================ */
-/* כרטיס "boarding pass" יוקרתי                                   */
-/* ============================================================ */
-function BoardingPass() {
-  return (
-    <div
-      className="tw-rise mt-14 w-full max-w-md overflow-hidden rounded-3xl border border-white/15 bg-white/[0.08] text-right shadow-[0_20px_60px_rgba(8,20,45,0.5)] backdrop-blur-xl [animation-delay:700ms]"
-      style={{ animationFillMode: 'both' }}
-    >
-      {/* פס עליון מוזהב */}
-      <div className="flex items-center justify-between bg-gradient-to-l from-amber-400/90 to-amber-200/80 px-6 py-3 text-[#1a1442]">
-        <span className="text-xl">✈️</span>
-        <span className="text-sm font-black tracking-wide">כרטיס עלייה להפלגה</span>
-      </div>
-
-      <div className="p-6 sm:p-7">
-        <div className="flex items-center justify-between border-b border-dashed border-white/20 pb-5">
-          <div className="text-left">
-            <p className="text-xs text-white/60">שעת ההמראה</p>
-            <p className="text-3xl font-black tabular-nums text-amber-100" style={{ fontFamily: 'var(--font-heebo), sans-serif' }}>
-              13:55
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-white/60">תאריך</p>
-            <p className="text-xl font-bold">שבת · 20.06</p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-x-4 gap-y-5 pt-5 text-sm">
-          <Detail label="היעד" value="האיים הסרוניים 🇬🇷" />
-          <Detail label="כלי השיט" value="Bali 4.6 ⛵" />
-          <Detail label="הצוות" value="ג'ורדן וסיגרים" />
-          <Detail label="הסטטוס" value="מתרגשים 🔥" />
-        </div>
-      </div>
-    </div>
-  );
+function Pill({ children }: { children: React.ReactNode }) {
+  return <span className="whitespace-nowrap">{children}</span>;
 }
 
-function Detail({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <p className="text-white/55">{label}</p>
-      <p className="font-bold text-white/95">{value}</p>
-    </div>
-  );
-}
-
-/* ============================================================ */
-/* הסצנה: תמונת ים אמיתית בשעת זהב + שכבת קריאוּת + נצנוצים        */
-/* ============================================================ */
-function Scene() {
-  return (
-    <div className="absolute inset-0 -z-10 overflow-hidden" aria-hidden>
-      {/* תמונת רקע — קטמרן/מפרשית בים בשעת השקיעה */}
-      <div
-        className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: 'url(/counter-bg.jpg)' }}
-      />
-
-      {/* שכבת הכהיה לקריאוּת הטקסט (כהה למעלה, שקוף באמצע, כהה למטה) */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            'linear-gradient(180deg, rgba(16,12,42,0.72) 0%, rgba(28,20,60,0.42) 26%, rgba(20,40,70,0.18) 48%, rgba(13,55,72,0.5) 78%, rgba(8,40,58,0.78) 100%)',
-        }}
-      />
-
-      {/* טאצ' זהב חמים מסביב */}
-      <div
-        className="absolute inset-0"
-        style={{ background: 'radial-gradient(120% 80% at 50% 30%, rgba(255,200,120,0.12) 0%, rgba(0,0,0,0) 55%)' }}
-      />
-
-      {/* נצנוצים עדינים */}
-      <Stars />
-    </div>
-  );
-}
-
-function Stars() {
-  const dots = [
-    { top: '10%', left: '18%', d: '0s' },
-    { top: '16%', left: '74%', d: '0.7s' },
-    { top: '8%', left: '52%', d: '1.4s' },
-    { top: '22%', left: '86%', d: '2.0s' },
-    { top: '13%', left: '34%', d: '1.0s' },
-    { top: '26%', left: '8%', d: '2.4s' },
-  ];
-  return (
-    <>
-      {dots.map((s, i) => (
-        <span
-          key={i}
-          className="absolute h-1.5 w-1.5 rounded-full bg-white/80"
-          style={{ top: s.top, left: s.left, animation: `tw-twinkle 3.5s ease-in-out ${s.d} infinite` }}
-        />
-      ))}
-    </>
-  );
+function Dot() {
+  return <span className="text-white/35">•</span>;
 }
